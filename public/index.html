@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C-TECH Weather & AQI Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #121824; }
+    </style>
+</head>
+<body class="text-gray-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 shadow-lg py-4 px-6 mb-6">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2.5 rounded-lg text-white text-2xl shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-cloud-sun"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide">C-TECH WEATHER REPORT</h1>
+                    <p class="text-xs text-indigo-400 font-medium">📍 สถานีตรวจวัดความปลอดภัยทางอากาศ: ชลบุรี</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs text-gray-400">อัปเดตล่าสุด: </span>
+                <span id="update-time" class="text-sm font-semibold text-indigo-300">กำลังโหลด...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8">
+        <div id="rain-alert" class="hidden bg-gradient-to-r from-red-500 to-amber-500 p-4 rounded-xl mb-6 shadow-xl animate-pulse flex items-center gap-3">
+            <span class="text-2xl"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
+            <div>
+                <h3 class="font-bold text-white">แจ้งเตือนเร่งด่วน: ตรวจพบฝนตกในพื้นที่!</h3>
+                <p class="text-xs text-white/90">โปรดเก็บเสื้อผ้าของท่านโดยด่วนที่สุด!</p>
+            </div>
+        </div>
+
+        <!-- 📊 Real-time Metrics Grid (ปรับจาก 3 การ์ด เป็น 4 การ์ดเพื่อใส่ PM2.5) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            
+            <!-- Card 1: ดัชนีฝุ่นรวม AQI -->
+            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีคุณภาพอากาศ (AQI)</span>
+                    <i class="fa-solid fa-wind text-indigo-400 text-lg"></i>
+                </div>
+                <div class="text-center py-4">
+                    <span id="aqi-val" class="text-6xl font-extrabold tracking-tight text-emerald-400">0</span>
+                    <p id="aqi-label" class="mt-1 text-sm font-bold text-emerald-400">กำลังโหลด...</p>
+                </div>
+                <div class="h-2 bg-slate-700 rounded-full overflow-hidden mt-2">
+                    <div id="aqi-bar" class="h-full bg-emerald-400 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- 😷 Card ใหม่!!: ปริมาณฝุ่นละออง PM2.5 โดยตรง -->
+            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ปริมาณฝุ่นละออง PM2.5</span>
+                    <i class="fa-solid fa-mask-face text-teal-400 text-lg"></i>
+                </div>
+                <div class="text-center py-4">
+                    <span id="pm25-val" class="text-6xl font-extrabold tracking-tight text-teal-400">0</span>
+                    <span class="text-sm text-gray-400 font-bold"> µg/m³</span>
+                    <p id="pm25-warning" class="mt-1 text-xs font-semibold text-gray-400">ความเข้มข้นสารมลพิษ</p>
+                </div>
+                <div class="bg-slate-950/30 p-2 rounded-lg border border-slate-700/50 text-center text-[10px] text-gray-500">
+                    อิงเกณฑ์ความปลอดภัยมาตรฐาน
+                </div>
+            </div>
+
+            <!-- Card 3: อุณหภูมิและความชื้น -->
+            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">อุณหภูมิและความชื้น</span>
+                        <i class="fa-solid fa-temperature-three-quarters text-rose-400 text-lg"></i>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 py-2 text-center">
+                        <div class="border-r border-slate-700">
+                            <p class="text-[10px] text-gray-400 mb-0.5">อุณหภูมิ</p>
+                            <span class="text-xl font-bold text-white"><span id="temp-val">0</span>°C</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 mb-0.5">ความชื้น</p>
+                            <span class="text-xl font-bold text-sky-400"><span id="humidity-val">0</span>%</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 text-center">
+                    <p id="weather-desc" class="text-xs font-semibold text-indigo-300">กำลังโหลด...</p>
+                </div>
+            </div>
+
+            <!-- Card 4: ดัชนีความร้อน -->
+            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีความร้อน (Heat Index)</span>
+                    <i class="fa-solid fa-fire-flame-curved text-amber-500 text-lg"></i>
+                </div>
+                <div class="text-center py-4">
+                    <span id="heat-val" class="text-6xl font-extrabold tracking-tight text-white">0</span><span class="text-lg text-gray-400"> °C</span>
+                    <p id="heat-warning" class="mt-1 text-sm font-bold text-gray-300">กำลังโหลด...</p>
+                </div>
+                <div class="text-center text-[10px] text-gray-500 border-t border-slate-700 pt-2">
+                    ร่างกายรู้สึกจริงสัมสัมพันธ์ความชื้น
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+                <i class="fa-solid fa-chart-line text-indigo-400 text-lg"></i>
+                <h2 class="text-base font-bold tracking-wide text-gray-200">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (Timeline Analytics)</h2>
+            </div>
+            <div class="relative w-full h-64 md:h-80">
+                <canvas id="historyChart"></canvas>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs text-gray-500">
+        <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ C-TECH</p>
+    </footer>
+
+    <script>
+        let myChart = null;
+
+        function updateChart(dataList) {
+            const labels = dataList.map(d => d.time);
+            const aqiData = dataList.map(d => d.aqi);
+            const tempData = dataList.map(d => d.temp);
+            const ctx = document.getElementById('historyChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = aqiData;
+                myChart.data.datasets[1].data = tempData;
+                myChart.update('none');
+                return;
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'ดัชนี AQI', data: aqiData, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#34d399', tension: 0.3 },
+                        { label: 'อุณหภูมิ (°C)', data: tempData, borderColor: '#f87171', backgroundColor: 'rgba(248, 113, 113, 0.1)', borderWidth: 3, pointRadius: 4, pointBackgroundColor: '#f87171', tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'sans-serif', size: 12 } } } },
+                    scales: {
+                        x: { grid: { color: '#273549' }, ticks: { color: '#94a3b8' } },
+                        y: { type: 'linear', display: true, grid: { color: '#273549' }, ticks: { color: '#94a3b8' }, min: 0, max: 150, title: { display: true, text: 'ค่าดัชนีวัดผล (AQI / °C)', color: '#94a3b8', font: { size: 12, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        async function fetchWeatherData() {
+            try {
+                const response = await fetch('/api/weather');
+                const data = await response.json();
+
+                // 📦 จัดการการ์ด AQI
+                const aqiVal = document.getElementById('aqi-val');
+                const aqiLabel = document.getElementById('aqi-label');
+                const aqiBar = document.getElementById('aqi-bar');
+                aqiVal.innerText = data.aqi;
+                aqiLabel.innerText = data.aqiLabel;
+                let percent = (data.aqi / 200) * 100;
+                aqiBar.style.width = `${Math.min(percent, 100)}%`;
+
+                if (data.aqi <= 50) {
+                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
+                    aqiLabel.className = "mt-1 text-sm font-bold text-emerald-400";
+                    aqiBar.className = "h-full bg-emerald-400 transition-all duration-500";
+                } else if (data.aqi <= 100) {
+                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
+                    aqiLabel.className = "mt-1 text-sm font-bold text-yellow-400";
+                    aqiBar.className = "h-full bg-yellow-400 transition-all duration-500";
+                } else {
+                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-red-500";
+                    aqiLabel.className = "mt-1 text-sm font-bold text-red-500";
+                    aqiBar.className = "h-full bg-red-500 transition-all duration-500";
+                }
+
+                // 📦 จัดการการ์ด PM2.5 (ใหม่) พร้อมอัปเดตเปลี่ยนสีฟอนต์ตามระดับความอันตรายจริง
+                const pm25Val = document.getElementById('pm25-val');
+                const pm25Warning = document.getElementById('pm25-warning');
+                pm25Val.innerText = data.pm25;
+                
+                if (data.pm25 <= 12) {
+                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-blue-400";
+                    pm25Warning.innerText = "อากาศบริสุทธิ์ 🔵";
+                    pm25Warning.className = "mt-1 text-xs font-bold text-blue-400";
+                } else if (data.pm25 <= 35) {
+                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
+                    pm25Warning.innerText = "เกณฑ์ปลอดภัย 🟢";
+                    pm25Warning.className = "mt-1 text-xs font-bold text-emerald-400";
+                } else if (data.pm25 <= 55) {
+                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
+                    pm25Warning.innerText = "เริ่มมีผลกระทบ 🟡";
+                    pm25Warning.className = "mt-1 text-xs font-bold text-yellow-400";
+                } else {
+                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-red-500";
+                    pm25Warning.innerText = "อันตรายต่อสุขภาพ 🔴";
+                    pm25Warning.className = "mt-1 text-xs font-bold text-red-500";
+                }
+
+                document.getElementById('temp-val').innerText = data.temp;
+                document.getElementById('humidity-val').innerText = data.humidity;
+                document.getElementById('weather-desc').innerText = data.weatherDesc;
+
+                const heatVal = document.getElementById('heat-val');
+                const heatWarning = document.getElementById('heat-warning');
+                heatVal.innerText = data.heatIndex;
+                heatWarning.innerText = data.heatWarning;
+
+                if (data.heatIndex <= 32) {
+                    heatVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
+                    heatWarning.className = "mt-1 text-sm font-bold text-emerald-400";
+                } else if (data.heatIndex <= 41) {
+                    heatVal.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
+                    heatWarning.className = "mt-1 text-sm font-bold text-yellow-400";
+                } else if (data.heatIndex <= 54) {
+                    heatVal.className = "text-6xl font-extrabold tracking-tight text-orange-400";
+                    heatWarning.className = "mt-1 text-sm font-bold text-orange-400";
+                } else {
+                    heatVal.className = "text-6xl font-extrabold tracking-tight text-red-500";
+                    heatWarning.className = "mt-1 text-sm font-bold text-red-500";
+                }
+
+                const rainAlert = document.getElementById('rain-alert');
+                if (data.isRaining) { rainAlert.classList.remove('hidden'); } 
+                else { rainAlert.classList.add('hidden'); }
+
+                document.getElementById('update-time').innerText = data.updateTime;
+
+                const historyResponse = await fetch('/api/historical');
+                const historyData = await historyResponse.json();
+                if(historyData.length > 0) {
+                    updateChart(historyData);
+                }
+
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+
+        fetchWeatherData();
+        setInterval(fetchWeatherData, 5000); 
+    </script>
+</body>
+</html>

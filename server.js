@@ -14,7 +14,7 @@ const TELEGRAM_CHANNEL = '@ctech_pm25_alert';
 
 let lastAlertStatus = "Normal"; 
 
-// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend
+// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend (เพิ่มโครงสร้าง forecast สำหรับหน้าเว็บ)
 let latestData = {
     aqi: 0,
     aqiLabel: "กำลังโหลด...",
@@ -25,7 +25,8 @@ let latestData = {
     heatIndex: 0,
     heatWarning: "กำลังโหลด...",
     isRaining: false,
-    updateTime: "-"
+    updateTime: "-",
+    forecast: [] // 👈 เพิ่ม Array นี้สำหรับส่งข้อมูลพยากรณ์ 3 วันไปให้หน้าเว็บ
 };
 
 let historicalData = []; 
@@ -53,39 +54,25 @@ async function sendTelegramPhoto(photoUrl, caption) {
             caption: caption,
             parse_mode: 'HTML'
         });
-        console.log('🎨 [Telegram] ส่งสรุปรายงานรายชั่วโมงเรียบร้อย!');
+        console.log('🎨 [Telegram] ส่งสรุปรายงานเรียบร้อย!');
     } catch (error) {
         console.error('❌ ไม่สามารถส่งภาพเข้า Telegram ได้:', error.message);
     }
 }
 
-// 🛠️ ปรับปรุงสูตรคำนวณ Heat Index ใหม่ให้มีความแม่นยำ ไม่ดีดสูงเกินไป
 function calculateHeatIndex(temp, humidity) {
     if (temp < 27) return Math.round(temp);
-    
     let F = temp * (9 / 5) + 32;
     let RH = humidity;
-    
-    // คำนวณค่าเบื้องต้นก่อน
     let hi = 0.5 * (F + 61.0 + ((F - 68.0) * 1.2) + (RH * 0.094));
-    
-    // ถ้าผลลัพธ์มีค่าตั้งแต่ 80°F ขึ้นไป ให้ใช้สูตร Rothfusz แบบเต็มพร้อมค่าชดเชย
     if (hi >= 80) {
         hi = -42.379 + 2.04901523 * F + 10.14333127 * RH - 0.22475541 * F * RH 
              - 0.00683783 * F * F - 0.05481717 * RH * RH + 0.00122874 * F * F * RH 
              + 0.00085282 * F * RH * RH - 0.00000199 * F * F * RH * RH;
-        
-        // ตัวชดเชยกรณีความชื้นต่ำหรือสูงเกินไปเพื่อไม่ให้ค่าเพี้ยน
-        if (RH < 13 && F >= 80 && F <= 112) {
-            hi -= ((13 - RH) / 4) * Math.sqrt((17 - Math.abs(F - 95.)) / 17);
-        } else if (RH > 85 && F >= 80 && F <= 87) {
-            hi += ((RH - 85) / 10) * ((87 - F) / 5);
-        }
+        if (RH < 13 && F >= 80 && F <= 112) hi -= ((13 - RH) / 4) * Math.sqrt((17 - Math.abs(F - 95.)) / 17);
+        else if (RH > 85 && F >= 80 && F <= 87) hi += ((RH - 85) / 10) * ((87 - F) / 5);
     }
-    
-    // แปลงกลับเป็นหน่วยองศาเซลเซียส
-    let HI_C = Math.round(((hi - 32) * 5) / 9);
-    return HI_C;
+    return Math.round(((hi - 32) * 5) / 9);
 }
 
 function getHeatIndexWarning(HI_C) {
@@ -97,6 +84,7 @@ function getHeatIndexWarning(HI_C) {
 
 async function checkAirAndWeather() {
     try {
+        // 1. ดึงข้อมูลคุณภาพอากาศ IQAir
         const iqairRes = await axios.get(`https://api.airvisual.com/v2/city?city=Chon%20Buri&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
         const currentAQI = iqairRes.data.data.current.pollution.aqius;
         
@@ -109,30 +97,57 @@ async function checkAirAndWeather() {
             currentPM25 = Math.round(currentAQI * 0.35); 
         }
 
+        // 2. ดึงข้อมูลสภาพอากาศปัจจุบัน OpenWeatherMap
         const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
         const temp = weatherRes.data.main.temp;         
-        
         let humidity = weatherRes.data.main.humidity; 
         if (iqairRes.data.data.current.weather && typeof iqairRes.data.data.current.weather.hu !== 'undefined') {
             humidity = iqairRes.data.data.current.weather.hu; 
         }
-
         const weatherDesc = weatherRes.data.weather[0].description; 
         const weatherId = weatherRes.data.weather[0].id; 
+
+        // 3. 🔮 [เพิ่มใหม่] ดึงข้อมูลพยากรณ์อากาศล่วงหน้า 5 วัน (ใช้แบบฟรีเหมือนเดิม)
+        const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+        const forecastList = forecastRes.data.list;
+        
+        // กรองข้อมูล: เลือกเฉพาะข้อมูลพยากรณ์ของเวลาประมาณ 12:00 น. ของวันถัดๆ ไป (เพื่อไม่ให้ข้อมูลซ้ำซ้อน)
+        const dailyForecast = [];
+        const checkedDates = [];
+        const todayStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' });
+
+        for (const item of forecastList) {
+            // แปลงเวลาของ item เป็นเวลาไทย
+            const itemDate = new Date(item.dt * 1000);
+            const itemDateStr = itemDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' });
+            const itemTimeStr = itemDate.toLocaleTimeString('en-US', { timeZone: 'Asia/Bangkok', hour12: false });
+
+            // ข้ามวันปัจจุบัน และเลือกช่วงเวลาใกล้เที่ยง (11:00 - 13:00) เอาแค่ 3 วันถัดไป
+            if (itemDateStr !== todayStr && !checkedDates.includes(itemDateStr) && itemTimeStr.startsWith('12:')) {
+                const dayName = itemDate.toLocaleDateString('th-TH', { weekday: 'long' });
+                dailyForecast.push({
+                    day: dayName,
+                    temp: Math.round(item.main.temp),
+                    humidity: item.main.humidity,
+                    desc: item.weather[0].description,
+                    icon: item.weather[0].icon
+                });
+                checkedDates.push(itemDateStr);
+                if (dailyForecast.length >= 3) break; // เอาแค่ 3 วันล่วงหน้าพอ
+            }
+        }
 
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
 
         let aqiLabel = "";
         let themeColor = "#27ae60"; 
-
         if (currentAQI <= 25) { aqiLabel = "ดีมาก 🔵"; themeColor = "#2980b9"; }
         else if (currentAQI <= 50) { aqiLabel = "ดี 🟢"; themeColor = "#2ecc71"; }
         else if (currentAQI <= 100) { aqiLabel = "ปานกลาง 🟡"; themeColor = "#f1c40f"; }
         else { aqiLabel = "อันตรายต่อสุขภาพ 🔴"; themeColor = "#e74c3c"; }
 
         const hasRain = ((weatherDesc.includes('ฝน') || weatherDesc.includes('rain') || weatherDesc.includes('พายุ')) || (weatherId >= 300 && weatherId < 600)) && humidity >= 75;
-
         const title = "🌤️ C-TECH WEATHER REPORT";
 
         const chartConfig = {
@@ -144,7 +159,6 @@ async function checkAirAndWeather() {
                 centerArea: { text: `${currentAQI}`, fontColor: '#ffffff', fontSize: 50, subtext: aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
             }
         };
-
         const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
         let rainWarning = "";
@@ -152,27 +166,23 @@ async function checkAirAndWeather() {
             rainWarning = `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเก็บผ้าด่วน) 🌧️</b>\n`;
         }
 
-        // 🕒 แก้ไขการบันทึกเวลาอัปเดตบนหน้าเว็บให้บังคับเป็นเวลาไทย (GMT+7)
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
 
+        // บันทึกข้อมูลลงตัวแปรหลัก (ส่งต่อข้อมูลพยากรณ์ไปให้หน้าเว็บด้วย)
         latestData = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
-            isRaining: hasRain, updateTime: localTimeFormatted
+            isRaining: hasRain, updateTime: localTimeFormatted,
+            forecast: dailyForecast // 👈 ข้อมูลพยากรณ์ 3 วันจะวิ่งไปที่หน้าเว็บแดชบอร์ด
         };
 
-        // 🕒 แก้ไขเวลาสำหรับกราฟย้อนหลังให้เป็นเวลาไทย
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
-        
         if (historicalData.length === 0 || historicalData[historicalData.length - 1].time !== timeLabel) {
             historicalData.push({ time: timeLabel, aqi: currentAQI, temp: temp });
         }
+        if (historicalData.length > 12) historicalData.shift(); 
 
-        if (historicalData.length > 12) {
-            historicalData.shift(); 
-        }
-
-        // 📝 ข้อความสรุปรายงานบน Telegram (เพิ่มลิงก์เว็บแดชบอร์ดเรียบร้อย)
+        // 📝 ข้อความสรุปรายงานบน Telegram (คงรูปแบบเดิมไว้ 100% ไม่ดึงพยากรณ์อากาศล่วงหน้ามาใส่)
         let textCaption = `<b>${title}</b>\n`;
         textCaption += `📍 สถานีตรวจวัด: จังหวัดชลบุรี\n`;
         textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
@@ -180,7 +190,7 @@ async function checkAirAndWeather() {
         textCaption += `😷 ดัชนีฝุ่นรวม AQI: <b>${currentAQI}</b>\n`;
         textCaption += `💨 ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; 
         textCaption += `🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${temp} °C</b>\n`;
-        textCaption += `💧 ความชื้นสัมพัทธ์ในอากาศ: <b>${humidity} %</b>\n`;
+        textCaption += `💧 ความชื้นสัมพัทธ์ in อากาศ: <b>${humidity} %</b>\n`;
         textCaption += `☁️ สภาพท้องฟ้า: ${weatherDesc}\n`;
         if (rainWarning) textCaption += rainWarning; 
         textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
@@ -188,7 +198,7 @@ async function checkAirAndWeather() {
         textCaption += `⚠️ ประเมินความเสี่ยง: ${heatWarning.text}\n`;
         textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
         textCaption += `💻 ดูแดชบอร์ดแบบเรียลไทม์ได้ที่:\n`;
-        textCaption += `🔗 https://ctech-weather-aqi.onrender.com/\n\n`; // 👈 เพิ่มลิงก์หน้าเว็บตามต้องการ
+        textCaption += `🔗 https://ctech-weather-aqi.onrender.com/\n\n`; 
         textCaption += `📢 สแตนด์บายอัปเดตระบบโดย สาขาคอมพิวเตอร์`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
@@ -199,9 +209,9 @@ async function checkAirAndWeather() {
 }
 
 cron.schedule('1 * * * *', () => {
-    console.log('⏰ [Cron Job] ถึงรอบรายงานประจำชั่วโมง (นาทีที่ 1) ทำการดึง API...');
+    console.log('⏰ [Cron Job] ถึงรอบรายงานประจำชั่วโมง ทำการดึง API...');
     checkAirAndWeather();
 });
 
 checkAirAndWeather();
-console.log('🚀 [Ready] บอทเวอร์ชันรายงานทุก 1 ชั่วโมง (ปรับปรุงจังหวะเวลาหลบระบบค้าง) สแตนด์บาย...');
+console.log('🚀 [Ready] บอทเวอร์ชันรายงานทุก 1 ชั่วโมงสแตนด์บาย...');

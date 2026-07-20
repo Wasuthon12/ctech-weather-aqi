@@ -14,11 +14,11 @@ const TELEGRAM_CHANNEL = '@ctech_pm25_alert';
 
 let lastAlertStatus = "Normal"; 
 
-// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend (เพิ่ม pm25 เข้ามา)
+// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend
 let latestData = {
     aqi: 0,
     aqiLabel: "กำลังโหลด...",
-    pm25: 0, // 👈 เพิ่มตัวแปรเก็บค่าฝุ่น PM2.5 จริง
+    pm25: 0, 
     temp: 0,
     humidity: 0,
     weatherDesc: "กำลังโหลด...",
@@ -59,14 +59,32 @@ async function sendTelegramPhoto(photoUrl, caption) {
     }
 }
 
+// 🛠️ ปรับปรุงสูตรคำนวณ Heat Index ใหม่ให้มีความแม่นยำ ไม่ดีดสูงเกินไป
 function calculateHeatIndex(temp, humidity) {
     if (temp < 27) return Math.round(temp);
+    
     let F = temp * (9 / 5) + 32;
     let RH = humidity;
-    let HI_F = -42.379 + 2.04901523 * F + 10.14333127 * RH - 0.22475541 * F * RH - 0.00683783 * F * F - 0.05481717 * RH * RH + 0.00122874 * F * F * RH + 0.00085282 * F * RH * RH - 0.00000199 * F * F * RH * RH;
-    if (RH > 85 && F >= 80 && F <= 87) HI_F += ((RH - 85) / 10) * ((87 - F) / 5);
-    let HI_C = Math.round(((HI_F - 32) * 5) / 9);
-    if (HI_C - temp > 10 && RH > 90) return Math.round(temp + 3);
+    
+    // คำนวณค่าเบื้องต้นก่อน
+    let hi = 0.5 * (F + 61.0 + ((F - 68.0) * 1.2) + (RH * 0.094));
+    
+    // ถ้าผลลัพธ์มีค่าตั้งแต่ 80°F ขึ้นไป ให้ใช้สูตร Rothfusz แบบเต็มพร้อมค่าชดเชย
+    if (hi >= 80) {
+        hi = -42.379 + 2.04901523 * F + 10.14333127 * RH - 0.22475541 * F * RH 
+             - 0.00683783 * F * F - 0.05481717 * RH * RH + 0.00122874 * F * F * RH 
+             + 0.00085282 * F * RH * RH - 0.00000199 * F * F * RH * RH;
+        
+        // ตัวชดเชยกรณีความชื้นต่ำหรือสูงเกินไปเพื่อไม่ให้ค่าเพี้ยน
+        if (RH < 13 && F >= 80 && F <= 112) {
+            hi -= ((13 - RH) / 4) * Math.sqrt((17 - Math.abs(F - 95.)) / 17);
+        } else if (RH > 85 && F >= 80 && F <= 87) {
+            hi += ((RH - 85) / 10) * ((87 - F) / 5);
+        }
+    }
+    
+    // แปลงกลับเป็นหน่วยองศาเซลเซียส
+    let HI_C = Math.round(((hi - 32) * 5) / 9);
     return HI_C;
 }
 
@@ -82,17 +100,13 @@ async function checkAirAndWeather() {
         const iqairRes = await axios.get(`https://api.airvisual.com/v2/city?city=Chon%20Buri&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
         const currentAQI = iqairRes.data.data.current.pollution.aqius;
         
-        // 🔬 ดึงค่าความเข้มข้นฝุ่น PM2.5 ที่แท้จริงจาก IQAir (หน่วยคือ µg/m³)
-        // ในบางรอบ API อาจจะใช้ชื่อหลักเป็นความเข้มข้นหลักตรงๆ เราดึงจาก main.pollution หรือแปลงสูตรคร่าวๆ ตามมาตรฐานสหรัฐฯ 
-        // แต่เพื่อให้ได้ค่าดิบที่แม่นยำจาก IQAir:
         let currentPM25 = 0;
         if (iqairRes.data.data.current.pollution.mainus === "p2") {
-            // สูตรคำนวณแปลงค่า AQI กลับมาเป็นความเข้มข้น PM2.5 โดยประมาณเพื่อความรวดเร็วและแสดงผลได้ทันที
             if (currentAQI <= 50) currentPM25 = Math.round(currentAQI * 0.24);
             else if (currentAQI <= 100) currentPM25 = Math.round(12.1 + (currentAQI - 50) * 0.46);
             else currentPM25 = Math.round(35.5 + (currentAQI - 100) * 0.4);
         } else {
-            currentPM25 = Math.round(currentAQI * 0.35); // ค่าสุ่มเฉลี่ยความเข้มข้นอนุภาคขนาดเล็ก
+            currentPM25 = Math.round(currentAQI * 0.35); 
         }
 
         const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
@@ -138,14 +152,17 @@ async function checkAirAndWeather() {
             rainWarning = `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเก็บผ้าด่วน) 🌧️</b>\n`;
         }
 
-        // 💾 บันทึกค่าลงตัวแปรหลัก (เพิ่มข้อมูล pm25 เพื่อยิงส่งให้หน้าเว็บ)
+        // 🕒 แก้ไขการบันทึกเวลาอัปเดตบนหน้าเว็บให้บังคับเป็นเวลาไทย (GMT+7)
+        const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
+
         latestData = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
-            isRaining: hasRain, updateTime: new Date().toLocaleTimeString('th-TH')
+            isRaining: hasRain, updateTime: localTimeFormatted
         };
 
-        const timeLabel = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+        // 🕒 แก้ไขเวลาสำหรับกราฟย้อนหลังให้เป็นเวลาไทย
+        const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
         
         if (historicalData.length === 0 || historicalData[historicalData.length - 1].time !== timeLabel) {
             historicalData.push({ time: timeLabel, aqi: currentAQI, temp: temp });
@@ -155,20 +172,23 @@ async function checkAirAndWeather() {
             historicalData.shift(); 
         }
 
-        // 📝 ข้อความสรุปรายงานบน Telegram (เพิ่มระบุค่าฝุ่น PM2.5)
+        // 📝 ข้อความสรุปรายงานบน Telegram (เพิ่มลิงก์เว็บแดชบอร์ดเรียบร้อย)
         let textCaption = `<b>${title}</b>\n`;
         textCaption += `📍 สถานีตรวจวัด: จังหวัดชลบุรี\n`;
         textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
         textCaption += `🍃 คุณภาพอากาศ: <b>${aqiLabel}</b>\n`;
         textCaption += `😷 ดัชนีฝุ่นรวม AQI: <b>${currentAQI}</b>\n`;
-        textCaption += `💨ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; // 👈 เพิ่มในข้อความ Telegram
+        textCaption += `💨 ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; 
         textCaption += `🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${temp} °C</b>\n`;
         textCaption += `💧 ความชื้นสัมพัทธ์ในอากาศ: <b>${humidity} %</b>\n`;
         textCaption += `☁️ สภาพท้องฟ้า: ${weatherDesc}\n`;
         if (rainWarning) textCaption += rainWarning; 
         textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
         textCaption += `🔥 ดัชนีความร้อน (ร่างกายรู้สึกจริง): <b>${heatIndexC} °C</b>\n`;
-        textCaption += `⚠️ ประเมินความเสี่ยง: ${heatWarning.text}\n\n`;
+        textCaption += `⚠️ ประเมินความเสี่ยง: ${heatWarning.text}\n`;
+        textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
+        textCaption += `💻 ดูแดชบอร์ดแบบเรียลไทม์ได้ที่:\n`;
+        textCaption += `🔗 https://ctech-weather-aqi.onrender.com/\n\n`; // 👈 เพิ่มลิงก์หน้าเว็บตามต้องการ
         textCaption += `📢 สแตนด์บายอัปเดตระบบโดย สาขาคอมพิวเตอร์`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
@@ -178,12 +198,10 @@ async function checkAirAndWeather() {
     }
 }
 
-// ⏰ สั่งรันอัปเดตข้อมูลอัตโนมัติ "ทุกๆ 1 ชั่วโมง" (โดยทำงาน ณ นาทีที่ 1 ของทุกชั่วโมง เพื่อแก้ปัญหาบอทค้าง)
 cron.schedule('1 * * * *', () => {
     console.log('⏰ [Cron Job] ถึงรอบรายงานประจำชั่วโมง (นาทีที่ 1) ทำการดึง API...');
     checkAirAndWeather();
 });
 
-// สั่งทำงานทันที 1 ครั้งเมื่อเปิดเซิร์ฟเวอร์เพื่อให้ระบบมีข้อมูลเริ่มต้น
 checkAirAndWeather();
 console.log('🚀 [Ready] บอทเวอร์ชันรายงานทุก 1 ชั่วโมง (ปรับปรุงจังหวะเวลาหลบระบบค้าง) สแตนด์บาย...');

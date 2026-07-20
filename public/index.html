@@ -42,7 +42,7 @@
             </div>
         </div>
 
-        <!-- 📊 Real-time Metrics Grid (ปรับจาก 3 การ์ด เป็น 4 การ์ดเพื่อใส่ PM2.5) -->
+        <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             
             <!-- Card 1: ดัชนีฝุ่นรวม AQI -->
@@ -115,6 +115,18 @@
             </div>
         </div>
 
+        <!-- 🔮 โซนใหม่: พยากรณ์อากาศล่วงหน้า 3 วัน (Forecast Cards) -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+                <i class="fa-solid fa-calendar-days text-indigo-400 text-lg"></i>
+                <h2 class="text-base font-bold tracking-wide text-gray-200">พยากรณ์อากาศล่วงหน้า 3 วัน (3-Day Weather Forecast)</h2>
+            </div>
+            <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- ข้อมูลพยากรณ์อากาศจะแทรกเข้ามาตรงนี้จาก JavaScript -->
+                <p class="text-center text-sm text-gray-400 col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
+            </div>
+        </div>
+
         <!-- Chart Section -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
@@ -169,6 +181,31 @@
             });
         }
 
+        // 🔮 ฟังก์ชันใหม่: แสดงผลการ์ดพยากรณ์ล่วงหน้า
+        function renderForecast(forecastData) {
+            const container = document.getElementById('forecast-container');
+            if (!forecastData || forecastData.length === 0) {
+                container.innerHTML = `<p class="text-center text-sm text-gray-400 col-span-3 py-4">ไม่พบข้อมูลพยากรณ์ล่วงหน้า</p>`;
+                return;
+            }
+
+            container.innerHTML = forecastData.map(item => `
+                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between shadow-md">
+                    <div>
+                        <h4 class="text-sm font-bold text-indigo-300">${item.day}</h4>
+                        <p class="text-xs text-gray-400 capitalize mt-0.5">${item.desc}</p>
+                        <div class="flex items-center gap-3 mt-2">
+                            <span class="text-sm text-white font-semibold"><i class="fa-solid fa-temperature-high text-rose-400 mr-1"></i> ${item.temp}°C</span>
+                            <span class="text-sm text-sky-400 font-semibold"><i class="fa-solid fa-droplet mr-1"></i> ${item.humidity}%</span>
+                        </div>
+                    </div>
+                    <div class="w-14 h-14 flex items-center justify-center bg-slate-800/60 rounded-lg">
+                        <img src="https://openweathermap.org/img/wn/${item.icon}@2x.png" alt="${item.desc}" class="w-full h-full object-contain" />
+                    </div>
+                </div>
+            `).join('');
+        }
+
         async function fetchWeatherData() {
             try {
                 const response = await fetch('/api/weather');
@@ -197,7 +234,7 @@
                     aqiBar.className = "h-full bg-red-500 transition-all duration-500";
                 }
 
-                // 📦 จัดการการ์ด PM2.5 (ใหม่) พร้อมอัปเดตเปลี่ยนสีฟอนต์ตามระดับความอันตรายจริง
+                // 📦 จัดการการ์ด PM2.5 พร้อมอัปเดตระดับความอันตรายจริง
                 const pm25Val = document.getElementById('pm25-val');
                 const pm25Warning = document.getElementById('pm25-warning');
                 pm25Val.innerText = data.pm25;
@@ -248,6 +285,9 @@
                 else { rainAlert.classList.add('hidden'); }
 
                 document.getElementById('update-time').innerText = data.updateTime;
+
+                // 🔮 เรียกใช้ฟังก์ชันแสดงผลการ์ดพยากรณ์อากาศ 3 วัน
+                renderForecast(data.forecast);
 
                 const historyResponse = await fetch('/api/historical');
                 const historyData = await historyResponse.json();

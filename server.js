@@ -12,7 +12,8 @@ const IQAIR_KEY = process.env.IQAIR_KEY;
 const OPENWEATHER_KEY = process.env.OPENWEATHER_KEY;
 const TELEGRAM_CHANNEL = '@ctech_pm25_alert'; 
 
-let lastAlertStatus = "Normal"; 
+// 📌 เปลี่ยนตัวแปรจำสถานะเดิม มาใช้จำระดับฝุ่นวิกฤตเพื่อไม่ให้บอทยิงข้อความซ้ำรัวๆ
+let lastPM25AlertLevel = "Safe"; // ค่าที่เป็นไปได้: Safe, Warning, Danger
 
 // 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend
 let latestData = {
@@ -44,6 +45,21 @@ app.get('/api/historical', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🌐 [Web Server] แดชบอร์ดพร้อมทำงานบน Cloud/Local พอร์ต: ${PORT}`);
 });
+
+// 🚨 1. [เพิ่มใหม่] ฟังก์ชันสำหรับส่งข้อความเตือนภัยด่วน (ส่งข้อความล้วนๆ เพื่อความรวดเร็วสูงสุด)
+async function sendTelegramAlert(message) {
+    try {
+        const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+        await axios.post(url, {
+            chat_id: TELEGRAM_CHANNEL,
+            text: message,
+            parse_mode: 'HTML'
+        });
+        console.log('🚨 [Telegram Alert] ส่งข้อความแจ้งเตือนวิกฤตด่วนเรียบร้อย!');
+    } catch (error) {
+        console.error('❌ ไม่สามารถส่งข้อความแจ้งเตือนด่วนเข้า Telegram ได้:', error.message);
+    }
+}
 
 async function sendTelegramPhoto(photoUrl, caption) {
     try {
@@ -82,7 +98,8 @@ function getHeatIndexWarning(HI_C) {
     return { text: "อันตรายสูงสุด 🔴", color: "#c0392b" };
 }
 
-async function checkAirAndWeather() {
+// 📌 เพิ่ม Parameter `isHourlyReport` เพื่อเลือกว่าจะส่งรูปภาพสรุปรายชั่วโมงหรือไม่
+async function checkAirAndWeather(isHourlyReport = false) {
     try {
         // 1. ดึงข้อมูลคุณภาพอากาศ IQAir
         const iqairRes = await axios.get(`https://api.airvisual.com/v2/city?city=Chon%20Buri&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
@@ -147,22 +164,6 @@ async function checkAirAndWeather() {
         const hasRain = ((weatherDesc.includes('ฝน') || weatherDesc.includes('rain') || weatherDesc.includes('พายุ')) || (weatherId >= 300 && weatherId < 600)) && humidity >= 75;
         const title = "🌤️ C-TECH WEATHER REPORT";
 
-        const chartConfig = {
-            type: 'radialGauge',
-            data: { datasets: [{ data: [currentAQI], backgroundColor: themeColor, label: 'AQI Index' }] },
-            options: {
-                title: { display: true, text: `${title} (AQI: ${currentAQI})`, fontColor: '#ffffff', fontSize: 22 },
-                domain: [0, 200], trackColor: '#34495e', centerPercentage: 70,
-                centerArea: { text: `${currentAQI}`, fontColor: '#ffffff', fontSize: 50, subtext: aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
-            }
-        };
-        const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
-
-        let rainWarning = "";
-        if (hasRain) {
-            rainWarning = `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเก็บผ้าด่วน) 🌧️</b>\n`;
-        }
-
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
 
         latestData = {
@@ -178,35 +179,91 @@ async function checkAirAndWeather() {
         }
         if (historicalData.length > 12) historicalData.shift(); 
 
-        let textCaption = `<b>${title}</b>\n`;
-        textCaption += `📍 สถานีตรวจวัด: จังหวัดชลบุรี\n`;
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
-        textCaption += `🍃 คุณภาพอากาศ: <b>${aqiLabel}</b>\n`;
-        textCaption += `😷 ดัชนีฝุ่นรวม AQI: <b>${currentAQI}</b>\n`;
-        textCaption += `💨 ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; 
-        textCaption += `🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${temp} °C</b>\n`;
-        textCaption += `💧 ความชื้นสัมพัทธ์ in อากาศ: <b>${humidity} %</b>\n`;
-        textCaption += `☁️ สภาพท้องฟ้า: ${weatherDesc}\n`;
-        if (rainWarning) textCaption += rainWarning; 
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
-        textCaption += `🔥 ดัชนีความร้อน (ร่างกายรู้สึกจริง): <b>${heatIndexC} °C</b>\n`;
-        textCaption += `⚠️ ประเมินความเสี่ยง: ${heatWarning.text}\n`;
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
-        textCaption += `💻 ดูแดชบอร์ดแบบเรียลไทม์ได้ที่:\n`;
-        textCaption += `🔗 https://ctech-weather-aqi.onrender.com/\n\n`; 
-        textCaption += `📢 สแตนด์บายอัปเดตระบบโดย สาขาคอมพิวเตอร์`;
+        // 🚨 2. [เพิ่มใหม่] Logic ระบบตรวจจับและเตือนภัยวิกฤตฝุ่นละออง PM2.5 แบบทันที
+        let currentAlertLevel = "Safe";
+        if (currentPM25 > 55) {
+            currentAlertLevel = "Danger";    // เกณฑ์สีแดง (อันตราย)
+        } else if (currentPM25 > 35) {
+            currentAlertLevel = "Warning";   // เกณฑ์สีเหลือง/ส้ม (เริ่มมีผลกระทบ)
+        }
 
-        await sendTelegramPhoto(chartUrl, textCaption);
+        // ตรวจเช็กว่ามีการเปลี่ยนแปลงระดับฝุ่นขึ้นไปในเกณฑ์เฝ้าระวังหรืออันตรายหรือไม่
+        if (currentAlertLevel !== lastPM25AlertLevel && currentAlertLevel !== "Safe") {
+            lastPM25AlertLevel = currentAlertLevel; 
+            
+            let alertMsg = `🚨 <b>[แจ้งเตือนด่วน! วิกฤตฝุ่น PM2.5 เกินมาตรฐาน]</b> 🚨\n`;
+            alertMsg += `📍 พิกัดสถานี: จังหวัดชลบุรี\n`;
+            alertMsg += `━━━━━━━━━━━━━━━━━━━━\n`;
+            if (currentAlertLevel === "Danger") {
+                alertMsg += `🔴 <b>ระดับอันตรายสูงสุด: ${currentPM25} µg/m³</b>\n`;
+                alertMsg += `⚠️ <i>คำแนะนำ: ดัชนีมลพิษสูงเกินเกณฑ์ความปลอดภัยอย่างมาก หลีกเลี่ยงกิจกรรมกลางแจ้ง และสวมหน้ากากอนามัยทันที!</i>\n`;
+            } else {
+                alertMsg += ` <b>ระดับเริ่มมีผลกระทบต่อสุขภาพ: ${currentPM25} µg/m³</b>\n`;
+                alertMsg += `⚠️ <i>คำแนะนำ: ปริมาณฝุ่นเริ่มหนาแน่น นักศึกษาและกลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</i>\n`;
+            }
+            alertMsg += `━━━━━━━━━━━━━━━━━━━━\n`;
+            alertMsg += `⏰ ตรวจพบเวลา: ${localTimeFormatted}\n`;
+            alertMsg += `💻 ดูรายละเอียดกราฟสด: https://ctech-weather-aqi.onrender.com/`;
+
+            // ส่งกระจายข่าวเตือนภัยด่วนเข้ากลุ่มทันทีโดยไม่รอรอบชั่วโมง
+            await sendTelegramAlert(alertMsg);
+        }
+        // หากค่าฝุ่นลดลงมาจนปลอดภัยแล้ว ให้ทำการรีเซ็ตตัวแปรความจำเพื่อให้พร้อมเตือนในคราวต่อไป
+        else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
+            lastPM25AlertLevel = "Safe";
+            console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
+        }
+
+        // 📊 3. [ปรับปรุง] ระบบส่งสรุปรายงานรายชั่วโมงแบบมีรูปภาพ (จะทำเฉพาะเมื่อ Cron สั่งการเข้ามา)
+        if (isHourlyReport) {
+            const chartConfig = {
+                type: 'radialGauge',
+                data: { datasets: [{ data: [currentAQI], backgroundColor: themeColor, label: 'AQI Index' }] },
+                options: {
+                    title: { display: true, text: `${title} (AQI: ${currentAQI})`, fontColor: '#ffffff', fontSize: 22 },
+                    domain: [0, 200], trackColor: '#34495e', centerPercentage: 70,
+                    centerArea: { text: `${currentAQI}`, fontColor: '#ffffff', fontSize: 50, subtext: aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
+                }
+            };
+            const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+
+            let rainWarning = "";
+            if (hasRain) {
+                rainWarning = `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเก็บผ้าด่วน) 🌧️</b>\n`;
+            }
+
+            let textCaption = `<b>${title}</b>\n`;
+            textCaption += `📍 สถานีตรวจวัด: จังหวัดชลบุรี\n`;
+            textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
+            textCaption += `🍃 คุณภาพอากาศ: <b>${aqiLabel}</b>\n`;
+            textCaption += `😷 ดัชนีฝุ่นรวม AQI: <b>${currentAQI}</b>\n`;
+            textCaption += `💨 ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; 
+            textCaption += `🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${temp} °C</b>\n`;
+            textCaption += `💧 ความชื้นสัมพัทธ์ in อากาศ: <b>${humidity} %</b>\n`;
+            textCaption += `☁️ สภาพท้องฟ้า: ${weatherDesc}\n`;
+            if (rainWarning) textCaption += rainWarning; 
+            textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
+            textCaption += `🔥 ดัชนีความร้อน (ร่างกายรู้สึกจริง): <b>${heatIndexC} °C</b>\n`;
+            textCaption += `⚠️ ประเมินความเสี่ยง: ${heatWarning.text}\n`;
+            textCaption += `━━━━━━━━━━━━━━━━━━━━\n`;
+            textCaption += `💻 ดูแดชบอร์ดแบบเรียลไทม์ได้ที่:\n`;
+            textCaption += `🔗 https://ctech-weather-aqi.onrender.com/\n\n`; 
+            textCaption += `📢 สแตนด์บายอัปเดตระบบโดย สาขาคอมพิวเตอร์`;
+
+            await sendTelegramPhoto(chartUrl, textCaption);
+        }
 
     } catch (error) {
         console.error('❌ ระบบดึงข้อมูลสภาพอากาศขัดข้อง:', error.message);
     }
 }
 
+// ⏰ ปรับแก้รอบให้ Cron job สั่งงานโดยส่งตัวแปร true เข้าไปยืนยันรอบรายชั่วโมง
 cron.schedule('1 * * * *', () => {
-    console.log('⏰ [Cron Job] ถึงรอบรายงานประจำชั่วโมง ทำการดึง API...');
-    checkAirAndWeather();
+    console.log('⏰ [Cron Job] ถึงรอบรายงานประจำชั่วโมง ทำการดึง API พร้อมส่งภาพ...');
+    checkAirAndWeather(true); 
 });
 
-checkAirAndWeather();
-console.log('🚀 [Ready] บอทเวอร์ชันรายงานทุก 1 ชั่วโมงสแตนด์บาย...');
+// บังคับให้ตรวจเช็กทันทีตอนเปิดเซิร์ฟเวอร์ (และเปิดโหมดส่งรูปภาพรายงานเบื้องต้น)
+checkAirAndWeather(true);
+console.log('🚀 [Ready] บอทเวอร์ชันแจ้งเตือนภัย PM2.5 ด่วน Real-time สแตนด์บาย...');

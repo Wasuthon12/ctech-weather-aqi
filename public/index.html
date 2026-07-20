@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <!-- 😷 Card ใหม่!!: ปริมาณฝุ่นละออง PM2.5 โดยตรง -->
+            <!-- 😷 Card 2: ปริมาณฝุ่นละออง PM2.5 โดยตรง -->
             <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ปริมาณฝุ่นละออง PM2.5</span>
@@ -115,14 +115,79 @@
             </div>
         </div>
 
-        <!-- 🔮 โซนใหม่: พยากรณ์อากาศล่วงหน้า 3 วัน (Forecast Cards) -->
+        <!-- 📊 [โซนใหม่] แผงเปรียบเทียบมลพิษ 3 พื้นที่เสี่ยงในชลบุรี (Multi-City/Station Comparison) -->
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+                <i class="fa-solid fa-layer-group text-indigo-400 text-lg"></i>
+                <h2 class="text-base font-bold tracking-wide text-gray-200">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- เมือง 1: อำเภอเมืองชลบุรี (อ้างอิงจากสถานีหลัก) -->
+                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
+                        <span class="text-sm font-bold text-white">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
+                        <span id="comp-main-label" class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">กำลังโหลด</span>
+                    </div>
+                    <div class="flex items-center justify-around py-2">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-main-aqi" class="text-2xl font-black text-white">0</span>
+                        </div>
+                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-main-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- เมือง 2: เมืองพัทยา -->
+                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
+                        <span class="text-sm font-bold text-white">📍 เมืองพัทยา (Pattaya)</span>
+                        <span id="comp-pattaya-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-gray-400 font-bold">กำลังโหลด</span>
+                    </div>
+                    <div class="flex items-center justify-around py-2">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-pattaya-aqi" class="text-2xl font-black text-white">0</span>
+                        </div>
+                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-pattaya-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- เมือง 3: อำเภอศรีราชา -->
+                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
+                        <span class="text-sm font-bold text-white">📍 อ.ศรีราชา (Si Racha)</span>
+                        <span id="comp-siracha-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-gray-400 font-bold">กำลังโหลด</span>
+                    </div>
+                    <div class="flex items-center justify-around py-2">
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-siracha-aqi" class="text-2xl font-black text-white">0</span>
+                        </div>
+                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="text-center">
+                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-siracha-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔮 โซนพยากรณ์อากาศล่วงหน้า 3 วัน (Forecast Cards) -->
         <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
                 <i class="fa-solid fa-calendar-days text-indigo-400 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-gray-200">พยากรณ์อากาศล่วงหน้า 3 วัน (3-Day Weather Forecast)</h2>
             </div>
             <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- ข้อมูลพยากรณ์อากาศจะแทรกเข้ามาตรงนี้จาก JavaScript -->
                 <p class="text-center text-sm text-gray-400 col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
             </div>
         </div>
@@ -181,7 +246,6 @@
             });
         }
 
-        // 🔮 ฟังก์ชันใหม่: แสดงผลการ์ดพยากรณ์ล่วงหน้า
         function renderForecast(forecastData) {
             const container = document.getElementById('forecast-container');
             if (!forecastData || forecastData.length === 0) {
@@ -211,7 +275,7 @@
                 const response = await fetch('/api/weather');
                 const data = await response.json();
 
-                // 📦 จัดการการ์ด AQI
+                // 📦 จัดการการ์ด AQI สถานีหลัก
                 const aqiVal = document.getElementById('aqi-val');
                 const aqiLabel = document.getElementById('aqi-label');
                 const aqiBar = document.getElementById('aqi-bar');
@@ -234,7 +298,7 @@
                     aqiBar.className = "h-full bg-red-500 transition-all duration-500";
                 }
 
-                // 📦 จัดการการ์ด PM2.5 พร้อมอัปเดตระดับความอันตรายจริง
+                // 📦 จัดการการ์ด PM2.5 สถานีหลัก
                 const pm25Val = document.getElementById('pm25-val');
                 const pm25Warning = document.getElementById('pm25-warning');
                 pm25Val.innerText = data.pm25;
@@ -286,7 +350,27 @@
 
                 document.getElementById('update-time').innerText = data.updateTime;
 
-                // 🔮 เรียกใช้ฟังก์ชันแสดงผลการ์ดพยากรณ์อากาศ 3 วัน
+                // 📊 Render อัปเดตข้อมูลกล่องเปรียบเทียบมลพิษ 3 พื้นที่
+                document.getElementById('comp-main-aqi').innerText = data.aqi;
+                document.getElementById('comp-main-pm25').innerHTML = `${data.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                document.getElementById('comp-main-label').innerText = data.aqiLabel;
+                // ปรับธีมสีป้ายของเมืองหลักตามเกณฑ์
+                document.getElementById('comp-main-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
+
+                if (data.comparison) {
+                    // อัปเดตข้อมูลพัทยา
+                    document.getElementById('comp-pattaya-aqi').innerText = data.comparison.pattaya.aqi;
+                    document.getElementById('comp-pattaya-pm25').innerHTML = `${data.comparison.pattaya.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                    document.getElementById('comp-pattaya-label').innerText = data.comparison.pattaya.label;
+                    document.getElementById('comp-pattaya-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.comparison.pattaya.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.comparison.pattaya.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
+
+                    // อัปเดตข้อมูลศรีราชา
+                    document.getElementById('comp-siracha-aqi').innerText = data.comparison.siracha.aqi;
+                    document.getElementById('comp-siracha-pm25').innerHTML = `${data.comparison.siracha.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                    document.getElementById('comp-siracha-label').innerText = data.comparison.siracha.label;
+                    document.getElementById('comp-siracha-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.comparison.siracha.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.comparison.siracha.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
+                }
+
                 renderForecast(data.forecast);
 
                 const historyResponse = await fetch('/api/historical');

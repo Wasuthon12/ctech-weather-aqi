@@ -119,19 +119,30 @@ async function checkAirAndWeather(isHourlyReport = false) {
             currentPM25 = Math.round(currentAQI * 0.35); 
         }
 
-        // 📊 [ดึงเพิ่ม] ข้อมูลคุณภาพอากาศของ พัทยา (Pattaya)
+        // 📊 [ปรับปรุง] ข้อมูลคุณภาพอากาศของ พัทยา (Pattaya) พร้อมระบบ Backup Failover ไปหาบางละมุง
         let pattayaData = { aqi: 0, pm25: 0, label: "ไม่มีข้อมูล" };
         try {
+            // ลองเรียกผ่านชื่อหลักคือ พัทยา ก่อน
             const pattayaRes = await axios.get(`https://api.airvisual.com/v2/city?city=Pattaya&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
             const pAQI = pattayaRes.data.data.current.pollution.aqius;
             let pPM25 = Math.round(pAQI * 0.35);
             let pLabel = pAQI <= 25 ? "ดีมาก 🔵" : pAQI <= 50 ? "ดี 🟢" : pAQI <= 100 ? "ปานกลาง 🟡" : "เริ่มมีผลกระทบ 🟠";
             pattayaData = { aqi: pAQI, pm25: pPM25, label: pLabel };
         } catch (e) { 
-            console.log("⚠️ ดึงข้อมูลพัทยาขัดข้อง:", e.message); 
+            console.log("⚠️ ดึงพัทยาตรงๆ ขัดข้อง ลองดึงผ่านสถานีหลักอำเภอบางละมุง..."); 
+            try {
+                // ถ้าพัทยาออฟไลน์ ให้ใช้ข้อมูลของอำเภอบางละมุงซึ่งครอบคลุมเขตพัทยาแทน
+                const lamungRes = await axios.get(`https://api.airvisual.com/v2/city?city=Bang%20Lamung&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
+                const pAQI = lamungRes.data.data.current.pollution.aqius;
+                let pPM25 = Math.round(pAQI * 0.35);
+                let pLabel = pAQI <= 25 ? "ดีมาก 🔵" : pAQI <= 50 ? "ดี 🟢" : pAQI <= 100 ? "ปานกลาง 🟡" : "เริ่มมีผลกระทบ 🟠";
+                pattayaData = { aqi: pAQI, pm25: pPM25, label: pLabel };
+            } catch (errLamung) {
+                console.error("❌ สถานีสำรองบางละมุงขัดข้องเช่นกัน:", errLamung.message);
+            }
         }
 
-        // 📊 [ดึงเพิ่ม] ข้อมูลคุณภาพอากาศของ ศรีราชา (Si Racha)
+        // 📊 [ปรับปรุง] ข้อมูลคุณภาพอากาศของ ศรีราชา (Si Racha)
         let sirachaData = { aqi: 0, pm25: 0, label: "ไม่มีข้อมูล" };
         try {
             const sirachaRes = await axios.get(`https://api.airvisual.com/v2/city?city=Si%20Racha&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);

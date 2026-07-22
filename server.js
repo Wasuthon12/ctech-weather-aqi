@@ -175,18 +175,16 @@ async function checkAirAndWeather(isHourlyReport = false) {
         const weatherDesc = weatherRes.data.weather[0].description; 
         const weatherId = weatherRes.data.weather[0].id; 
 
-        // ☀️ 2.1 คำนวณ/ดึงค่า UV Index อ้างอิงตามช่วงเวลาและสภาพแสงแดด
+        // ☀️ 2.1 คำนวณ/ดึงค่า UV Index
         let uvIndex = 0;
         const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
         
-        // เช็กว่าเป็นเวลากลางวันหรือไม่ (06:00 - 18:00 น.)
         if (currentHour >= 6 && currentHour <= 18) {
             try {
                 const uvRes = await axios.get(`https://api.openweathermap.org/data/2.5/uvi?lat=13.3611&lon=100.9847&appid=${OPENWEATHER_KEY}`);
                 uvIndex = Math.round(uvRes.data.value);
             } catch (uvErr) {
-                // หาก API UV แบบแยกเรียกไม่ได้ ให้ประเมินจากเวลาและอุณหภูมิ
-                const peakFactor = Math.sin((currentHour - 6) / 12 * Math.PI); // พีกสุดช่วงเที่ยงวัน
+                const peakFactor = Math.sin((currentHour - 6) / 12 * Math.PI);
                 uvIndex = Math.round(peakFactor * (temp > 33 ? 10 : 7));
             }
         }

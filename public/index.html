@@ -38,6 +38,15 @@
             pointer-events: none;
             animation: rainFall 0.8s linear infinite;
         }
+
+        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต C-TECH */
+        @keyframes mascotBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-mascot {
+            animation: mascotBounce 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body id="dynamic-bg" class="text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-slate-900 relative overflow-x-hidden">
@@ -79,15 +88,45 @@
 
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
+        
+        <!-- 🤖 C-TECH Mascot & AI Weather Assistant Section (เอกลักษณ์โดดเด่นประจำสถาบัน) -->
+        <div class="bg-gradient-to-r from-indigo-900/90 via-slate-800/90 to-slate-900/90 border border-indigo-500/30 rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4">
+            <!-- ตัวละคร Mascot -->
+            <div class="relative flex-shrink-0">
+                <div id="mascot-avatar" class="w-24 h-24 md:w-28 md:h-28 bg-indigo-600/20 rounded-full border-2 border-indigo-400/50 flex items-center justify-center text-5xl md:text-6xl shadow-inner animate-mascot">
+                    🤖
+                </div>
+                <span class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+                    NONG C-TECH
+                </span>
+            </div>
+            <!-- กล่องคำพูด AI Speech Bubble -->
+            <div class="flex-grow bg-slate-900/80 border border-slate-700 p-4 rounded-xl relative w-full">
+                <!-- สามเหลี่ยมชี้ไปทาง Mascot -->
+                <div class="hidden md:block absolute -left-2.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-slate-700 border-b-8 border-b-transparent"></div>
+                <div class="flex items-center justify-between mb-1">
+                    <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-indigo-400"></i> น้อง C-TECH AI วิเคราะห์สภาพอากาศ
+                    </h3>
+                    <span id="mascot-status-badge" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300">
+                        ปกติ
+                    </span>
+                </div>
+                <p id="mascot-speech" class="text-sm text-gray-200 font-medium leading-relaxed">
+                    "สวัสดีครับพี่ๆ ชาว C-TECH! กำลังดึงข้อมูลสภาพอากาศและมลพิษในวิทยาลัยให้อยู่นะครับ..."
+                </p>
+            </div>
+        </div>
+
         <div id="rain-alert" class="hidden bg-gradient-to-r from-red-500 to-amber-500 p-4 rounded-xl mb-6 shadow-xl animate-pulse flex items-center gap-3">
             <span class="text-2xl"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
             <div>
                 <h3 class="font-bold text-white">แจ้งเตือนเร่งด่วน: ตรวจพบฝนตกในพื้นที่!</h3>
-                <p class="text-xs text-white/90">โปรดเก็บเสื้อผ้าของท่านโดยด่วนที่สุด!</p>
+                <p class="text-xs text-white/90">โปรดเก็บเสื้อผ้าและพกร่มระหว่างเปลี่ยนอาคารเรียนด่วน!</p>
             </div>
         </div>
 
-        <!-- 📊 Real-time Metrics Grid (ปรับเป็น 5 การ์ด) -->
+        <!-- 📊 Real-time Metrics Grid (5 การ์ด) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
             <!-- Card 1: AQI -->
@@ -121,7 +160,7 @@
                 </div>
             </div>
 
-            <!-- ☀️ Card 3: ดัชนี UV Index (เพิ่มเข้ามาใหม่!) -->
+            <!-- Card 3: UV Index -->
             <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนีรังสี UV</span>
@@ -269,6 +308,40 @@
     </footer>
 
     <script>
+        // 🤖 ฟังก์ชันอัปเดต Mascot AI Assistant ตามสภาพอากาศ
+        function updateMascotAssistant(data) {
+            const avatar = document.getElementById('mascot-avatar');
+            const speech = document.getElementById('mascot-speech');
+            const badge = document.getElementById('mascot-status-badge');
+
+            if (data.isRaining) {
+                avatar.innerText = "🌧️";
+                speech.innerHTML = `"ฝุ่นน้อยลงเพราะฝนตกครับพี่ๆ! ☔ <b>อย่าลืมพกร่มก่อนออกจากตึกเรียน</b> และขับขี่มอเตอร์ไซค์ระวังถนนลื่นด้วยนะครับ!"`;
+                badge.innerText = "เตือนฝนตก";
+                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-sky-500/20 text-sky-300";
+            } else if (data.pm25 > 55) {
+                avatar.innerText = "😷";
+                speech.innerHTML = `"ค่าฝุ่น PM2.5 สูงถึง <b class='text-red-400'>${data.pm25} µg/m³</b> อันตรายต่อสุขภาพครับ! 🔴 <b>สวมหน้ากากอนามัย N95 ทันที</b> และหลีกเลี่ยงกิจกรรมกลางแจ้งชั่วคราวนะครับ"`;
+                badge.innerText = "ฝุ่นเตือนภัยวิกฤต";
+                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-red-500/20 text-red-300";
+            } else if (data.uvIndex >= 8) {
+                avatar.innerText = "🕶️";
+                speech.innerHTML = `"วันนี้แดดจัดมาก! ดัชนี UV พุ่งสูงระดับ <b class='text-amber-400'>${data.uvIndex} (${data.uvLabel})</b> ☀️ <b>ทาครีมกันแดด หรือเลี่ยงเดินตากแดดนานเกิน 15 นาที</b> นะครับ"`;
+                badge.innerText = "แดดจัด UV สูง";
+                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-300";
+            } else if (data.heatIndex >= 42) {
+                avatar.innerText = "🥵";
+                speech.innerHTML = `"อากาศร้อนอบอ้าวมาก รู้สึกร้อนเหมือน <b class='text-orange-400'>${data.heatIndex}°C</b>! 🔥 <b>จิบน้ำบ่อยๆ เพื่อป้องกันโรคลมแดด (Heatstroke)</b> นะครับชาว C-TECH"`;
+                badge.innerText = "ดัชนีความร้อนสูง";
+                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-orange-500/20 text-orange-300";
+            } else {
+                avatar.innerText = "😊";
+                speech.innerHTML = `"สภาพอากาศรอบวิทยาลัยวันนี้อยู่ในเกณฑ์ดีครับ! 🍃 คุณภาพอากาศ <b>${data.aqiLabel}</b> เหมาะแก่การเรียนรู้และทำกิจกรรมกลางแจ้งเต็มที่เลยครับ!"`;
+                badge.innerText = "อากาศสดใส";
+                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300";
+            }
+        }
+
         // ☀️/🌙 สลับธีมกลางวัน - กลางคืน (พร้อมดาวกะพริบ)
         function applyDayNightTheme() {
             const now = new Date();
@@ -382,6 +455,9 @@
                 const response = await fetch('/api/weather');
                 const data = await response.json();
 
+                // 🤖 อัปเดต Mascot AI Assistant
+                updateMascotAssistant(data);
+
                 // 1. AQI
                 const aqiVal = document.getElementById('aqi-val');
                 const aqiLabel = document.getElementById('aqi-label');
@@ -428,7 +504,7 @@
                     pm25Warning.className = "mt-1 text-[11px] font-bold text-red-500";
                 }
 
-                // ☀️ 3. UV Index (ปรับสีตามความรุนแรง)
+                // ☀️ 3. UV Index
                 const uvVal = document.getElementById('uv-val');
                 const uvLabel = document.getElementById('uv-label');
                 if (uvVal && uvLabel) {

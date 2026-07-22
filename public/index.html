@@ -54,7 +54,7 @@
         .theme-dark .text-heading { color: #f8fafc; }
         .theme-dark .modal-bg { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
 
-        /* ☀️ Light Theme (ปรับปรุงใหม่ นุ่มนวล ไม่แสบตา) */
+        /* ☀️ Light Theme */
         .theme-light { background: linear-gradient(135deg, #cbd5e1 0%, #e2e8f0 50%, #f1f5f9 100%); color: #0f172a; }
         .theme-light .card-bg { background-color: rgba(255, 255, 255, 0.92); border-color: #cbd5e1; color: #0f172a; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); }
         .theme-light .inner-card-bg { background-color: #f8fafc; border-color: #cbd5e1; }
@@ -216,8 +216,8 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 AQI Card (กดเปิดรายละเอียด) -->
-            <div onclick="openAqiModal()" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
+            <!-- 💡 1. AQI Card (กดดูเกณฑ์) -->
+            <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
                 </div>
@@ -234,7 +234,11 @@
                 </div>
             </div>
 
-            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
+            <!-- 💡 2. PM2.5 Card (กดดูเกณฑ์) -->
+            <div onclick="openModal('pm25')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">
+                    คลิกดูเกณฑ์ ℹ️
+                </div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ฝุ่น PM2.5</span>
                     <i class="fa-solid fa-mask-face text-teal-500 text-base"></i>
@@ -245,10 +249,11 @@
                     <p id="pm25-warning" class="mt-1 text-[11px] font-bold text-muted">ความเข้มข้นสารมลพิษ</p>
                 </div>
                 <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] font-bold text-muted">
-                    เกณฑ์มาตรฐานความปลอดภัย
+                    เกณฑ์มาตรฐานไทย (PCD)
                 </div>
             </div>
 
+            <!-- 3. UV Card -->
             <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีรังสี UV</span>
@@ -263,6 +268,7 @@
                 </div>
             </div>
 
+            <!-- 4. Temp/Humidity Card -->
             <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -285,7 +291,11 @@
                 </div>
             </div>
 
-            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
+            <!-- 💡 5. Heat Index Card (กดดูเกณฑ์) -->
+            <div onclick="openModal('heat')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
+                    คลิกดูเกณฑ์ ℹ️
+                </div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีความร้อน</span>
                     <i class="fa-solid fa-fire-flame-curved text-amber-600 text-base"></i>
@@ -386,81 +396,36 @@
         </div>
     </main>
 
-    <!-- 📢 AQI Details Modal (ป๊อปอัพแสดงเกณฑ์รายละเอียด AQI) -->
-    <div id="aqi-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <!-- 📢 Unified Details Modal (ป๊อปอัพอเนกประสงค์รองรับ AQI, PM2.5, Heat Index) -->
+    <div id="info-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
-            <button onclick="closeAqiModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">
                 ✕
             </button>
 
+            <!-- Dynamic Header -->
             <div class="flex items-center gap-3 mb-4 border-b border-slate-500/30 pb-3">
-                <div class="bg-indigo-600 text-white p-2.5 rounded-xl">
-                    <i class="fa-solid fa-wind text-xl"></i>
+                <div id="modal-icon-bg" class="bg-indigo-600 text-white p-2.5 rounded-xl">
+                    <i id="modal-icon" class="fa-solid fa-wind text-xl"></i>
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-heading">ดัชนีคุณภาพอากาศ AQI คืออะไร?</h2>
-                    <p class="text-xs text-indigo-500 font-semibold">Air Quality Index (US-EPA Standard)</p>
+                    <h2 id="modal-title" class="text-lg font-bold text-heading">หัวข้อ</h2>
+                    <p id="modal-subtitle" class="text-xs text-indigo-500 font-semibold">คำอธิบาย</p>
                 </div>
             </div>
 
-            <p class="text-xs text-muted leading-relaxed mb-4">
-                <b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศที่คำนวณจากปริมาณมลพิษในอากาศ เช่น <b>ฝุ่น PM2.5, PM10, ก๊าซโอโซน และก๊าซพิษต่างๆ</b> โดยแบ่งระดับความอันตรายออกเป็น 6 ระดับสีมาตรฐานสากล:
+            <!-- Dynamic Description -->
+            <p id="modal-description" class="text-xs text-muted leading-relaxed mb-4">
+                รายละเอียด...
             </p>
 
-            <!-- รายละเอียดเกณฑ์ AQI -->
-            <div class="space-y-2.5 mb-6 text-xs">
-                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 50</span>
-                    <div>
-                        <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 คุณภาพอากาศดีมาก (Good)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">ไม่มีผลกระทบต่อสุขภาพ เหมาะแก่การทำกิจกรรมกลางแจ้งและออกกำลังกายเต็มที่</p>
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
-                    <div>
-                        <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป แต่ผู้ที่ไวต่อมลพิษหรือโรคทางเดินหายใจควรสังเกตอาการ</p>
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 150</span>
-                    <div>
-                        <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 มีผลต่อกลุ่มเสี่ยง (Unhealthy for Sensitive Groups)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">เด็ก, ผู้สูงอายุ, และผู้ป่วยโรคปอด/หัวใจ ควรเริ่มสวมหน้ากากอนามัย และลดเวลาทำกิจกรรมกลางแจ้ง</p>
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
-                    <div>
-                        <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">ทุกคนเริ่มมีผลกระทบต่อสุขภาพ <b>ควรสวมหน้ากาก N95</b> เมื่อออกนอกอาคาร และเลี่ยงการออกกำลังกายกลางแจ้ง</p>
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">201 - 300</span>
-                    <div>
-                        <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 มีผลอย่างมาก (Very Unhealthy)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">เตือนภัยสุขภาพร้ายแรง งดกิจกรรมกลางแจ้งทุกชนิด เปิดเครื่องฟอกอากาศในห้องเรียน/บ้านเรือน</p>
-                    </div>
-                </div>
-
-                <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-800 flex items-start gap-3">
-                    <span class="px-2.5 py-1 rounded bg-rose-900 text-white font-bold text-[11px] whitespace-nowrap">301+</span>
-                    <div>
-                        <h4 class="font-bold text-rose-500">🟤 อันตรายร้ายแรง (Hazardous)</h4>
-                        <p class="text-muted text-[11px] mt-0.5">ภาวะฉุกเฉินทางสุขภาพ ห้ามออกจากอาคารโดยเด็ดขาด</p>
-                    </div>
-                </div>
+            <!-- Dynamic Content (ตารางเกณฑ์วัด) -->
+            <div id="modal-body-content" class="space-y-2.5 mb-6 text-xs">
             </div>
 
             <div class="text-center pt-2">
-                <button onclick="closeAqiModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">
+                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">
                     เข้าใจแล้ว ปิดหน้าต่างนี้
                 </button>
             </div>
@@ -505,17 +470,155 @@
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
 
-        /* 🟢 ฟังก์ชั่นเปิด/ปิด AQI Modal */
-        function openAqiModal() {
-            const modal = document.getElementById('aqi-modal');
+        /* 🟢 ฟังก์ชั่นเปิด/ปิด และจัดการเนื้อหา Modal อเนกประสงค์ */
+        function openModal(type) {
+            const modal = document.getElementById('info-modal');
+            const iconBg = document.getElementById('modal-icon-bg');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const subtitle = document.getElementById('modal-subtitle');
+            const desc = document.getElementById('modal-description');
+            const body = document.getElementById('modal-body-content');
+
+            if (type === 'aqi') {
+                iconBg.className = "bg-indigo-600 text-white p-2.5 rounded-xl";
+                icon.className = "fa-solid fa-wind text-xl";
+                title.innerText = "ดัชนีคุณภาพอากาศ AQI คืออะไร?";
+                subtitle.innerText = "Air Quality Index (US-EPA Standard)";
+                desc.innerHTML = "<b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศที่คำนวณจากมลพิษรวม เช่น PM2.5, PM10 และก๊าซพิษ โดยแบ่งเป็น 6 ระดับสีสากล:";
+                body.innerHTML = `
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 50</span>
+                        <div>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 คุณภาพอากาศดีมาก (Good)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ไม่มีผลกระทบต่อสุขภาพ เหมาะแก่การทำกิจกรรมกลางแจ้งเต็มที่</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
+                        <div>
+                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป แต่ผู้ป่วยโรคทางเดินหายใจควรสังเกตอาการ</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 150</span>
+                        <div>
+                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 มีผลต่อกลุ่มเสี่ยง (Unhealthy for Sensitive Groups)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เด็ก, ผู้สูงอายุ และผู้ป่วยควรเริ่มสวมหน้ากาก และลดกิจกรรมกลางแจ้ง</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
+                        <div>
+                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบทุกคน <b>ควรสวมหน้ากาก N95</b> เมื่ออกนอกอาคาร</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">201 - 300</span>
+                        <div>
+                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 มีผลอย่างมาก (Very Unhealthy)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">อันตรายร้ายแรง งดกิจกรรมกลางแจ้งทุกชนิด เปิดเครื่องฟอกอากาศ</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-800 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-rose-900 text-white font-bold text-[11px] whitespace-nowrap">301+</span>
+                        <div>
+                            <h4 class="font-bold text-rose-500">🟤 อันตรายร้ายแรง (Hazardous)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ภาวะฉุกเฉินทางสุขภาพ ห้ามออกจากอาคารโดยเด็ดขาด</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'pm25') {
+                iconBg.className = "bg-teal-600 text-white p-2.5 rounded-xl";
+                icon.className = "fa-solid fa-mask-face text-xl";
+                title.innerText = "ดัชนีฝุ่นละออง PM2.5 คืออะไร?";
+                subtitle.innerText = "PM2.5 Standard (กรมควบคุมมลพิษ ประเทศไทย)";
+                desc.innerHTML = "<b>PM2.5</b> คือฝุ่นละอองขนาดเล็กไม่เกิน 2.5 ไมครอน สามารถเล็ดลอดเข้าสู่ปอดและกระแสเลือดได้โดยตรง กรมควบคุมมลพิษได้กำหนดเกณฑ์มาตรฐานใหม่ไว้ดังนี้:";
+                body.innerHTML = `
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 15.0</span>
+                        <div>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🔵 ดีมาก (0 - 15.0 µg/m³)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">อากาศสะอาด สดชื่น เหมาะแก่การทำกิจกรรมกลางแจ้งทุกประเภท</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-green-500/15 border border-green-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-green-500 text-white font-bold text-[11px] whitespace-nowrap">15.1 - 25.0</span>
+                        <div>
+                            <h4 class="font-bold text-green-600 dark:text-green-400">🟢 ดี (15.1 - 25.0 µg/m³)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">25.1 - 37.5</span>
+                        <div>
+                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (25.1 - 37.5 µg/m³)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีฝุ่นสะสม ผู้ป่วยโรคภูมิแพ้หรือทางเดินหายใจควรหลีกเลี่ยงการทำกิจกรรมหนักกลางแจ้ง</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">37.6 - 75.0</span>
+                        <div>
+                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลต่อสุขภาพ (37.6 - 75.0 µg/m³)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบต่อร่างกาย <b>ควรสวมหน้ากากอนามัย N95</b> และลดระยะเวลาทำกิจกรรมกลางแจ้ง</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">75.1+</span>
+                        <div>
+                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพอย่างมาก (75.1+ µg/m³)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ระดับอันตรายวิกฤต! สวมหน้ากาก N95 ตลอดเวลา หลีกเลี่ยงออกนอกอาคาร และใช้อุปกรณ์ฟอกอากาศ</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'heat') {
+                iconBg.className = "bg-amber-600 text-white p-2.5 rounded-xl";
+                icon.className = "fa-solid fa-fire-flame-curved text-xl";
+                title.innerText = "ดัชนีความร้อน (Heat Index) คืออะไร?";
+                subtitle.innerText = "Heat Index Standard (กรมอุตุนิยมวิทยา)";
+                desc.innerHTML = "<b>ดัชนีความร้อน (Heat Index)</b> คืออุณหภูมิที่ร่างกายรู้สึกจริง โดยคำนวณจาก <b>อุณหภูมิอากาศร่วมกับความชื้นสัมพัทธ์</b> ซึ่งความชื้นที่สูงจะทำให้เหงื่อระเหยยาก ร่างกายจึงรู้สึกร้อนกว่าอุณหภูมิที่วัดได้จริง:";
+                body.innerHTML = `
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">27 - 32 °C</span>
+                        <div>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 เฝ้าระวัง (Caution)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">อาจรู้สึกอ่อนเพลียเมื่อทำกิจกรรมกลางแจ้งนานๆ ควรดื่มน้ำให้เพียงพอ</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">32 - 41 °C</span>
+                        <div>
+                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 เตือนภัย (Extreme Caution)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เสี่ยงเกิดอาการตะคริวจากความร้อน เพลียแดด หลีกเลี่ยงการตากแดดนานเกินไป</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">41 - 54 °C</span>
+                        <div>
+                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 อันตราย (Danger)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">เกิดตะคริวและเพลียแดดได้ง่าย <b>เสี่ยงต่อการเกิดโรคลมแดด (Heatstroke)</b> หากทำกิจกรรมกลางแจ้งนาน</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">54 °C ขึ้นไป</span>
+                        <div>
+                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 อันตรายมาก (Extreme Danger)</h4>
+                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> มีโอกาสเกิดโรคลมแดด (Heatstroke) สูงมาก งดกิจกรรมกลางแจ้งและอยู่ในที่ร่มร่มเย็น</p>
+                        </div>
+                    </div>
+                `;
+            }
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
             }, 10);
         }
 
-        function closeAqiModal() {
-            const modal = document.getElementById('aqi-modal');
+        function closeModal() {
+            const modal = document.getElementById('info-modal');
             modal.classList.add('opacity-0');
             setTimeout(() => {
                 modal.classList.add('hidden');

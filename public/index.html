@@ -73,7 +73,7 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
         }
 
-        /* 🚶‍♂️ Mascot Walk Animations */
+        /* 🚶‍♂️ Mascot Walk Animations (ปรับ z-index ไม่ให้บังกล่องข้อความ) */
         @keyframes mascotWalk {
             0% { transform: translateX(-60px) scaleX(1); }
             49% { transform: translateX(calc(100vw + 10px)) scaleX(1); }
@@ -90,7 +90,7 @@
         .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
     </style>
 </head>
-<body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-12">
+<body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
 
     <!-- ☁️ เมฆลอยขยับได้ในพื้นหลัง -->
     <div class="absolute top-10 left-0 pointer-events-none opacity-20 text-6xl text-slate-400 animate-cloud-1 z-0">
@@ -141,30 +141,32 @@
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
-        <!-- 📍 Navigation Tabs เลือกพื้นที่ -->
-        <div class="card-bg border rounded-2xl p-2 mb-6 backdrop-blur-md shadow-lg flex flex-wrap items-center gap-2 transition-colors duration-500">
-            <div class="px-3 py-1.5 text-xs font-bold text-indigo-400 flex items-center gap-1.5 border-r border-slate-700/50 mr-1">
+        <!-- 📍 Navigation Tabs เลือกพื้นที่ (ปรับเป็น Flex Column บนมือถือ และ Row บนจอใหญ่) -->
+        <div class="card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
+            <div class="px-2 py-1 text-xs font-bold text-indigo-400 flex items-center gap-1.5 border-b sm:border-b-0 sm:border-r border-slate-700/50 pb-2 sm:pb-0 sm:pr-3">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>เลือกพื้นที่:</span>
             </div>
-            <button onclick="switchLocation('main')" id="tab-main" class="location-tab active flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-building"></i>
-                <span>อ.เมืองชลบุรี (C-TECH Main)</span>
-            </button>
-            <button onclick="switchLocation('pattaya')" id="tab-pattaya" class="location-tab flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-umbrella-beach"></i>
-                <span>เมืองพัทยา (Pattaya)</span>
-            </button>
-            <button onclick="switchLocation('siracha')" id="tab-siracha" class="location-tab flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
-                <i class="fa-solid fa-anchor"></i>
-                <span>อ.ศรีราชา (Si Racha)</span>
-            </button>
+            <div class="grid grid-cols-1 sm:flex sm:flex-wrap w-full gap-2">
+                <button onclick="switchLocation('main')" id="tab-main" class="location-tab active px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-building"></i>
+                    <span>อ.เมืองชลบุรี (C-TECH Main)</span>
+                </button>
+                <button onclick="switchLocation('pattaya')" id="tab-pattaya" class="location-tab px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-umbrella-beach"></i>
+                    <span>เมืองพัทยา (Pattaya)</span>
+                </button>
+                <button onclick="switchLocation('siracha')" id="tab-siracha" class="location-tab px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-anchor"></i>
+                    <span>อ.ศรีราชา (Si Racha)</span>
+                </button>
+            </div>
         </div>
 
-        <!-- 🤖 C-TECH Mascot Section -->
+        <!-- 🤖 C-TECH Mascot Section (ปรับแก้ไม่ให้ตัวหนังสือซ้อนกันบนมือถือ) -->
         <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
-                <div id="mascot-avatar" class="w-20 h-20 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-400/50 flex items-center justify-center text-4xl md:text-5xl shadow-inner animate-mascot mb-2">
+                <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-400/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
                     🤖
                 </div>
                 <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow border border-indigo-400/30 whitespace-nowrap">
@@ -173,15 +175,18 @@
             </div>
             <div class="flex-grow inner-card-bg border p-4 rounded-xl relative w-full transition-colors duration-500">
                 <div class="hidden md:block absolute -left-2.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-slate-700 border-b-8 border-b-transparent"></div>
-                <div class="flex items-center justify-between mb-1">
-                    <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2">
-                        <i class="fa-solid fa-robot text-indigo-400"></i> น้อง C-TECH AI วิเคราะห์สภาพอากาศ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)
+                
+                <!-- Header กล่องคำพูด AI ปรับ Wrap ป้องกันซ้อน -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-700/40">
+                    <h3 class="text-xs md:text-sm font-bold text-indigo-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-robot text-indigo-400"></i>
+                        <span>น้อง C-TECH AI วิเคราะห์ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)</span>
                     </h3>
                     <span id="mascot-status-badge" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300">
                         ปกติ
                     </span>
                 </div>
-                <p id="mascot-speech" class="text-sm text-heading font-medium leading-relaxed">
+                <p id="mascot-speech" class="text-xs md:text-sm text-heading font-medium leading-relaxed">
                     "สวัสดีครับพี่ๆ ชาว C-TECH! กำลังดึงข้อมูลสภาพอากาศและมลพิษให้อยู่นะครับ..."
                 </p>
             </div>
@@ -363,12 +368,12 @@
         </div>
     </main>
 
-    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation -->
-    <div id="walking-mascot" class="fixed bottom-2 left-0 z-50 pointer-events-none flex flex-col items-center">
-        <div class="bg-indigo-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-1 whitespace-nowrap animate-bounce">
+    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation ( z-index 20 ไม่ให้ลอยบังการ์ด ) -->
+    <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
+        <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
             C-TECH Student 🎓
         </div>
-        <svg width="45" height="65" viewBox="0 0 100 140" class="drop-shadow-md">
+        <svg width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
             <g class="mascot-legs">
                 <line x1="40" y1="95" x2="35" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-left"/>
                 <ellipse cx="32" cy="127" rx="8" ry="4" fill="#0f172a"/>

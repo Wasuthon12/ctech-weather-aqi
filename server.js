@@ -25,6 +25,8 @@ let latestData = {
     weatherDesc: "กำลังโหลด...",
     heatIndex: 0,
     heatWarning: "กำลังโหลด...",
+    uvIndex: 0,
+    uvLabel: "กำลังโหลด...",
     isRaining: false,
     updateTime: "-",
     forecast: [],
@@ -173,6 +175,28 @@ async function checkAirAndWeather(isHourlyReport = false) {
         const weatherDesc = weatherRes.data.weather[0].description; 
         const weatherId = weatherRes.data.weather[0].id; 
 
+        // ☀️ 2.1 คำนวณ/ดึงค่า UV Index อ้างอิงตามช่วงเวลาและสภาพแสงแดด
+        let uvIndex = 0;
+        const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+        
+        // เช็กว่าเป็นเวลากลางวันหรือไม่ (06:00 - 18:00 น.)
+        if (currentHour >= 6 && currentHour <= 18) {
+            try {
+                const uvRes = await axios.get(`https://api.openweathermap.org/data/2.5/uvi?lat=13.3611&lon=100.9847&appid=${OPENWEATHER_KEY}`);
+                uvIndex = Math.round(uvRes.data.value);
+            } catch (uvErr) {
+                // หาก API UV แบบแยกเรียกไม่ได้ ให้ประเมินจากเวลาและอุณหภูมิ
+                const peakFactor = Math.sin((currentHour - 6) / 12 * Math.PI); // พีกสุดช่วงเที่ยงวัน
+                uvIndex = Math.round(peakFactor * (temp > 33 ? 10 : 7));
+            }
+        }
+
+        let uvLabel = "ต่ำ 🟢";
+        if (uvIndex >= 11) uvLabel = "สุดขีด 🟣";
+        else if (uvIndex >= 8) uvLabel = "สูงมาก 🔴";
+        else if (uvIndex >= 6) uvLabel = "สูง 🟠";
+        else if (uvIndex >= 3) uvLabel = "ปานกลาง 🟡";
+
         // 3. 🔮 พยากรณ์ล่วงหน้า 3 วัน
         const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
         const forecastList = forecastRes.data.list;
@@ -220,6 +244,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
         latestData = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
+            uvIndex: uvIndex, uvLabel: uvLabel,
             isRaining: hasRain, updateTime: localTimeFormatted,
             forecast: dailyForecast,
             comparison: {
@@ -290,6 +315,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
             textCaption += `🍃 คุณภาพอากาศ: <b>${aqiLabel}</b>\n`;
             textCaption += `😷 ดัชนีฝุ่นรวม AQI: <b>${currentAQI}</b>\n`;
             textCaption += `💨 ปริมาณฝุ่น PM2.5: <b>${currentPM25} µg/m³</b>\n`; 
+            textCaption += `☀️ ดัชนีรังสี UV: <b>${uvIndex} (${uvLabel})</b>\n`; 
             textCaption += `🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${temp} °C</b>\n`;
             textCaption += `💧 ความชื้นสัมพัทธ์ in อากาศ: <b>${humidity} %</b>\n`;
             textCaption += `☁️ สภาพท้องฟ้า: ${weatherDesc}\n`;

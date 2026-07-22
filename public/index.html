@@ -53,7 +53,7 @@
     <!-- 🌧️ Container สร้างเม็ดฝนตก -->
     <div id="rain-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden hidden"></div>
 
-    <!-- ☀️/🌙 แผงตกแต่งสกายไลท์มุมขวาบน (สลับดวงอาทิตย์/ดวงจันทร์+ดาวระยิบระยับ) -->
+    <!-- ☀️/🌙 แผงตกแต่งสกายไลท์มุมขวาบน -->
     <div id="sky-element" class="absolute top-4 right-8 pointer-events-none opacity-90 transition-all duration-1000 text-6xl md:text-8xl z-0">
         <!-- แสดงผลผ่าน JS -->
     </div>
@@ -87,75 +87,90 @@
             </div>
         </div>
 
-        <!-- 📊 Real-time Metrics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <!-- 📊 Real-time Metrics Grid (ปรับเป็น 5 การ์ด) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
             <!-- Card 1: AQI -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีคุณภาพอากาศ (AQI)</span>
-                    <i class="fa-solid fa-wind text-indigo-400 text-lg"></i>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนี AQI</span>
+                    <i class="fa-solid fa-wind text-indigo-400 text-base"></i>
                 </div>
-                <div class="text-center py-4">
-                    <span id="aqi-val" class="text-6xl font-extrabold tracking-tight text-emerald-400">0</span>
-                    <p id="aqi-label" class="mt-1 text-sm font-bold text-emerald-400">กำลังโหลด...</p>
+                <div class="text-center py-3">
+                    <span id="aqi-val" class="text-5xl font-extrabold tracking-tight text-emerald-400">0</span>
+                    <p id="aqi-label" class="mt-1 text-xs font-bold text-emerald-400">กำลังโหลด...</p>
                 </div>
-                <div class="h-2 bg-slate-700 rounded-full overflow-hidden mt-2">
+                <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden mt-2">
                     <div id="aqi-bar" class="h-full bg-emerald-400 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
             <!-- Card 2: PM2.5 -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ปริมาณฝุ่นละออง PM2.5</span>
-                    <i class="fa-solid fa-mask-face text-teal-400 text-lg"></i>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ฝุ่น PM2.5</span>
+                    <i class="fa-solid fa-mask-face text-teal-400 text-base"></i>
                 </div>
-                <div class="text-center py-4">
-                    <span id="pm25-val" class="text-6xl font-extrabold tracking-tight text-teal-400">0</span>
-                    <span class="text-sm text-gray-400 font-bold"> µg/m³</span>
-                    <p id="pm25-warning" class="mt-1 text-xs font-semibold text-gray-400">ความเข้มข้นสารมลพิษ</p>
+                <div class="text-center py-3">
+                    <span id="pm25-val" class="text-5xl font-extrabold tracking-tight text-teal-400">0</span>
+                    <span class="text-xs text-gray-400 font-bold"> µg/m³</span>
+                    <p id="pm25-warning" class="mt-1 text-[11px] font-semibold text-gray-400">ความเข้มข้นสารมลพิษ</p>
                 </div>
-                <div class="bg-slate-950/30 p-2 rounded-lg border border-slate-700/50 text-center text-[10px] text-gray-500">
-                    อิงเกณฑ์ความปลอดภัยมาตรฐาน
+                <div class="bg-slate-950/30 p-1.5 rounded-lg border border-slate-700/50 text-center text-[9px] text-gray-500">
+                    เกณฑ์มาตรฐานความปลอดภัย
                 </div>
             </div>
 
-            <!-- Card 3: Temp/Humidity -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <!-- ☀️ Card 3: ดัชนี UV Index (เพิ่มเข้ามาใหม่!) -->
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนีรังสี UV</span>
+                    <i class="fa-solid fa-sun text-amber-400 text-base"></i>
+                </div>
+                <div class="text-center py-3">
+                    <span id="uv-val" class="text-5xl font-extrabold tracking-tight text-amber-400">0</span>
+                    <p id="uv-label" class="mt-1 text-xs font-bold text-amber-400">กำลังโหลด...</p>
+                </div>
+                <div class="bg-slate-950/30 p-1.5 rounded-lg border border-slate-700/50 text-center text-[9px] text-gray-500">
+                    ความเข้มแสงแดด (WHO)
+                </div>
+            </div>
+
+            <!-- Card 4: Temp/Humidity -->
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">อุณหภูมิและความชื้น</span>
-                        <i class="fa-solid fa-temperature-three-quarters text-rose-400 text-lg"></i>
+                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">อุณหภูมิ/ความชื้น</span>
+                        <i class="fa-solid fa-temperature-three-quarters text-rose-400 text-base"></i>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 py-2 text-center">
+                    <div class="grid grid-cols-2 gap-1 py-1 text-center">
                         <div class="border-r border-slate-700">
-                            <p class="text-[10px] text-gray-400 mb-0.5">อุณหภูมิ</p>
-                            <span class="text-xl font-bold text-white"><span id="temp-val">0</span>°C</span>
+                            <p class="text-[9px] text-gray-400 mb-0.5">อุณหภูมิ</p>
+                            <span class="text-lg font-bold text-white"><span id="temp-val">0</span>°C</span>
                         </div>
                         <div>
-                            <p class="text-[10px] text-gray-400 mb-0.5">ความชื้น</p>
-                            <span class="text-xl font-bold text-sky-400"><span id="humidity-val">0</span>%</span>
+                            <p class="text-[9px] text-gray-400 mb-0.5">ความชื้น</p>
+                            <span class="text-lg font-bold text-sky-400"><span id="humidity-val">0</span>%</span>
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-900/50 p-2 rounded-lg border border-slate-700/50 text-center">
-                    <p id="weather-desc" class="text-xs font-semibold text-indigo-300">กำลังโหลด...</p>
+                <div class="bg-slate-900/50 p-1.5 rounded-lg border border-slate-700/50 text-center mt-2">
+                    <p id="weather-desc" class="text-[11px] font-semibold text-indigo-300">กำลังโหลด...</p>
                 </div>
             </div>
 
-            <!-- Card 4: Heat Index -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <!-- Card 5: Heat Index -->
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีความร้อน (Heat Index)</span>
-                    <i class="fa-solid fa-fire-flame-curved text-amber-500 text-lg"></i>
+                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนีความร้อน</span>
+                    <i class="fa-solid fa-fire-flame-curved text-amber-500 text-base"></i>
                 </div>
-                <div class="text-center py-4">
-                    <span id="heat-val" class="text-6xl font-extrabold tracking-tight text-white">0</span><span class="text-lg text-gray-400"> °C</span>
-                    <p id="heat-warning" class="mt-1 text-sm font-bold text-gray-300">กำลังโหลด...</p>
+                <div class="text-center py-3">
+                    <span id="heat-val" class="text-5xl font-extrabold tracking-tight text-white">0</span><span class="text-xs text-gray-400"> °C</span>
+                    <p id="heat-warning" class="mt-1 text-xs font-bold text-gray-300">กำลังโหลด...</p>
                 </div>
-                <div class="text-center text-[10px] text-gray-500 border-t border-slate-700 pt-2">
-                    เกณฑ์มาตรฐานอุตุนิยมวิทยาไทย
+                <div class="text-center text-[9px] text-gray-500 border-t border-slate-700 pt-1.5">
+                    เกณฑ์อุตุนิยมวิทยาไทย
                 </div>
             </div>
         </div>
@@ -254,7 +269,7 @@
     </footer>
 
     <script>
-        // ☀️/🌙 สลับธีมกลางวัน - กลางคืน (เพิ่มกลุ่มดาวระยิบระยับรอบดวงจันทร์)
+        // ☀️/🌙 สลับธีมกลางวัน - กลางคืน (พร้อมดาวกะพริบ)
         function applyDayNightTheme() {
             const now = new Date();
             const hours = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
@@ -269,8 +284,6 @@
                 skyElement.innerHTML = `<i class="fa-solid fa-sun text-amber-400 animate-spin-slow"></i>`;
             } else {
                 body.className = "text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 relative overflow-x-hidden";
-                
-                // 🌙 ดวงจันทร์สว่างนวล + 🌟 ดาวกะพริบระยิบระยับล้อมรอบ
                 skyElement.innerHTML = `
                     <div class="relative flex items-center justify-center">
                         <i class="fa-solid fa-moon text-amber-200 drop-shadow-[0_0_15px_rgba(253,230,138,0.6)]"></i>
@@ -282,7 +295,7 @@
             }
         }
 
-        // 🌧️ อนิเมชันเม็ดฝน
+        // 🌧️ อนิเมชันฝน
         function toggleRainEffect(isRaining) {
             const rainContainer = document.getElementById('rain-container');
             if (isRaining) {
@@ -369,7 +382,7 @@
                 const response = await fetch('/api/weather');
                 const data = await response.json();
 
-                // AQI
+                // 1. AQI
                 const aqiVal = document.getElementById('aqi-val');
                 const aqiLabel = document.getElementById('aqi-label');
                 const aqiBar = document.getElementById('aqi-bar');
@@ -379,67 +392,93 @@
                 aqiBar.style.width = `${Math.min(percent, 100)}%`;
 
                 if (data.aqi <= 50) {
-                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
-                    aqiLabel.className = "mt-1 text-sm font-bold text-emerald-400";
+                    aqiVal.className = "text-5xl font-extrabold tracking-tight text-emerald-400";
+                    aqiLabel.className = "mt-1 text-xs font-bold text-emerald-400";
                     aqiBar.className = "h-full bg-emerald-400 transition-all duration-500";
                 } else if (data.aqi <= 100) {
-                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
-                    aqiLabel.className = "mt-1 text-sm font-bold text-yellow-400";
+                    aqiVal.className = "text-5xl font-extrabold tracking-tight text-yellow-400";
+                    aqiLabel.className = "mt-1 text-xs font-bold text-yellow-400";
                     aqiBar.className = "h-full bg-yellow-400 transition-all duration-500";
                 } else {
-                    aqiVal.className = "text-6xl font-extrabold tracking-tight text-red-500";
-                    aqiLabel.className = "mt-1 text-sm font-bold text-red-500";
+                    aqiVal.className = "text-5xl font-extrabold tracking-tight text-red-500";
+                    aqiLabel.className = "mt-1 text-xs font-bold text-red-500";
                     aqiBar.className = "h-full bg-red-500 transition-all duration-500";
                 }
 
-                // PM2.5
+                // 2. PM2.5
                 const pm25Val = document.getElementById('pm25-val');
                 const pm25Warning = document.getElementById('pm25-warning');
                 pm25Val.innerText = data.pm25;
                 
                 if (data.pm25 <= 12) {
-                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-blue-400";
+                    pm25Val.className = "text-5xl font-extrabold tracking-tight text-blue-400";
                     pm25Warning.innerText = "อากาศบริสุทธิ์ 🔵";
-                    pm25Warning.className = "mt-1 text-xs font-bold text-blue-400";
+                    pm25Warning.className = "mt-1 text-[11px] font-bold text-blue-400";
                 } else if (data.pm25 <= 35) {
-                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
+                    pm25Val.className = "text-5xl font-extrabold tracking-tight text-emerald-400";
                     pm25Warning.innerText = "เกณฑ์ปลอดภัย 🟢";
-                    pm25Warning.className = "mt-1 text-xs font-bold text-emerald-400";
+                    pm25Warning.className = "mt-1 text-[11px] font-bold text-emerald-400";
                 } else if (data.pm25 <= 55) {
-                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
+                    pm25Val.className = "text-5xl font-extrabold tracking-tight text-yellow-400";
                     pm25Warning.innerText = "เริ่มมีผลกระทบ 🟡";
-                    pm25Warning.className = "mt-1 text-xs font-bold text-yellow-400";
+                    pm25Warning.className = "mt-1 text-[11px] font-bold text-yellow-400";
                 } else {
-                    pm25Val.className = "text-6xl font-extrabold tracking-tight text-red-500";
+                    pm25Val.className = "text-5xl font-extrabold tracking-tight text-red-500";
                     pm25Warning.innerText = "อันตรายต่อสุขภาพ 🔴";
-                    pm25Warning.className = "mt-1 text-xs font-bold text-red-500";
+                    pm25Warning.className = "mt-1 text-[11px] font-bold text-red-500";
                 }
 
+                // ☀️ 3. UV Index (ปรับสีตามความรุนแรง)
+                const uvVal = document.getElementById('uv-val');
+                const uvLabel = document.getElementById('uv-label');
+                if (uvVal && uvLabel) {
+                    uvVal.innerText = data.uvIndex !== undefined ? data.uvIndex : 0;
+                    uvLabel.innerText = data.uvLabel || "ปกติ";
+
+                    if (data.uvIndex >= 11) {
+                        uvVal.className = "text-5xl font-extrabold tracking-tight text-purple-400";
+                        uvLabel.className = "mt-1 text-xs font-bold text-purple-400";
+                    } else if (data.uvIndex >= 8) {
+                        uvVal.className = "text-5xl font-extrabold tracking-tight text-red-400";
+                        uvLabel.className = "mt-1 text-xs font-bold text-red-400";
+                    } else if (data.uvIndex >= 6) {
+                        uvVal.className = "text-5xl font-extrabold tracking-tight text-orange-400";
+                        uvLabel.className = "mt-1 text-xs font-bold text-orange-400";
+                    } else if (data.uvIndex >= 3) {
+                        uvVal.className = "text-5xl font-extrabold tracking-tight text-yellow-400";
+                        uvLabel.className = "mt-1 text-xs font-bold text-yellow-400";
+                    } else {
+                        uvVal.className = "text-5xl font-extrabold tracking-tight text-emerald-400";
+                        uvLabel.className = "mt-1 text-xs font-bold text-emerald-400";
+                    }
+                }
+
+                // 4. Temp / Humidity
                 document.getElementById('temp-val').innerText = data.temp;
                 document.getElementById('humidity-val').innerText = data.humidity;
                 document.getElementById('weather-desc').innerText = data.weatherDesc;
 
-                // Heat Index
+                // 5. Heat Index
                 const heatVal = document.getElementById('heat-val');
                 const heatWarning = document.getElementById('heat-warning');
                 heatVal.innerText = data.heatIndex;
                 heatWarning.innerText = data.heatWarning;
 
                 if (data.heatIndex < 27.0) {
-                    heatVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
-                    heatWarning.className = "mt-1 text-sm font-bold text-emerald-400";
+                    heatVal.className = "text-5xl font-extrabold tracking-tight text-emerald-400";
+                    heatWarning.className = "mt-1 text-xs font-bold text-emerald-400";
                 } else if (data.heatIndex <= 32.9) {
-                    heatVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
-                    heatWarning.className = "mt-1 text-sm font-bold text-emerald-400";
+                    heatVal.className = "text-5xl font-extrabold tracking-tight text-emerald-400";
+                    heatWarning.className = "mt-1 text-xs font-bold text-emerald-400";
                 } else if (data.heatIndex <= 41.9) {
-                    heatVal.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
-                    heatWarning.className = "mt-1 text-sm font-bold text-yellow-400";
+                    heatVal.className = "text-5xl font-extrabold tracking-tight text-yellow-400";
+                    heatWarning.className = "mt-1 text-xs font-bold text-yellow-400";
                 } else if (data.heatIndex <= 51.9) {
-                    heatVal.className = "text-6xl font-extrabold tracking-tight text-orange-400";
-                    heatWarning.className = "mt-1 text-sm font-bold text-orange-400";
+                    heatVal.className = "text-5xl font-extrabold tracking-tight text-orange-400";
+                    heatWarning.className = "mt-1 text-xs font-bold text-orange-400";
                 } else {
-                    heatVal.className = "text-6xl font-extrabold tracking-tight text-red-500";
-                    heatWarning.className = "mt-1 text-sm font-bold text-red-500";
+                    heatVal.className = "text-5xl font-extrabold tracking-tight text-red-500";
+                    heatWarning.className = "mt-1 text-xs font-bold text-red-500";
                 }
 
                 // เช็กฝนตก

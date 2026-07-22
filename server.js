@@ -80,7 +80,7 @@ async function sendTelegramPhoto(photoUrl, caption) {
     }
 }
 
-// 🌡️ ฟังก์ชันคำนวณ Heat Index แบบปรับสมดุล (Smooth Balanced Factor)
+// 🌡️ ฟังก์ชันคำนวณ Heat Index แบบปรับสมดุล
 function calculateHeatIndex(temp, humidity) {
     if (temp < 27) return Math.round(temp);
     
@@ -107,7 +107,7 @@ function calculateHeatIndex(temp, humidity) {
     return Math.round(hiC);
 }
 
-// ⚠️ ระดับการเตือนภัยดัชนีความร้อนตามเกณฑ์มาตรฐานกรมอุตุนิยมวิทยาไทย (4 ระดับ)
+// ⚠️ ระดับการเตือนภัยดัชนีความร้อน
 function getHeatIndexWarning(HI_C) {
     if (HI_C < 27.0) return { text: "ปกติ 🟢", color: "#27ae60" };
     if (HI_C <= 32.9) return { text: "เฝ้าระวัง 🟢", color: "#2ecc71" };
@@ -118,7 +118,7 @@ function getHeatIndexWarning(HI_C) {
 
 async function checkAirAndWeather(isHourlyReport = false) {
     try {
-        // 1. IQAir ชลบุรีหลัก
+        // 1. IQAir ชลบุรี
         const iqairRes = await axios.get(`https://api.airvisual.com/v2/city?city=Chon%20Buri&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
         const currentAQI = iqairRes.data.data.current.pollution.aqius;
         
@@ -163,7 +163,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
             console.log("⚠️ ดึงข้อมูลศรีราชาขัดข้อง:", e.message); 
         }
 
-        // 2. OpenWeatherMap ปัจจุบัน
+        // 2. OpenWeatherMap
         const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
         const temp = weatherRes.data.main.temp;         
         let humidity = weatherRes.data.main.humidity; 

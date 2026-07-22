@@ -52,6 +52,7 @@
         .theme-dark .header-bg { background-color: rgba(30, 41, 59, 0.85); border-color: rgba(51, 65, 85, 0.8); }
         .theme-dark .text-muted { color: #94a3b8; }
         .theme-dark .text-heading { color: #f8fafc; }
+        .theme-dark .modal-bg { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
 
         /* ☀️ Light Theme (ปรับปรุงใหม่ นุ่มนวล ไม่แสบตา) */
         .theme-light { background: linear-gradient(135deg, #cbd5e1 0%, #e2e8f0 50%, #f1f5f9 100%); color: #0f172a; }
@@ -60,6 +61,7 @@
         .theme-light .header-bg { background-color: rgba(255, 255, 255, 0.95); border-color: #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .theme-light .text-muted { color: #475569; }
         .theme-light .text-heading { color: #0f172a; }
+        .theme-light .modal-bg { background-color: #ffffff; color: #0f172a; border-color: #cbd5e1; }
 
         /* 🔮 Cyberpunk Theme */
         .theme-cyberpunk { background: linear-gradient(135deg, #120224 0%, #240046 50%, #10002b 100%); color: #f0f0f0; }
@@ -68,6 +70,7 @@
         .theme-cyberpunk .header-bg { background-color: rgba(36, 0, 70, 0.85); border-color: #ff007f; }
         .theme-cyberpunk .text-muted { color: #c77dff; }
         .theme-cyberpunk .text-heading { color: #00f5d4; }
+        .theme-cyberpunk .modal-bg { background-color: #240046; color: #f0f0f0; border-color: #ff007f; }
 
         .location-tab.active {
             background-color: #4f46e5 !important;
@@ -212,7 +215,12 @@
 
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
+            
+            <!-- 💡 AQI Card (กดเปิดรายละเอียด) -->
+            <div onclick="openAqiModal()" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
+                    คลิกดูเกณฑ์ ℹ️
+                </div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนี AQI</span>
                     <i class="fa-solid fa-wind text-indigo-500 text-base"></i>
@@ -378,6 +386,87 @@
         </div>
     </main>
 
+    <!-- 📢 AQI Details Modal (ป๊อปอัพแสดงเกณฑ์รายละเอียด AQI) -->
+    <div id="aqi-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+        <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <button onclick="closeAqiModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">
+                ✕
+            </button>
+
+            <div class="flex items-center gap-3 mb-4 border-b border-slate-500/30 pb-3">
+                <div class="bg-indigo-600 text-white p-2.5 rounded-xl">
+                    <i class="fa-solid fa-wind text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-heading">ดัชนีคุณภาพอากาศ AQI คืออะไร?</h2>
+                    <p class="text-xs text-indigo-500 font-semibold">Air Quality Index (US-EPA Standard)</p>
+                </div>
+            </div>
+
+            <p class="text-xs text-muted leading-relaxed mb-4">
+                <b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศที่คำนวณจากปริมาณมลพิษในอากาศ เช่น <b>ฝุ่น PM2.5, PM10, ก๊าซโอโซน และก๊าซพิษต่างๆ</b> โดยแบ่งระดับความอันตรายออกเป็น 6 ระดับสีมาตรฐานสากล:
+            </p>
+
+            <!-- รายละเอียดเกณฑ์ AQI -->
+            <div class="space-y-2.5 mb-6 text-xs">
+                <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 50</span>
+                    <div>
+                        <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 คุณภาพอากาศดีมาก (Good)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">ไม่มีผลกระทบต่อสุขภาพ เหมาะแก่การทำกิจกรรมกลางแจ้งและออกกำลังกายเต็มที่</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
+                    <div>
+                        <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป แต่ผู้ที่ไวต่อมลพิษหรือโรคทางเดินหายใจควรสังเกตอาการ</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 150</span>
+                    <div>
+                        <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 มีผลต่อกลุ่มเสี่ยง (Unhealthy for Sensitive Groups)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">เด็ก, ผู้สูงอายุ, และผู้ป่วยโรคปอด/หัวใจ ควรเริ่มสวมหน้ากากอนามัย และลดเวลาทำกิจกรรมกลางแจ้ง</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
+                    <div>
+                        <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">ทุกคนเริ่มมีผลกระทบต่อสุขภาพ <b>ควรสวมหน้ากาก N95</b> เมื่อออกนอกอาคาร และเลี่ยงการออกกำลังกายกลางแจ้ง</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">201 - 300</span>
+                    <div>
+                        <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 มีผลอย่างมาก (Very Unhealthy)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">เตือนภัยสุขภาพร้ายแรง งดกิจกรรมกลางแจ้งทุกชนิด เปิดเครื่องฟอกอากาศในห้องเรียน/บ้านเรือน</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-800 flex items-start gap-3">
+                    <span class="px-2.5 py-1 rounded bg-rose-900 text-white font-bold text-[11px] whitespace-nowrap">301+</span>
+                    <div>
+                        <h4 class="font-bold text-rose-500">🟤 อันตรายร้ายแรง (Hazardous)</h4>
+                        <p class="text-muted text-[11px] mt-0.5">ภาวะฉุกเฉินทางสุขภาพ ห้ามออกจากอาคารโดยเด็ดขาด</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <button onclick="closeAqiModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">
+                    เข้าใจแล้ว ปิดหน้าต่างนี้
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
         <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
@@ -415,6 +504,23 @@
             'pattaya': 'เมืองพัทยา (Pattaya)',
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
+
+        /* 🟢 ฟังก์ชั่นเปิด/ปิด AQI Modal */
+        function openAqiModal() {
+            const modal = document.getElementById('aqi-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+            }, 10);
+        }
+
+        function closeAqiModal() {
+            const modal = document.getElementById('aqi-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
 
         function switchLocation(locationKey) {
             currentLocation = locationKey;

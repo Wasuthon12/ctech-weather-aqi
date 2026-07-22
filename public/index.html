@@ -73,19 +73,27 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
         }
 
-        /* 🚶‍♂️ Mascot Walk Animations (ปรับ z-index ไม่ให้บังกล่องข้อความ) */
+        /* 🚶‍♂️ Mascot Walk Animations (แก้การพลิกตัวอักษร) */
         @keyframes mascotWalk {
-            0% { transform: translateX(-60px) scaleX(1); }
-            49% { transform: translateX(calc(100vw + 10px)) scaleX(1); }
-            50% { transform: translateX(calc(100vw + 10px)) scaleX(-1); }
-            99% { transform: translateX(-60px) scaleX(-1); }
-            100% { transform: translateX(-60px) scaleX(1); }
+            0% { transform: translateX(-60px); }
+            50% { transform: translateX(calc(100vw + 10px)); }
+            50.01% { transform: translateX(calc(100vw + 10px)); }
+            100% { transform: translateX(-60px); }
         }
+
+        @keyframes mascotFlip {
+            0%, 49.9% { transform: scaleX(1); }
+            50%, 99.9% { transform: scaleX(-1); }
+            100% { transform: scaleX(1); }
+        }
+
         @keyframes legSwing {
             0%, 100% { transform: rotate(-15deg); transform-origin: top center; }
             50% { transform: rotate(15deg); transform-origin: top center; }
         }
+
         #walking-mascot { animation: mascotWalk 22s linear infinite; }
+        #mascot-svg { animation: mascotFlip 22s linear infinite; }
         .leg-left { animation: legSwing 0.6s ease-in-out infinite alternate; }
         .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
     </style>
@@ -141,7 +149,7 @@
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
-        <!-- 📍 Navigation Tabs เลือกพื้นที่ (ปรับเป็น Flex Column บนมือถือ และ Row บนจอใหญ่) -->
+        <!-- 📍 Navigation Tabs เลือกพื้นที่ -->
         <div class="card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
             <div class="px-2 py-1 text-xs font-bold text-indigo-400 flex items-center gap-1.5 border-b sm:border-b-0 sm:border-r border-slate-700/50 pb-2 sm:pb-0 sm:pr-3">
                 <i class="fa-solid fa-location-dot"></i>
@@ -163,7 +171,7 @@
             </div>
         </div>
 
-        <!-- 🤖 C-TECH Mascot Section (ปรับแก้ไม่ให้ตัวหนังสือซ้อนกันบนมือถือ) -->
+        <!-- 🤖 C-TECH Mascot Section -->
         <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
                 <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-400/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
@@ -176,7 +184,6 @@
             <div class="flex-grow inner-card-bg border p-4 rounded-xl relative w-full transition-colors duration-500">
                 <div class="hidden md:block absolute -left-2.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-slate-700 border-b-8 border-b-transparent"></div>
                 
-                <!-- Header กล่องคำพูด AI ปรับ Wrap ป้องกันซ้อน -->
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-700/40">
                     <h3 class="text-xs md:text-sm font-bold text-indigo-400 flex items-center gap-1.5">
                         <i class="fa-solid fa-robot text-indigo-400"></i>
@@ -368,12 +375,14 @@
         </div>
     </main>
 
-    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation ( z-index 20 ไม่ให้ลอยบังการ์ด ) -->
+    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation (แยกส่วน Flipping ไม่ให้ตัวหนังสือกลับด้าน) -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
+        <!-- ป้ายชื่อจะไม่กลับด้าน -->
         <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
             C-TECH Student 🎓
         </div>
-        <svg width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
+        <!-- ตัวการ์ตูน SVG จะพลิกเฉพาะรูป -->
+        <svg id="mascot-svg" width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
             <g class="mascot-legs">
                 <line x1="40" y1="95" x2="35" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-left"/>
                 <ellipse cx="32" cy="127" rx="8" ry="4" fill="#0f172a"/>

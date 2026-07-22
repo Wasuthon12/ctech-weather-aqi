@@ -47,15 +47,81 @@
         .animate-mascot {
             animation: mascotBounce 3s ease-in-out infinite;
         }
+
+        /* 🎨 Custom Classes สำหรับสลับธีม */
+        /* Theme: Dark (Default) */
+        .theme-dark {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+        .theme-dark .card-bg {
+            background-color: rgba(30, 41, 59, 0.9);
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        .theme-dark .inner-card-bg {
+            background-color: rgba(15, 23, 42, 0.6);
+            border-color: rgba(51, 65, 85, 0.6);
+        }
+        .theme-dark .header-bg {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-color: rgba(51, 65, 85, 0.8);
+        }
+        .theme-dark .text-muted { color: #94a3b8; }
+        .theme-dark .text-heading { color: #f8fafc; }
+
+        /* Theme: Light */
+        .theme-light {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            color: #1e293b;
+        }
+        .theme-light .card-bg {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: #cbd5e1;
+            color: #1e293b;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+        .theme-light .inner-card-bg {
+            background-color: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        .theme-light .header-bg {
+            background-color: rgba(255, 255, 255, 0.85);
+            border-color: #cbd5e1;
+        }
+        .theme-light .text-muted { color: #64748b; }
+        .theme-light .text-heading { color: #0f172a; }
+
+        /* Theme: Cyberpunk */
+        .theme-cyberpunk {
+            background: linear-gradient(135deg, #120224 0%, #240046 50%, #10002b 100%);
+            color: #f0f0f0;
+        }
+        .theme-cyberpunk .card-bg {
+            background-color: rgba(36, 0, 70, 0.7);
+            border-color: #ff007f;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
+            color: #f0f0f0;
+        }
+        .theme-cyberpunk .inner-card-bg {
+            background-color: rgba(16, 0, 43, 0.8);
+            border-color: #7b2cbf;
+        }
+        .theme-cyberpunk .header-bg {
+            background-color: rgba(36, 0, 70, 0.85);
+            border-color: #ff007f;
+        }
+        .theme-cyberpunk .text-muted { color: #c77dff; }
+        .theme-cyberpunk .text-heading { color: #00f5d4; }
     </style>
 </head>
-<body id="dynamic-bg" class="text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-slate-900 relative overflow-x-hidden">
+<body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden">
 
     <!-- ☁️ เมฆลอยขยับได้ในพื้นหลัง -->
-    <div class="absolute top-10 left-0 pointer-events-none opacity-20 text-6xl text-slate-300 animate-cloud-1 z-0">
+    <div class="absolute top-10 left-0 pointer-events-none opacity-20 text-6xl text-slate-400 animate-cloud-1 z-0">
         <i class="fa-solid fa-cloud"></i>
     </div>
-    <div class="absolute top-28 left-0 pointer-events-none opacity-15 text-8xl text-slate-400 animate-cloud-2 z-0">
+    <div class="absolute top-28 left-0 pointer-events-none opacity-15 text-8xl text-slate-500 animate-cloud-2 z-0">
         <i class="fa-solid fa-clouds"></i>
     </div>
 
@@ -68,20 +134,35 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/80 shadow-lg py-4 px-6 mb-6 z-10">
+    <header class="header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-indigo-600 p-2.5 rounded-lg text-white text-2xl shadow-lg shadow-indigo-500/30">
                     <i class="fa-solid fa-cloud-sun"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide">C-TECH WEATHER REPORT</h1>
+                    <h1 class="text-xl font-bold tracking-wide text-heading">C-TECH WEATHER REPORT</h1>
                     <p class="text-xs text-indigo-400 font-medium">📍 สถานีตรวจวัดความปลอดภัยทางอากาศ: ชลบุรี</p>
                 </div>
             </div>
-            <div class="text-right">
-                <span class="text-xs text-gray-400">อัปเดตล่าสุด: </span>
-                <span id="update-time" class="text-sm font-semibold text-indigo-300">กำลังโหลด...</span>
+
+            <!-- Controls (Theme Selector + Clock) -->
+            <div class="flex items-center gap-4">
+                <!-- 🎨 ปุ่มเลือกเปลี่ยนธีม -->
+                <div class="flex items-center gap-2 bg-slate-950/20 border border-slate-700/50 rounded-xl p-1.5 backdrop-blur-sm">
+                    <i class="fa-solid fa-palette text-indigo-400 text-xs ml-1"></i>
+                    <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-semibold text-gray-200 cursor-pointer focus:outline-none border-none pr-1">
+                        <option value="auto" class="bg-slate-800 text-white">⚙️ Auto (ตามเวลา)</option>
+                        <option value="dark" class="bg-slate-800 text-white" selected>🌙 Dark (มืด)</option>
+                        <option value="light" class="bg-slate-800 text-white">☀️ Light (สว่าง)</option>
+                        <option value="cyberpunk" class="bg-slate-800 text-white">🔮 Cyberpunk (นีออน)</option>
+                    </select>
+                </div>
+
+                <div class="text-right hidden sm:block">
+                    <span class="text-xs text-muted">อัปเดตล่าสุด: </span>
+                    <span id="update-time" class="text-sm font-semibold text-indigo-400">กำลังโหลด...</span>
+                </div>
             </div>
         </div>
     </header>
@@ -89,8 +170,8 @@
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
-        <!-- 🤖 C-TECH Mascot & AI Weather Assistant Section (แก้ไขการบังข้อความเรียบร้อย) -->
-        <div class="bg-gradient-to-r from-indigo-900/90 via-slate-800/90 to-slate-900/90 border border-indigo-500/30 rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4">
+        <!-- 🤖 C-TECH Mascot & AI Weather Assistant Section -->
+        <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <!-- ตัวละคร Mascot -->
             <div class="flex flex-col items-center flex-shrink-0">
                 <div id="mascot-avatar" class="w-20 h-20 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-400/50 flex items-center justify-center text-4xl md:text-5xl shadow-inner animate-mascot mb-2">
@@ -101,18 +182,17 @@
                 </span>
             </div>
             <!-- กล่องคำพูด AI Speech Bubble -->
-            <div class="flex-grow bg-slate-900/80 border border-slate-700 p-4 rounded-xl relative w-full">
-                <!-- สามเหลี่ยมชี้ไปทาง Mascot -->
+            <div class="flex-grow inner-card-bg border p-4 rounded-xl relative w-full transition-colors duration-500">
                 <div class="hidden md:block absolute -left-2.5 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-slate-700 border-b-8 border-b-transparent"></div>
                 <div class="flex items-center justify-between mb-1">
-                    <h3 class="text-sm font-bold text-indigo-300 flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-indigo-400 flex items-center gap-2">
                         <i class="fa-solid fa-robot text-indigo-400"></i> น้อง C-TECH AI วิเคราะห์สภาพอากาศ
                     </h3>
                     <span id="mascot-status-badge" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300">
                         ปกติ
                     </span>
                 </div>
-                <p id="mascot-speech" class="text-sm text-gray-200 font-medium leading-relaxed">
+                <p id="mascot-speech" class="text-sm text-heading font-medium leading-relaxed">
                     "สวัสดีครับพี่ๆ ชาว C-TECH! กำลังดึงข้อมูลสภาพอากาศและมลพิษในวิทยาลัยให้อยู่นะครับ..."
                 </p>
             </div>
@@ -130,150 +210,150 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
             <!-- Card 1: AQI -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนี AQI</span>
+                    <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">ดัชนี AQI</span>
                     <i class="fa-solid fa-wind text-indigo-400 text-base"></i>
                 </div>
                 <div class="text-center py-3">
                     <span id="aqi-val" class="text-5xl font-extrabold tracking-tight text-emerald-400">0</span>
                     <p id="aqi-label" class="mt-1 text-xs font-bold text-emerald-400">กำลังโหลด...</p>
                 </div>
-                <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden mt-2">
+                <div class="h-1.5 bg-slate-700/40 rounded-full overflow-hidden mt-2">
                     <div id="aqi-bar" class="h-full bg-emerald-400 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
             <!-- Card 2: PM2.5 -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ฝุ่น PM2.5</span>
+                    <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">ฝุ่น PM2.5</span>
                     <i class="fa-solid fa-mask-face text-teal-400 text-base"></i>
                 </div>
                 <div class="text-center py-3">
                     <span id="pm25-val" class="text-5xl font-extrabold tracking-tight text-teal-400">0</span>
-                    <span class="text-xs text-gray-400 font-bold"> µg/m³</span>
-                    <p id="pm25-warning" class="mt-1 text-[11px] font-semibold text-gray-400">ความเข้มข้นสารมลพิษ</p>
+                    <span class="text-xs text-muted font-bold"> µg/m³</span>
+                    <p id="pm25-warning" class="mt-1 text-[11px] font-semibold text-muted">ความเข้มข้นสารมลพิษ</p>
                 </div>
-                <div class="bg-slate-950/30 p-1.5 rounded-lg border border-slate-700/50 text-center text-[9px] text-gray-500">
+                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] text-muted">
                     เกณฑ์มาตรฐานความปลอดภัย
                 </div>
             </div>
 
             <!-- Card 3: UV Index -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนีรังสี UV</span>
+                    <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">ดัชนีรังสี UV</span>
                     <i class="fa-solid fa-sun text-amber-400 text-base"></i>
                 </div>
                 <div class="text-center py-3">
                     <span id="uv-val" class="text-5xl font-extrabold tracking-tight text-amber-400">0</span>
                     <p id="uv-label" class="mt-1 text-xs font-bold text-amber-400">กำลังโหลด...</p>
                 </div>
-                <div class="bg-slate-950/30 p-1.5 rounded-lg border border-slate-700/50 text-center text-[9px] text-gray-500">
+                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] text-muted">
                     ความเข้มแสงแดด (WHO)
                 </div>
             </div>
 
             <!-- Card 4: Temp/Humidity -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">อุณหภูมิ/ความชื้น</span>
+                        <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">อุณหภูมิ/ความชื้น</span>
                         <i class="fa-solid fa-temperature-three-quarters text-rose-400 text-base"></i>
                     </div>
                     <div class="grid grid-cols-2 gap-1 py-1 text-center">
-                        <div class="border-r border-slate-700">
-                            <p class="text-[9px] text-gray-400 mb-0.5">อุณหภูมิ</p>
-                            <span class="text-lg font-bold text-white"><span id="temp-val">0</span>°C</span>
+                        <div class="border-r border-slate-700/50">
+                            <p class="text-[9px] text-muted mb-0.5">อุณหภูมิ</p>
+                            <span class="text-lg font-bold text-heading"><span id="temp-val">0</span>°C</span>
                         </div>
                         <div>
-                            <p class="text-[9px] text-gray-400 mb-0.5">ความชื้น</p>
+                            <p class="text-[9px] text-muted mb-0.5">ความชื้น</p>
                             <span class="text-lg font-bold text-sky-400"><span id="humidity-val">0</span>%</span>
                         </div>
                     </div>
                 </div>
-                <div class="bg-slate-900/50 p-1.5 rounded-lg border border-slate-700/50 text-center mt-2">
-                    <p id="weather-desc" class="text-[11px] font-semibold text-indigo-300">กำลังโหลด...</p>
+                <div class="inner-card-bg p-1.5 rounded-lg border text-center mt-2">
+                    <p id="weather-desc" class="text-[11px] font-semibold text-indigo-400">กำลังโหลด...</p>
                 </div>
             </div>
 
             <!-- Card 5: Heat Index -->
-            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-4 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">ดัชนีความร้อน</span>
+                    <span class="text-[11px] font-semibold text-muted uppercase tracking-wider">ดัชนีความร้อน</span>
                     <i class="fa-solid fa-fire-flame-curved text-amber-500 text-base"></i>
                 </div>
                 <div class="text-center py-3">
-                    <span id="heat-val" class="text-5xl font-extrabold tracking-tight text-white">0</span><span class="text-xs text-gray-400"> °C</span>
-                    <p id="heat-warning" class="mt-1 text-xs font-bold text-gray-300">กำลังโหลด...</p>
+                    <span id="heat-val" class="text-5xl font-extrabold tracking-tight text-heading">0</span><span class="text-xs text-muted"> °C</span>
+                    <p id="heat-warning" class="mt-1 text-xs font-bold text-muted">กำลังโหลด...</p>
                 </div>
-                <div class="text-center text-[9px] text-gray-500 border-t border-slate-700 pt-1.5">
+                <div class="text-center text-[9px] text-muted border-t border-slate-700/50 pt-1.5">
                     เกณฑ์อุตุนิยมวิทยาไทย
                 </div>
             </div>
         </div>
 
         <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่เสี่ยง -->
-        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-layer-group text-indigo-400 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-gray-200">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
+                <h2 class="text-base font-bold tracking-wide text-heading">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- เมือง 1: เมืองชลบุรี -->
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
-                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
-                        <span class="text-sm font-bold text-white">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
+                <div class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/40 pb-2 mb-2">
+                        <span class="text-sm font-bold text-heading">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
                         <span id="comp-main-label" class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold">กำลังโหลด</span>
                     </div>
                     <div class="flex items-center justify-around py-2">
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-main-aqi" class="text-2xl font-black text-white">0</span>
+                            <p class="text-[10px] text-muted mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-main-aqi" class="text-2xl font-black text-heading">0</span>
                         </div>
-                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="w-px h-8 bg-slate-700/50"></div>
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-main-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                            <p class="text-[10px] text-muted mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-main-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-muted">µg</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- เมือง 2: พัทยา -->
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
-                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
-                        <span class="text-sm font-bold text-white">📍 เมืองพัทยา (Pattaya)</span>
-                        <span id="comp-pattaya-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-gray-400 font-bold">กำลังโหลด</span>
+                <div class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/40 pb-2 mb-2">
+                        <span class="text-sm font-bold text-heading">📍 เมืองพัทยา (Pattaya)</span>
+                        <span id="comp-pattaya-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-muted font-bold">กำลังโหลด</span>
                     </div>
                     <div class="flex items-center justify-around py-2">
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-pattaya-aqi" class="text-2xl font-black text-white">0</span>
+                            <p class="text-[10px] text-muted mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-pattaya-aqi" class="text-2xl font-black text-heading">0</span>
                         </div>
-                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="w-px h-8 bg-slate-700/50"></div>
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-pattaya-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                            <p class="text-[10px] text-muted mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-pattaya-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-muted">µg</span></span>
                         </div>
                     </div>
                 </div>
 
                 <!-- เมือง 3: ศรีราชา -->
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
-                    <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
-                        <span class="text-sm font-bold text-white">📍 อ.ศรีราชา (Si Racha)</span>
-                        <span id="comp-siracha-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-gray-400 font-bold">กำลังโหลด</span>
+                <div class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-700/40 pb-2 mb-2">
+                        <span class="text-sm font-bold text-heading">📍 อ.ศรีราชา (Si Racha)</span>
+                        <span id="comp-siracha-label" class="text-xs px-2 py-0.5 rounded bg-slate-700 text-muted font-bold">กำลังโหลด</span>
                     </div>
                     <div class="flex items-center justify-around py-2">
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-siracha-aqi" class="text-2xl font-black text-white">0</span>
+                            <p class="text-[10px] text-muted mb-0.5">ดัชนี AQI</p>
+                            <span id="comp-siracha-aqi" class="text-2xl font-black text-heading">0</span>
                         </div>
-                        <div class="w-px h-8 bg-slate-700"></div>
+                        <div class="w-px h-8 bg-slate-700/50"></div>
                         <div class="text-center">
-                            <p class="text-[10px] text-gray-400 mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-siracha-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-gray-500">µg</span></span>
+                            <p class="text-[10px] text-muted mb-0.5">ฝุ่น PM2.5</p>
+                            <span id="comp-siracha-pm25" class="text-2xl font-black text-teal-400">0 <span class="text-xs font-normal text-muted">µg</span></span>
                         </div>
                     </div>
                 </div>
@@ -281,21 +361,21 @@
         </div>
 
         <!-- 🔮 พยากรณ์อากาศล่วงหน้า 3 วัน -->
-        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-calendar-days text-indigo-400 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-gray-200">พยากรณ์อากาศล่วงหน้า 3 วัน (3-Day Weather Forecast)</h2>
+                <h2 class="text-base font-bold tracking-wide text-heading">พยากรณ์อากาศล่วงหน้า 3 วัน (3-Day Weather Forecast)</h2>
             </div>
             <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <p class="text-center text-sm text-gray-400 col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
+                <p class="text-center text-sm text-muted col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
             </div>
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
+        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
+            <div class="flex items-center gap-2 mb-4 border-b border-slate-700/50 pb-3">
                 <i class="fa-solid fa-chart-line text-indigo-400 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-gray-200">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (Timeline Analytics)</h2>
+                <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (Timeline Analytics)</h2>
             </div>
             <div class="relative w-full h-64 md:h-80">
                 <canvas id="historyChart"></canvas>
@@ -303,11 +383,77 @@
         </div>
     </main>
 
-    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs text-gray-500 z-10">
+    <footer class="bg-slate-950/80 border-t border-slate-800 text-center py-4 text-xs text-muted z-10">
         <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ C-TECH</p>
     </footer>
 
     <script>
+        // 🎨 ระบบเปลี่ยนและบันทึกธีม (Theme Management System)
+        function changeTheme(themeName) {
+            const body = document.getElementById('dynamic-bg');
+            localStorage.setItem('ctech_theme', themeName);
+            
+            // ลบ Class ธีมเดิม
+            body.classList.remove('theme-dark', 'theme-light', 'theme-cyberpunk');
+
+            if (themeName === 'auto') {
+                applyAutoTheme();
+            } else {
+                body.classList.add(`theme-${themeName}`);
+                updateSkyElement(themeName);
+            }
+
+            // อัปเดตกราฟให้สีกลมกลืนกับธีม
+            if (myChart) {
+                const textColor = themeName === 'light' ? '#334155' : '#94a3b8';
+                const gridColor = themeName === 'light' ? '#e2e8f0' : '#273549';
+                myChart.options.scales.x.ticks.color = textColor;
+                myChart.options.scales.y.ticks.color = textColor;
+                myChart.options.scales.x.grid.color = gridColor;
+                myChart.options.scales.y.grid.color = gridColor;
+                myChart.update();
+            }
+        }
+
+        function applyAutoTheme() {
+            const now = new Date();
+            const hours = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+            const isDayTime = hours >= 6 && hours < 18;
+            
+            const body = document.getElementById('dynamic-bg');
+            body.classList.remove('theme-dark', 'theme-light', 'theme-cyberpunk');
+            
+            if (isDayTime) {
+                body.classList.add('theme-light');
+                updateSkyElement('light');
+            } else {
+                body.classList.add('theme-dark');
+                updateSkyElement('dark');
+            }
+        }
+
+        function updateSkyElement(mode) {
+            const skyElement = document.getElementById('sky-element');
+            if (mode === 'light') {
+                skyElement.innerHTML = `<i class="fa-solid fa-sun text-amber-400 animate-spin-slow"></i>`;
+            } else {
+                skyElement.innerHTML = `
+                    <div class="relative flex items-center justify-center">
+                        <i class="fa-solid fa-moon text-amber-200 drop-shadow-[0_0_15px_rgba(253,230,138,0.6)]"></i>
+                        <i class="fa-solid fa-star text-sm text-amber-100 absolute -top-3 -left-6 animate-pulse"></i>
+                        <i class="fa-solid fa-star text-xs text-sky-200 absolute top-2 -right-6 animate-pulse" style="animation-delay: 0.5s;"></i>
+                    </div>
+                `;
+            }
+        }
+
+        // โหลดธีมเดิมที่ผู้ใช้เคยเลือกไว้
+        function initTheme() {
+            const savedTheme = localStorage.getItem('ctech_theme') || 'dark';
+            document.getElementById('theme-select').value = savedTheme;
+            changeTheme(savedTheme);
+        }
+
         // 🤖 ฟังก์ชันอัปเดต Mascot AI Assistant ตามสภาพอากาศ
         function updateMascotAssistant(data) {
             const avatar = document.getElementById('mascot-avatar');
@@ -339,32 +485,6 @@
                 speech.innerHTML = `"สภาพอากาศรอบวิทยาลัยวันนี้อยู่ในเกณฑ์ดีครับ! 🍃 คุณภาพอากาศ <b>${data.aqiLabel}</b> เหมาะแก่การเรียนรู้และทำกิจกรรมกลางแจ้งเต็มที่เลยครับ!"`;
                 badge.innerText = "อากาศสดใส";
                 badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-300";
-            }
-        }
-
-        // ☀️/🌙 สลับธีมกลางวัน - กลางคืน (พร้อมดาวกะพริบ)
-        function applyDayNightTheme() {
-            const now = new Date();
-            const hours = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
-            
-            const body = document.getElementById('dynamic-bg');
-            const skyElement = document.getElementById('sky-element');
-
-            const isDayTime = hours >= 6 && hours < 18;
-
-            if (isDayTime) {
-                body.className = "text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-gradient-to-br from-sky-900 via-slate-900 to-indigo-950 relative overflow-x-hidden";
-                skyElement.innerHTML = `<i class="fa-solid fa-sun text-amber-400 animate-spin-slow"></i>`;
-            } else {
-                body.className = "text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 relative overflow-x-hidden";
-                skyElement.innerHTML = `
-                    <div class="relative flex items-center justify-center">
-                        <i class="fa-solid fa-moon text-amber-200 drop-shadow-[0_0_15px_rgba(253,230,138,0.6)]"></i>
-                        <i class="fa-solid fa-star text-sm text-amber-100 absolute -top-3 -left-6 animate-pulse"></i>
-                        <i class="fa-solid fa-star text-xs text-sky-200 absolute top-2 -right-6 animate-pulse" style="animation-delay: 0.5s;"></i>
-                        <i class="fa-solid fa-star text-base text-yellow-100 absolute -bottom-2 -left-4 animate-pulse" style="animation-delay: 1s;"></i>
-                    </div>
-                `;
             }
         }
 
@@ -428,21 +548,21 @@
         function renderForecast(forecastData) {
             const container = document.getElementById('forecast-container');
             if (!forecastData || forecastData.length === 0) {
-                container.innerHTML = `<p class="text-center text-sm text-gray-400 col-span-3 py-4">ไม่พบข้อมูลพยากรณ์ล่วงหน้า</p>`;
+                container.innerHTML = `<p class="text-center text-sm text-muted col-span-3 py-4">ไม่พบข้อมูลพยากรณ์ล่วงหน้า</p>`;
                 return;
             }
 
             container.innerHTML = forecastData.map(item => `
-                <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex items-center justify-between shadow-md">
+                <div class="inner-card-bg border rounded-xl p-4 flex items-center justify-between shadow-md">
                     <div>
-                        <h4 class="text-sm font-bold text-indigo-300">${item.day}</h4>
-                        <p class="text-xs text-gray-400 capitalize mt-0.5">${item.desc}</p>
+                        <h4 class="text-sm font-bold text-indigo-400">${item.day}</h4>
+                        <p class="text-xs text-muted capitalize mt-0.5">${item.desc}</p>
                         <div class="flex items-center gap-3 mt-2">
-                            <span class="text-sm text-white font-semibold"><i class="fa-solid fa-temperature-high text-rose-400 mr-1"></i> ${item.temp}°C</span>
+                            <span class="text-sm text-heading font-semibold"><i class="fa-solid fa-temperature-high text-rose-400 mr-1"></i> ${item.temp}°C</span>
                             <span class="text-sm text-sky-400 font-semibold"><i class="fa-solid fa-droplet mr-1"></i> ${item.humidity}%</span>
                         </div>
                     </div>
-                    <div class="w-14 h-14 flex items-center justify-center bg-slate-800/60 rounded-lg">
+                    <div class="w-14 h-14 flex items-center justify-center bg-slate-800/40 rounded-lg">
                         <img src="https://openweathermap.org/img/wn/${item.icon}@2x.png" alt="${item.desc}" class="w-full h-full object-contain" />
                     </div>
                 </div>
@@ -451,7 +571,6 @@
 
         async function fetchWeatherData() {
             try {
-                applyDayNightTheme();
                 const response = await fetch('/api/weather');
                 const data = await response.json();
 
@@ -571,18 +690,18 @@
 
                 // เปรียบเทียบ 3 เมือง
                 document.getElementById('comp-main-aqi').innerText = data.aqi;
-                document.getElementById('comp-main-pm25').innerHTML = `${data.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                document.getElementById('comp-main-pm25').innerHTML = `${data.pm25} <span class="text-xs font-normal text-muted">µg</span>`;
                 document.getElementById('comp-main-label').innerText = data.aqiLabel;
                 document.getElementById('comp-main-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
 
                 if (data.comparison) {
                     document.getElementById('comp-pattaya-aqi').innerText = data.comparison.pattaya.aqi;
-                    document.getElementById('comp-pattaya-pm25').innerHTML = `${data.comparison.pattaya.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                    document.getElementById('comp-pattaya-pm25').innerHTML = `${data.comparison.pattaya.pm25} <span class="text-xs font-normal text-muted">µg</span>`;
                     document.getElementById('comp-pattaya-label').innerText = data.comparison.pattaya.label;
                     document.getElementById('comp-pattaya-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.comparison.pattaya.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.comparison.pattaya.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
 
                     document.getElementById('comp-siracha-aqi').innerText = data.comparison.siracha.aqi;
-                    document.getElementById('comp-siracha-pm25').innerHTML = `${data.comparison.siracha.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
+                    document.getElementById('comp-siracha-pm25').innerHTML = `${data.comparison.siracha.pm25} <span class="text-xs font-normal text-muted">µg</span>`;
                     document.getElementById('comp-siracha-label').innerText = data.comparison.siracha.label;
                     document.getElementById('comp-siracha-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.comparison.siracha.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.comparison.siracha.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
                 }
@@ -600,6 +719,8 @@
             }
         }
 
+        // เริ่มทำงานเมื่อโหลดหน้าเว็บ
+        initTheme();
         fetchWeatherData();
         setInterval(fetchWeatherData, 5000); 
     </script>

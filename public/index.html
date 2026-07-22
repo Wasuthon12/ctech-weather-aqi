@@ -253,7 +253,7 @@
                 </div>
             </div>
 
-            <!-- 💡 3. UV Card (กดดูเกณฑ์ได้แล้ว) -->
+            <!-- 💡 3. UV Card -->
             <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -387,19 +387,29 @@
             </div>
         </div>
 
-        <!-- Chart Section -->
+        <!-- 📈 Chart Section (กราฟวิเคราะห์แนวโน้มอ่านง่าย สบายตา) -->
         <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
-                <i class="fa-solid fa-chart-line text-indigo-600 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 border-b border-slate-400/30 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
+                    <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
+                </div>
+                <div class="flex items-center gap-4 text-xs font-bold">
+                    <span class="flex items-center gap-1.5 text-indigo-400">
+                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
+                    </span>
+                    <span class="flex items-center gap-1.5 text-rose-400">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
+                    </span>
+                </div>
             </div>
-            <div class="relative w-full h-64 md:h-80">
+            <div class="relative w-full h-72 md:h-80">
                 <canvas id="historyChart"></canvas>
             </div>
         </div>
     </main>
 
-    <!-- 📢 Unified Details Modal (ป๊อปอัพอเนกประสงค์รองรับ AQI, PM2.5, UV, Heat Index) -->
+    <!-- 📢 Unified Details Modal -->
     <div id="info-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
@@ -473,7 +483,6 @@
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
 
-        /* 🟢 ฟังก์ชั่นเปิด/ปิด และจัดการเนื้อหา Modal อเนกประสงค์ */
         function openModal(type) {
             const modal = document.getElementById('info-modal');
             const iconBg = document.getElementById('modal-icon-bg');
@@ -700,11 +709,13 @@
 
             if (myChart) {
                 const textColor = themeName === 'light' ? '#0f172a' : '#94a3b8';
-                const gridColor = themeName === 'light' ? '#cbd5e1' : '#273549';
+                const gridColor = themeName === 'light' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
+                
                 myChart.options.scales.x.ticks.color = textColor;
-                myChart.options.scales.y.ticks.color = textColor;
+                myChart.options.scales.yAQI.ticks.color = textColor;
+                myChart.options.scales.yTemp.ticks.color = textColor;
                 myChart.options.scales.x.grid.color = gridColor;
-                myChart.options.scales.y.grid.color = gridColor;
+                myChart.options.scales.yAQI.grid.color = gridColor;
                 myChart.update();
             }
         }
@@ -802,6 +813,7 @@
             }
         }
 
+        /* 📈 กราฟเวอร์ชันใหม่ (อ่านง่าย มีสเกลแยกซ้าย-ขวา ชัดเจน) */
         function updateChart(dataList) {
             if (!dataList || dataList.length === 0) return;
             const labels = dataList.map(d => d.time);
@@ -811,16 +823,27 @@
 
             const currentTheme = localStorage.getItem('ctech_theme') || 'dark';
             const textColor = currentTheme === 'light' ? '#0f172a' : '#94a3b8';
-            const gridColor = currentTheme === 'light' ? '#cbd5e1' : '#273549';
+            const gridColor = currentTheme === 'light' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
+
+            // Gradient พื้นหลังเส้น AQI
+            const gradientAQI = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientAQI.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+            gradientAQI.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
+
+            // Gradient พื้นหลังเส้น อุณหภูมิ
+            const gradientTemp = ctx.createLinearGradient(0, 0, 0, 300);
+            gradientTemp.addColorStop(0, 'rgba(244, 63, 94, 0.25)');
+            gradientTemp.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
 
             if (myChart) {
                 myChart.data.labels = labels;
                 myChart.data.datasets[0].data = aqiData;
                 myChart.data.datasets[1].data = tempData;
                 myChart.options.scales.x.ticks.color = textColor;
-                myChart.options.scales.y.ticks.color = textColor;
+                myChart.options.scales.yAQI.ticks.color = textColor;
+                myChart.options.scales.yTemp.ticks.color = textColor;
                 myChart.options.scales.x.grid.color = gridColor;
-                myChart.options.scales.y.grid.color = gridColor;
+                myChart.options.scales.yAQI.grid.color = gridColor;
                 myChart.update();
             } else {
                 myChart = new Chart(ctx, {
@@ -828,16 +851,85 @@
                     data: {
                         labels: labels,
                         datasets: [
-                            { label: 'ดัชนี AQI', data: aqiData, borderColor: '#6366f1', backgroundColor: 'rgba(99, 102, 241, 0.2)', fill: true, tension: 0.4 },
-                            { label: 'อุณหภูมิ (°C)', data: tempData, borderColor: '#f43f5e', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.4 }
+                            {
+                                label: 'ดัชนี AQI',
+                                data: aqiData,
+                                yAxisID: 'yAQI',
+                                borderColor: '#6366f1',
+                                backgroundColor: gradientAQI,
+                                borderWidth: 3,
+                                pointBackgroundColor: '#818cf8',
+                                pointBorderColor: '#ffffff',
+                                pointHoverRadius: 6,
+                                fill: true,
+                                tension: 0.35
+                            },
+                            {
+                                label: 'อุณหภูมิ (°C)',
+                                data: tempData,
+                                yAxisID: 'yTemp',
+                                borderColor: '#f43f5e',
+                                backgroundColor: gradientTemp,
+                                borderWidth: 2.5,
+                                borderDash: [4, 4],
+                                pointBackgroundColor: '#fb7185',
+                                pointBorderColor: '#ffffff',
+                                pointHoverRadius: 6,
+                                fill: true,
+                                tension: 0.35
+                            }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { size: 12, weight: 'bold' },
+                                bodyFont: { size: 12 },
+                                padding: 10,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y + (context.dataset.yAxisID === 'yTemp' ? ' °C' : '');
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
-                            x: { ticks: { color: textColor }, grid: { color: gridColor } },
-                            y: { ticks: { color: textColor }, grid: { color: gridColor } }
+                            x: {
+                                ticks: { color: textColor, font: { size: 10, weight: 'bold' } },
+                                grid: { color: gridColor, drawBorder: false }
+                            },
+                            yAQI: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                title: { display: true, text: 'ดัชนี AQI', color: '#6366f1', font: { size: 11, weight: 'bold' } },
+                                ticks: { color: textColor, font: { size: 10 } },
+                                grid: { color: gridColor, drawBorder: false },
+                                grace: '10%'
+                            },
+                            yTemp: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                title: { display: true, text: 'อุณหภูมิ (°C)', color: '#f43f5e', font: { size: 11, weight: 'bold' } },
+                                ticks: { color: textColor, font: { size: 10 } },
+                                grid: { drawOnChartArea: false },
+                                grace: '10%'
+                            }
                         }
                     }
                 });

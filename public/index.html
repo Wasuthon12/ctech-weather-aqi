@@ -8,13 +8,25 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { background-color: #121824; }
+        /* CSS Animation สำหรับดวงอาทิตย์และดาว */
+        @keyframes spinSlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spinSlow 20s linear infinite;
+        }
     </style>
 </head>
-<body class="text-gray-100 font-sans min-h-screen flex flex-col justify-between">
+<body id="dynamic-bg" class="text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-slate-900 relative overflow-x-hidden">
+
+    <!-- ☀️/🌙 แผงตกแต่งสกายไลท์มุมขวาบน (ปรับเปลี่ยนตามเวลาอัตโนมัติ) -->
+    <div id="sky-element" class="absolute top-4 right-8 pointer-events-none opacity-25 transition-all duration-1000 text-6xl md:text-8xl">
+        <!-- แสดงผลผ่าน JS -->
+    </div>
 
     <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 shadow-lg py-4 px-6 mb-6">
+    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/80 shadow-lg py-4 px-6 mb-6 z-10">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="bg-indigo-600 p-2.5 rounded-lg text-white text-2xl shadow-lg shadow-indigo-500/30">
@@ -33,7 +45,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8">
+    <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         <div id="rain-alert" class="hidden bg-gradient-to-r from-red-500 to-amber-500 p-4 rounded-xl mb-6 shadow-xl animate-pulse flex items-center gap-3">
             <span class="text-2xl"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
             <div>
@@ -46,7 +58,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             
             <!-- Card 1: ดัชนีฝุ่นรวม AQI -->
-            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีคุณภาพอากาศ (AQI)</span>
                     <i class="fa-solid fa-wind text-indigo-400 text-lg"></i>
@@ -61,7 +73,7 @@
             </div>
 
             <!-- 😷 Card 2: ปริมาณฝุ่นละออง PM2.5 โดยตรง -->
-            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ปริมาณฝุ่นละออง PM2.5</span>
                     <i class="fa-solid fa-mask-face text-teal-400 text-lg"></i>
@@ -77,7 +89,7 @@
             </div>
 
             <!-- Card 3: อุณหภูมิและความชื้น -->
-            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">อุณหภูมิและความชื้น</span>
@@ -100,7 +112,7 @@
             </div>
 
             <!-- Card 4: ดัชนีความร้อน -->
-            <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
+            <div class="bg-slate-800/90 backdrop-blur-md rounded-2xl p-5 border border-slate-700 shadow-xl flex flex-col justify-between">
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">ดัชนีความร้อน (Heat Index)</span>
                     <i class="fa-solid fa-fire-flame-curved text-amber-500 text-lg"></i>
@@ -110,19 +122,19 @@
                     <p id="heat-warning" class="mt-1 text-sm font-bold text-gray-300">กำลังโหลด...</p>
                 </div>
                 <div class="text-center text-[10px] text-gray-500 border-t border-slate-700 pt-2">
-                    ร่างกายรู้สึกจริงสัมสัมพันธ์ความชื้น
+                    เกณฑ์มาตรฐานอุตุนิยมวิทยาไทย
                 </div>
             </div>
         </div>
 
-        <!-- 📊 [โซนใหม่] แผงเปรียบเทียบมลพิษ 3 พื้นที่เสี่ยงในชลบุรี (Multi-City/Station Comparison) -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
+        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่เสี่ยง -->
+        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
                 <i class="fa-solid fa-layer-group text-indigo-400 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-gray-200">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- เมือง 1: อำเภอเมืองชลบุรี (อ้างอิงจากสถานีหลัก) -->
+                <!-- เมือง 1: อำเภอเมืองชลบุรี -->
                 <div class="bg-slate-900/40 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between shadow-md">
                     <div class="flex justify-between items-center border-b border-slate-700/50 pb-2 mb-2">
                         <span class="text-sm font-bold text-white">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
@@ -181,8 +193,8 @@
             </div>
         </div>
 
-        <!-- 🔮 โซนพยากรณ์อากาศล่วงหน้า 3 วัน (Forecast Cards) -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
+        <!-- 🔮 โซนพยากรณ์อากาศล่วงหน้า 3 วัน -->
+        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl mb-6">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
                 <i class="fa-solid fa-calendar-days text-indigo-400 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-gray-200">พยากรณ์อากาศล่วงหน้า 3 วัน (3-Day Weather Forecast)</h2>
@@ -193,7 +205,7 @@
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-xl">
+        <div class="bg-slate-800/90 backdrop-blur-md border border-slate-700 rounded-2xl p-6 shadow-xl">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-3">
                 <i class="fa-solid fa-chart-line text-indigo-400 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-gray-200">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (Timeline Analytics)</h2>
@@ -204,11 +216,31 @@
         </div>
     </main>
 
-    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs text-gray-500">
+    <footer class="bg-slate-900 border-t border-slate-800 text-center py-4 text-xs text-gray-500 z-10">
         <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ C-TECH</p>
     </footer>
 
     <script>
+        // ☀️/🌙 ฟังก์ชันสลับธีมกลางวัน - กลางคืนตามเวลาจริง
+        function applyDayNightTheme() {
+            const now = new Date();
+            const hours = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+            
+            const body = document.getElementById('dynamic-bg');
+            const skyElement = document.getElementById('sky-element');
+
+            // กลางวัน: 06:00 - 17:59 น.
+            const isDayTime = hours >= 6 && hours < 18;
+
+            if (isDayTime) {
+                body.className = "text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-gradient-to-br from-sky-900 via-slate-900 to-indigo-950 relative overflow-x-hidden";
+                skyElement.innerHTML = `<i class="fa-solid fa-sun text-amber-400 animate-spin-slow"></i>`;
+            } else {
+                body.className = "text-gray-100 font-sans min-h-screen flex flex-col justify-between transition-colors duration-1000 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 relative overflow-x-hidden";
+                skyElement.innerHTML = `<div class="relative"><i class="fa-solid fa-moon text-amber-200"></i><i class="fa-solid fa-star text-xs text-amber-100/70 absolute -top-2 -left-4 animate-pulse"></i></div>`;
+            }
+        }
+
         let myChart = null;
 
         function updateChart(dataList) {
@@ -272,10 +304,11 @@
 
         async function fetchWeatherData() {
             try {
+                applyDayNightTheme(); // เรียกอัปเดตธีมกลางวัน/กลางคืน
                 const response = await fetch('/api/weather');
                 const data = await response.json();
 
-                // 📦 จัดการการ์ด AQI สถานีหลัก
+                // 📦 AQI
                 const aqiVal = document.getElementById('aqi-val');
                 const aqiLabel = document.getElementById('aqi-label');
                 const aqiBar = document.getElementById('aqi-bar');
@@ -298,7 +331,7 @@
                     aqiBar.className = "h-full bg-red-500 transition-all duration-500";
                 }
 
-                // 📦 จัดการการ์ด PM2.5 สถานีหลัก
+                // 📦 PM2.5
                 const pm25Val = document.getElementById('pm25-val');
                 const pm25Warning = document.getElementById('pm25-warning');
                 pm25Val.innerText = data.pm25;
@@ -325,18 +358,22 @@
                 document.getElementById('humidity-val').innerText = data.humidity;
                 document.getElementById('weather-desc').innerText = data.weatherDesc;
 
+                // 📦 Heat Index
                 const heatVal = document.getElementById('heat-val');
                 const heatWarning = document.getElementById('heat-warning');
                 heatVal.innerText = data.heatIndex;
                 heatWarning.innerText = data.heatWarning;
 
-                if (data.heatIndex <= 32) {
+                if (data.heatIndex < 27.0) {
                     heatVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
                     heatWarning.className = "mt-1 text-sm font-bold text-emerald-400";
-                } else if (data.heatIndex <= 41) {
+                } else if (data.heatIndex <= 32.9) {
+                    heatVal.className = "text-6xl font-extrabold tracking-tight text-emerald-400";
+                    heatWarning.className = "mt-1 text-sm font-bold text-emerald-400";
+                } else if (data.heatIndex <= 41.9) {
                     heatVal.className = "text-6xl font-extrabold tracking-tight text-yellow-400";
                     heatWarning.className = "mt-1 text-sm font-bold text-yellow-400";
-                } else if (data.heatIndex <= 54) {
+                } else if (data.heatIndex <= 51.9) {
                     heatVal.className = "text-6xl font-extrabold tracking-tight text-orange-400";
                     heatWarning.className = "mt-1 text-sm font-bold text-orange-400";
                 } else {
@@ -350,21 +387,18 @@
 
                 document.getElementById('update-time').innerText = data.updateTime;
 
-                // 📊 Render อัปเดตข้อมูลกล่องเปรียบเทียบมลพิษ 3 พื้นที่
+                // 📊 เปรียบเทียบ 3 เมือง
                 document.getElementById('comp-main-aqi').innerText = data.aqi;
                 document.getElementById('comp-main-pm25').innerHTML = `${data.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
                 document.getElementById('comp-main-label').innerText = data.aqiLabel;
-                // ปรับธีมสีป้ายของเมืองหลักตามเกณฑ์
                 document.getElementById('comp-main-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
 
                 if (data.comparison) {
-                    // อัปเดตข้อมูลพัทยา
                     document.getElementById('comp-pattaya-aqi').innerText = data.comparison.pattaya.aqi;
                     document.getElementById('comp-pattaya-pm25').innerHTML = `${data.comparison.pattaya.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
                     document.getElementById('comp-pattaya-label').innerText = data.comparison.pattaya.label;
                     document.getElementById('comp-pattaya-label').className = `text-xs px-2 py-0.5 rounded font-bold ${data.comparison.pattaya.aqi <= 50 ? 'bg-emerald-500/10 text-emerald-400' : data.comparison.pattaya.aqi <= 100 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-red-500/10 text-red-400'}`;
 
-                    // อัปเดตข้อมูลศรีราชา
                     document.getElementById('comp-siracha-aqi').innerText = data.comparison.siracha.aqi;
                     document.getElementById('comp-siracha-pm25').innerHTML = `${data.comparison.siracha.pm25} <span class="text-xs font-normal text-gray-500">µg</span>`;
                     document.getElementById('comp-siracha-label').innerText = data.comparison.siracha.label;

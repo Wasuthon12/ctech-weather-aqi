@@ -12,10 +12,10 @@ const IQAIR_KEY = process.env.IQAIR_KEY;
 const OPENWEATHER_KEY = process.env.OPENWEATHER_KEY;
 const TELEGRAM_CHANNEL = '@ctech_pm25_alert'; 
 
-// 📌 เปลี่ยนตัวแปรจำสถานะเดิม มาใช้จำระดับฝุ่นวิกฤตเพื่อไม่ให้บอทยิงข้อความซ้ำรัวๆ
-let lastPM25AlertLevel = "Safe"; // ค่าที่เป็นไปได้: Safe, Warning, Danger
+// 📌 ตัวแปรจำสถานะระดับฝุ่นวิกฤต
+let lastPM25AlertLevel = "Safe"; // Safe, Warning, Danger
 
-// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้หน้าเว็บ Frontend (เพิ่มโครงสร้างรองรับเปรียบเทียบเมือง)
+// 📌 ตัวแปรหลักสำหรับเก็บข้อมูลส่งให้ Frontend
 let latestData = {
     aqi: 0,
     aqiLabel: "กำลังโหลด...",
@@ -28,7 +28,6 @@ let latestData = {
     isRaining: false,
     updateTime: "-",
     forecast: [],
-    // 📊 เพิ่มส่วนเปรียบเทียบพื้นที่เสี่ยงตรงนี้
     comparison: {
         pattaya: { aqi: 0, pm25: 0, label: "กำลังโหลด..." },
         siracha: { aqi: 0, pm25: 0, label: "กำลังโหลด..." }
@@ -51,7 +50,7 @@ app.listen(PORT, () => {
     console.log(`🌐 [Web Server] แดชบอร์ดพร้อมทำงานบน Cloud/Local พอร์ต: ${PORT}`);
 });
 
-// 🚨 ฟังก์ชันสำหรับส่งข้อความเตือนภัยด่วน (ส่งข้อความล้วนๆ เพื่อความรวดเร็วสูงสุด)
+// 🚨 ฟังก์ชันส่งข้อความเตือนภัยด่วน
 async function sendTelegramAlert(message) {
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
@@ -81,32 +80,45 @@ async function sendTelegramPhoto(photoUrl, caption) {
     }
 }
 
+// 🌡️ ฟังก์ชันคำนวณ Heat Index แบบปรับสมดุล (Smooth Balanced Factor)
 function calculateHeatIndex(temp, humidity) {
     if (temp < 27) return Math.round(temp);
+    
     let F = temp * (9 / 5) + 32;
     let RH = humidity;
-    let hi = 0.5 * (F + 61.0 + ((F - 68.0) * 1.2) + (RH * 0.094));
-    if (hi >= 80) {
-        hi = -42.379 + 2.04901523 * F + 10.14333127 * RH - 0.22475541 * F * RH 
-             - 0.00683783 * F * F - 0.05481717 * RH * RH + 0.00122874 * F * F * RH 
-             + 0.00085282 * F * RH * RH - 0.00000199 * F * F * RH * RH;
-        if (RH < 13 && F >= 80 && F <= 112) hi -= ((13 - RH) / 4) * Math.sqrt((17 - Math.abs(F - 95.)) / 17);
-        else if (RH > 85 && F >= 80 && F <= 87) hi += ((RH - 85) / 10) * ((87 - F) / 5);
+    
+    let hiF = 0.5 * (F + 61.0 + ((F - 68.0) * 1.2) + (RH * 0.094));
+    
+    if (hiF >= 80) {
+        let rothfusz = -42.379 + 2.04901523 * F + 10.14333127 * RH - 0.22475541 * F * RH 
+                       - 0.00683783 * F * F - 0.05481717 * RH * RH + 0.00122874 * F * F * RH 
+                       + 0.00085282 * F * RH * RH - 0.00000199 * F * F * RH * RH;
+        
+        hiF = (hiF + rothfusz) / 2;
     }
-    return Math.round(((hi - 32) * 5) / 9);
+    
+    let hiC = ((hiF - 32) * 5) / 9;
+    
+    let maxAllowed = temp + 8;
+    if (hiC > maxAllowed) {
+        hiC = maxAllowed;
+    }
+
+    return Math.round(hiC);
 }
 
+// ⚠️ ระดับการเตือนภัยดัชนีความร้อนตามเกณฑ์มาตรฐานกรมอุตุนิยมวิทยาไทย (4 ระดับ)
 function getHeatIndexWarning(HI_C) {
-    if (HI_C <= 32) return { text: "ปกติ", color: "#27ae60" };
-    if (HI_C <= 41) return { text: "เฝ้าระวัง 🟡", color: "#f1c40f" };
-    if (HI_C <= 54) return { text: "เตือนภัย 🟠", color: "#e67e22" };
-    return { text: "อันตรายสูงสุด 🔴", color: "#c0392b" };
+    if (HI_C < 27.0) return { text: "ปกติ 🟢", color: "#27ae60" };
+    if (HI_C <= 32.9) return { text: "เฝ้าระวัง 🟢", color: "#2ecc71" };
+    if (HI_C <= 41.9) return { text: "เตือนภัย 🟡", color: "#f1c40f" };
+    if (HI_C <= 51.9) return { text: "อันตราย 🟠", color: "#e67e22" };
+    return { text: "อันตรายมาก 🔴", color: "#c0392b" };
 }
 
-// 📌 เพิ่ม Parameter `isHourlyReport` เพื่อเลือกว่าจะส่งรูปภาพสรุปรายชั่วโมงหรือไม่
 async function checkAirAndWeather(isHourlyReport = false) {
     try {
-        // 1. ดึงข้อมูลคุณภาพอากาศ IQAir ของตัวเมืองชลบุรีหลัก
+        // 1. IQAir ชลบุรีหลัก
         const iqairRes = await axios.get(`https://api.airvisual.com/v2/city?city=Chon%20Buri&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
         const currentAQI = iqairRes.data.data.current.pollution.aqius;
         
@@ -119,30 +131,27 @@ async function checkAirAndWeather(isHourlyReport = false) {
             currentPM25 = Math.round(currentAQI * 0.35); 
         }
 
-        // 📊 [ปรับปรุง] ข้อมูลคุณภาพอากาศของ พัทยา (Pattaya) พร้อมระบบ Backup Failover ไปหาบางละมุง
+        // พัทยา
         let pattayaData = { aqi: 0, pm25: 0, label: "ไม่มีข้อมูล" };
         try {
-            // ลองเรียกผ่านชื่อหลักคือ พัทยา ก่อน
             const pattayaRes = await axios.get(`https://api.airvisual.com/v2/city?city=Pattaya&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
             const pAQI = pattayaRes.data.data.current.pollution.aqius;
             let pPM25 = Math.round(pAQI * 0.35);
             let pLabel = pAQI <= 25 ? "ดีมาก 🔵" : pAQI <= 50 ? "ดี 🟢" : pAQI <= 100 ? "ปานกลาง 🟡" : "เริ่มมีผลกระทบ 🟠";
             pattayaData = { aqi: pAQI, pm25: pPM25, label: pLabel };
         } catch (e) { 
-            console.log("⚠️ ดึงพัทยาตรงๆ ขัดข้อง ลองดึงผ่านสถานีหลักอำเภอบางละมุง..."); 
             try {
-                // ถ้าพัทยาออฟไลน์ ให้ใช้ข้อมูลของอำเภอบางละมุงซึ่งครอบคลุมเขตพัทยาแทน
                 const lamungRes = await axios.get(`https://api.airvisual.com/v2/city?city=Bang%20Lamung&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
                 const pAQI = lamungRes.data.data.current.pollution.aqius;
                 let pPM25 = Math.round(pAQI * 0.35);
                 let pLabel = pAQI <= 25 ? "ดีมาก 🔵" : pAQI <= 50 ? "ดี 🟢" : pAQI <= 100 ? "ปานกลาง 🟡" : "เริ่มมีผลกระทบ 🟠";
                 pattayaData = { aqi: pAQI, pm25: pPM25, label: pLabel };
             } catch (errLamung) {
-                console.error("❌ สถานีสำรองบางละมุงขัดข้องเช่นกัน:", errLamung.message);
+                console.error("❌ สถานีสำรองบางละมุงขัดข้อง:", errLamung.message);
             }
         }
 
-        // 📊 [ปรับปรุง] ข้อมูลคุณภาพอากาศของ ศรีราชา (Si Racha)
+        // ศรีราชา
         let sirachaData = { aqi: 0, pm25: 0, label: "ไม่มีข้อมูล" };
         try {
             const sirachaRes = await axios.get(`https://api.airvisual.com/v2/city?city=Si%20Racha&state=Chon%20Buri&country=Thailand&key=${IQAIR_KEY}`);
@@ -154,7 +163,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
             console.log("⚠️ ดึงข้อมูลศรีราชาขัดข้อง:", e.message); 
         }
 
-        // 2. ดึงข้อมูลสภาพอากาศปัจจุบัน OpenWeatherMap
+        // 2. OpenWeatherMap ปัจจุบัน
         const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
         const temp = weatherRes.data.main.temp;         
         let humidity = weatherRes.data.main.humidity; 
@@ -164,20 +173,22 @@ async function checkAirAndWeather(isHourlyReport = false) {
         const weatherDesc = weatherRes.data.weather[0].description; 
         const weatherId = weatherRes.data.weather[0].id; 
 
-        // 3. 🔮 ระบบคัดกรองพยากรณ์ล่วงหน้า 3 วันแบบยืดหยุ่น (การันตีว่าข้อมูลไม่ว่าง)
+        // 3. 🔮 พยากรณ์ล่วงหน้า 3 วัน
         const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=Chonburi,TH&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
         const forecastList = forecastRes.data.list;
         
         const dailyForecast = [];
-        const checkedDates = [];
-        const todayStr = new Date().toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' });
+        const checkedDates = new Set();
+
+        const nowInThailand = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+        const todayDateNum = nowInThailand.getDate();
 
         for (const item of forecastList) {
-            const itemDate = new Date(item.dt * 1000);
-            const itemDateStr = itemDate.toLocaleDateString('en-US', { timeZone: 'Asia/Bangkok' });
+            const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+            const itemDateNum = itemDate.getDate();
 
-            if (itemDateStr !== todayStr && !checkedDates.includes(itemDateStr)) {
-                const dayName = itemDate.toLocaleDateString('th-TH', { weekday: 'long' });
+            if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
+                const dayName = itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' });
                 dailyForecast.push({
                     day: dayName,
                     temp: Math.round(item.main.temp),
@@ -185,7 +196,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
                     desc: item.weather[0].description,
                     icon: item.weather[0].icon
                 });
-                checkedDates.push(itemDateStr);
+                checkedDates.add(itemDateNum);
                 
                 if (dailyForecast.length >= 3) break;
             }
@@ -206,13 +217,11 @@ async function checkAirAndWeather(isHourlyReport = false) {
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
 
-        // บันทึกรวมผลลัพธ์ข้อมูลทั้งหมด
         latestData = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
             isRaining: hasRain, updateTime: localTimeFormatted,
             forecast: dailyForecast,
-            // 📊 สั่งส่งแพ็กข้อมูลเปรียบเทียบทั้ง 2 อำเภอไปให้หน้าบ้าน Frontend รันการ์ด
             comparison: {
                 pattaya: pattayaData,
                 siracha: sirachaData
@@ -225,15 +234,14 @@ async function checkAirAndWeather(isHourlyReport = false) {
         }
         if (historicalData.length > 12) historicalData.shift(); 
 
-        // 🚨 2. Logic ระบบตรวจจับและเตือนภัยวิกฤตฝุ่นละออง PM2.5 แบบทันที
+        // 🚨 แจ้งเตือนด่วน PM2.5
         let currentAlertLevel = "Safe";
         if (currentPM25 > 55) {
-            currentAlertLevel = "Danger";    // เกณฑ์สีแดง (อันตราย)
+            currentAlertLevel = "Danger";
         } else if (currentPM25 > 35) {
-            currentAlertLevel = "Warning";   // เกณฑ์สีเหลือง/ส้ม (เริ่มมีผลกระทบ)
+            currentAlertLevel = "Warning";
         }
 
-        // ตรวจเช็กว่ามีการเปลี่ยนแปลงระดับฝุ่นขึ้นไปในเกณฑ์เฝ้าระวังหรืออันตรายหรือไม่
         if (currentAlertLevel !== lastPM25AlertLevel && currentAlertLevel !== "Safe") {
             lastPM25AlertLevel = currentAlertLevel; 
             
@@ -258,7 +266,7 @@ async function checkAirAndWeather(isHourlyReport = false) {
             console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
         }
 
-        // 📊 3. ระบบส่งสรุปรายงานรายชั่วโมงแบบมีรูปภาพ (จะทำเฉพาะเมื่อ Cron สั่งการเข้ามา)
+        // 📊 สรุปรายงานรายชั่วโมง
         if (isHourlyReport) {
             const chartConfig = {
                 type: 'radialGauge',

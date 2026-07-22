@@ -216,7 +216,7 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 1. AQI Card (กดดูเกณฑ์) -->
+            <!-- 💡 1. AQI Card -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -234,7 +234,7 @@
                 </div>
             </div>
 
-            <!-- 💡 2. PM2.5 Card (กดดูเกณฑ์) -->
+            <!-- 💡 2. PM2.5 Card -->
             <div onclick="openModal('pm25')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -253,8 +253,11 @@
                 </div>
             </div>
 
-            <!-- 3. UV Card -->
-            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
+            <!-- 💡 3. UV Card (กดดูเกณฑ์ได้แล้ว) -->
+            <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
+                    คลิกดูเกณฑ์ ℹ️
+                </div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีรังสี UV</span>
                     <i class="fa-solid fa-sun text-amber-500 text-base"></i>
@@ -291,7 +294,7 @@
                 </div>
             </div>
 
-            <!-- 💡 5. Heat Index Card (กดดูเกณฑ์) -->
+            <!-- 💡 5. Heat Index Card -->
             <div onclick="openModal('heat')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -396,7 +399,7 @@
         </div>
     </main>
 
-    <!-- 📢 Unified Details Modal (ป๊อปอัพอเนกประสงค์รองรับ AQI, PM2.5, Heat Index) -->
+    <!-- 📢 Unified Details Modal (ป๊อปอัพอเนกประสงค์รองรับ AQI, PM2.5, UV, Heat Index) -->
     <div id="info-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             
@@ -420,7 +423,7 @@
                 รายละเอียด...
             </p>
 
-            <!-- Dynamic Content (ตารางเกณฑ์วัด) -->
+            <!-- Dynamic Content -->
             <div id="modal-body-content" class="space-y-2.5 mb-6 text-xs">
             </div>
 
@@ -512,7 +515,7 @@
                         <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
                         <div>
                             <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบทุกคน <b>ควรสวมหน้ากาก N95</b> เมื่ออกนอกอาคาร</p>
+                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบทุกคน <b>ควรสวมหน้ากาก N95</b> เมื่อออกนอกอาคาร</p>
                         </div>
                     </div>
                     <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
@@ -570,6 +573,49 @@
                         <div>
                             <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพอย่างมาก (75.1+ µg/m³)</h4>
                             <p class="text-muted text-[11px] mt-0.5">ระดับอันตรายวิกฤต! สวมหน้ากาก N95 ตลอดเวลา หลีกเลี่ยงออกนอกอาคาร และใช้อุปกรณ์ฟอกอากาศ</p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'uv') {
+                iconBg.className = "bg-amber-500 text-white p-2.5 rounded-xl";
+                icon.className = "fa-solid fa-sun text-xl";
+                title.innerText = "ดัชนีรังสี UV คืออะไร?";
+                subtitle.innerText = "UV Index Standard (WHO - องค์กรอนามัยโลก)";
+                desc.innerHTML = "<b>ดัชนีรังสี UV (Ultraviolet Index)</b> คือค่าชี้วัดความเข้มข้นของรังสีอัลตราไวโอเลตจากดวงอาทิตย์ที่ตกกระทบผิวโลก เพื่อเตือนภัยอันตรายต่อผิวหนังและดวงตา แบ่งเป็น 5 ระดับ:";
+                body.innerHTML = `
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 2</span>
+                        <div>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ (Low)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ปลอดภัยสูง สามารถทำกิจกรรมกลางแจ้งได้ตามปกติโดยไม่ต้องป้องกันพิเศษ</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">3 - 5</span>
+                        <div>
+                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ควรสวมแว่นกันแดด สวมหมวก และหลบแดดในที่ร่มช่วงเที่ยงวัน</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">6 - 7</span>
+                        <div>
+                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 สูง (High)</h4>
+                            <p class="text-muted text-[11px] mt-0.5"><b>ทาครีมกันแดด SPF 30+</b> สวมเสื้อแขนยาว หมวกปีกกว้าง และเลี่ยงอยู่กลางแดดจัดเกิน 20 นาที</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">8 - 10</span>
+                        <div>
+                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 สูงมาก (Very High)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ผิวหนังอาจแสบไหม้ได้เร็ว <b>หลีกเลี่ยงการออกแดดช่วง 10:00 - 16:00 น.</b> และทากันแดดซ้ำทุก 2 ชม.</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">11+</span>
+                        <div>
+                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/อันตรายมาก (Extreme)</h4>
+                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> ผิวไหม้แดดได้ภายในไม่กี่นาที งดออกแดดจัดและสวมอุปกรณ์ป้องกันเต็มรูปแบบ</p>
                         </div>
                     </div>
                 `;

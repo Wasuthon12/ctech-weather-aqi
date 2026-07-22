@@ -216,7 +216,7 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 1. AQI Card -->
+            <!-- 💡 1. AQI Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -226,11 +226,11 @@
                     <i class="fa-solid fa-wind text-indigo-500 text-base"></i>
                 </div>
                 <div class="text-center py-3">
-                    <span id="aqi-val" class="text-5xl font-extrabold tracking-tight text-emerald-500">0</span>
-                    <p id="aqi-label" class="mt-1 text-xs font-bold text-emerald-600">กำลังโหลด...</p>
+                    <span id="aqi-val" class="text-5xl font-extrabold tracking-tight transition-colors duration-500">0</span>
+                    <p id="aqi-label" class="mt-1 text-xs font-bold transition-colors duration-500">กำลังโหลด...</p>
                 </div>
                 <div class="h-1.5 bg-slate-400/30 rounded-full overflow-hidden mt-2">
-                    <div id="aqi-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+                    <div id="aqi-bar" class="h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -387,7 +387,7 @@
             </div>
         </div>
 
-        <!-- 📈 Chart Section (กราฟวิเคราะห์แนวโน้มอ่านง่าย สบายตา) -->
+        <!-- 📈 Chart Section -->
         <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 border-b border-slate-400/30 pb-3">
                 <div class="flex items-center gap-2">
@@ -482,6 +482,23 @@
             'pattaya': 'เมืองพัทยา (Pattaya)',
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
+
+        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (แก้ไขบั๊กสีเขียวขัดกับสีเหลือง) */
+        function getAqiColorClass(aqi) {
+            if (aqi <= 50) {
+                return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
+            } else if (aqi <= 100) {
+                return { text: 'text-amber-400', bg: 'bg-amber-400' };
+            } else if (aqi <= 150) {
+                return { text: 'text-orange-500', bg: 'bg-orange-500' };
+            } else if (aqi <= 200) {
+                return { text: 'text-red-500', bg: 'bg-red-500' };
+            } else if (aqi <= 300) {
+                return { text: 'text-purple-500', bg: 'bg-purple-500' };
+            } else {
+                return { text: 'text-rose-900', bg: 'bg-rose-900' };
+            }
+        }
 
         function openModal(type) {
             const modal = document.getElementById('info-modal');
@@ -813,7 +830,6 @@
             }
         }
 
-        /* 📈 กราฟเวอร์ชันใหม่ (อ่านง่าย มีสเกลแยกซ้าย-ขวา ชัดเจน) */
         function updateChart(dataList) {
             if (!dataList || dataList.length === 0) return;
             const labels = dataList.map(d => d.time);
@@ -825,12 +841,10 @@
             const textColor = currentTheme === 'light' ? '#0f172a' : '#94a3b8';
             const gridColor = currentTheme === 'light' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
 
-            // Gradient พื้นหลังเส้น AQI
             const gradientAQI = ctx.createLinearGradient(0, 0, 0, 300);
             gradientAQI.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
             gradientAQI.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
 
-            // Gradient พื้นหลังเส้น อุณหภูมิ
             const gradientTemp = ctx.createLinearGradient(0, 0, 0, 300);
             gradientTemp.addColorStop(0, 'rgba(244, 63, 94, 0.25)');
             gradientTemp.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
@@ -965,9 +979,22 @@
                 const res = await fetch(`/api/weather?location=${currentLocation}`);
                 const data = await res.json();
 
-                document.getElementById('aqi-val').innerText = data.aqi;
-                document.getElementById('aqi-label').innerText = data.aqiLabel;
-                document.getElementById('aqi-bar').style.width = `${Math.min(100, (data.aqi / 200) * 100)}%`;
+                // 🟢 อัปเดตตัวเลข AQI ข้อความ และสี (Dynamic Color Fix)
+                const aqiValElem = document.getElementById('aqi-val');
+                const aqiLabelElem = document.getElementById('aqi-label');
+                const aqiBarElem = document.getElementById('aqi-bar');
+
+                aqiValElem.innerText = data.aqi;
+                aqiLabelElem.innerText = data.aqiLabel;
+                aqiBarElem.style.width = `${Math.min(100, (data.aqi / 200) * 100)}%`;
+
+                // คำนวณ Class สีแบบ Dynamic
+                const colorObj = getAqiColorClass(data.aqi);
+                
+                // ล้างคลาสสีเดิมออกก่อนใส่คลาสสีใหม่
+                aqiValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${colorObj.text}`;
+                aqiLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${colorObj.text}`;
+                aqiBarElem.className = `h-full transition-all duration-500 ${colorObj.bg}`;
 
                 document.getElementById('pm25-val').innerText = data.pm25;
                 document.getElementById('uv-val').innerText = data.uvIndex;

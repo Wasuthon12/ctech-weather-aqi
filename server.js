@@ -44,6 +44,7 @@ app.get('/api/weather', (req, res) => {
     const loc = req.query.location || 'main';
     const targetData = storeData[loc] || storeData.main;
 
+    // สร้างข้อมูล Comparison และ History ส่งกลับไปให้ Frontend
     const responseData = {
         ...targetData,
         comparison: {
@@ -122,44 +123,6 @@ function getHeatIndexWarning(HI_C) {
     return { text: "อันตรายมาก 🔴", color: "#c0392b" };
 }
 
-// ☀️ ฟังก์ชันคำนวณรังสี UV ตามเวลาจริงแม่นยำ (เวลาประเทศไทย GMT+7)
-function calculateSmartUVIndex(clouds = 0) {
-    const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
-
-    // 1. กลางคืน/ย่ำค่ำ (18:00 - 05:59 น.) -> UV = 0
-    if (currentHour >= 18 || currentHour < 6) {
-        return { index: 0, label: "ต่ำ 🟢" };
-    }
-
-    // 2. เช้าตรู่ (06:00 - 08:59 น.) -> UV = 1 ถึง 2
-    if (currentHour >= 6 && currentHour < 9) {
-        return { index: 1, label: "ต่ำ 🟢" };
-    }
-
-    // 3. ช่วงสาย (09:00 - 10:59 น.) -> UV = 3 ถึง 5
-    if (currentHour >= 9 && currentHour < 11) {
-        const baseUV = Math.round(5 * (1 - clouds / 100));
-        const uv = Math.max(2, baseUV);
-        return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
-    }
-
-    // 4. ช่วงเที่ยงวันพีค (11:00 - 14:59 น.) -> UV = 6 ถึง 11+
-    if (currentHour >= 11 && currentHour < 15) {
-        const baseUV = Math.round(10 * (1 - clouds / 100));
-        const uv = Math.max(4, baseUV);
-        let label = "สูง 🟠";
-        if (uv >= 11) label = "สุดขีด 🟣";
-        else if (uv >= 8) label = "สูงมาก 🔴";
-        else if (uv <= 5) label = "ปานกลาง 🟡";
-        return { index: uv, label: label };
-    }
-
-    // 5. ช่วงบ่ายแก่ๆ (15:00 - 17:59 น.) -> UV = 1 ถึง 4
-    const baseUV = Math.round(4 * (1 - clouds / 100));
-    const uv = Math.max(1, baseUV);
-    return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
-}
-
 // 🔄 ฟังก์ชันดึงข้อมูลแบบไดนามิกตามเมือง
 async function fetchCityData(key) {
     const locConfig = LOCATIONS[key];
@@ -196,12 +159,20 @@ async function fetchCityData(key) {
         const humidity = weatherRes.data.main.humidity;
         const weatherDesc = weatherRes.data.weather[0].description;
         const weatherId = weatherRes.data.weather[0].id;
-        const clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
 
-        // ☀️ คำนวณ UV Index ใหม่ตามเวลาจริง
-        const calculatedUV = calculateSmartUVIndex(clouds);
-        let uvIndex = calculatedUV.index;
-        let uvLabel = calculatedUV.label;
+        // UV Index
+        let uvIndex = 0;
+        const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+        if (currentHour >= 6 && currentHour <= 18) {
+            try {
+                const uvRes = await axios.get(`https://api.openweathermap.org/data/2.5/uvi?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}`);
+                uvIndex = Math.round(uvRes.data.value);
+            } catch (uvErr) {
+                const peakFactor = Math.sin((currentHour - 6) / 12 * Math.PI);
+                uvIndex = Math.round(peakFactor * (temp > 33 ? 10 : 7));
+            }
+        }
+        let uvLabel = uvIndex >= 11 ? "สุดขีด 🟣" : uvIndex >= 8 ? "สูงมาก 🔴" : uvIndex >= 6 ? "สูง 🟠" : uvIndex >= 3 ? "ปานกลาง 🟡" : "ต่ำ 🟢";
 
         // Forecast 3 วัน
         const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);

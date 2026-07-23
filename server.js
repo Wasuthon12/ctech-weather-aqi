@@ -312,4 +312,3 @@ cron.schedule('1 * * * *', () => {
 
 checkAirAndWeatherAll(true);
 console.log('🚀 [Ready] บอทสภาพอากาศรองรับ 3 เมือง สแตนด์บาย...');
-    

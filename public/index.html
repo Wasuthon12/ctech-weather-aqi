@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C-TECH Weather & AQI Dashboard</title>
+    <title>Weather & AQI Report Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -37,37 +37,37 @@
             animation: rainFall 0.8s linear infinite;
         }
 
-        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต C-TECH */
+        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต */
         @keyframes mascotBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
         }
         .animate-mascot { animation: mascotBounce 3s ease-in-out infinite; }
 
-        /* 🎨 Custom Classes สำหรับสลับธีม */
+        /* 🎨 Custom Classes สำหรับสลับธีม + Glassmorphism แท็บใส */
         /* 🌙 Dark Theme */
         .theme-dark { background-color: #0f172a; color: #f8fafc; }
-        .theme-dark .card-bg { background-color: rgba(30, 41, 59, 0.9); border-color: #334155; color: #f8fafc; }
+        .theme-dark .card-bg { background-color: rgba(30, 41, 59, 0.8); border-color: rgba(255, 255, 255, 0.1); color: #f8fafc; backdrop-filter: blur(12px); }
         .theme-dark .inner-card-bg { background-color: rgba(15, 23, 42, 0.6); border-color: rgba(51, 65, 85, 0.6); }
-        .theme-dark .header-bg { background-color: rgba(30, 41, 59, 0.85); border-color: rgba(51, 65, 85, 0.8); }
+        .theme-dark .header-bg { background: rgba(15, 23, 42, 0.35); border-color: rgba(255, 255, 255, 0.12); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .theme-dark .text-muted { color: #94a3b8; }
         .theme-dark .text-heading { color: #f8fafc; }
         .theme-dark .modal-bg { background-color: #1e293b; color: #f8fafc; border-color: #334155; }
 
         /* ☀️ Light Theme */
         .theme-light { background: linear-gradient(135deg, #cbd5e1 0%, #e2e8f0 50%, #f1f5f9 100%); color: #0f172a; }
-        .theme-light .card-bg { background-color: rgba(255, 255, 255, 0.92); border-color: #cbd5e1; color: #0f172a; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08); }
-        .theme-light .inner-card-bg { background-color: #f8fafc; border-color: #cbd5e1; }
-        .theme-light .header-bg { background-color: rgba(255, 255, 255, 0.95); border-color: #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .theme-light .card-bg { background-color: rgba(255, 255, 255, 0.75); border-color: rgba(255, 255, 255, 0.5); color: #0f172a; box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05); backdrop-filter: blur(12px); }
+        .theme-light .inner-card-bg { background-color: rgba(248, 250, 252, 0.8); border-color: #cbd5e1; }
+        .theme-light .header-bg { background: rgba(255, 255, 255, 0.35); border-color: rgba(255, 255, 255, 0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .theme-light .text-muted { color: #475569; }
         .theme-light .text-heading { color: #0f172a; }
         .theme-light .modal-bg { background-color: #ffffff; color: #0f172a; border-color: #cbd5e1; }
 
         /* 🔮 Cyberpunk Theme */
         .theme-cyberpunk { background: linear-gradient(135deg, #120224 0%, #240046 50%, #10002b 100%); color: #f0f0f0; }
-        .theme-cyberpunk .card-bg { background-color: rgba(36, 0, 70, 0.7); border-color: #ff007f; box-shadow: 0 0 15px rgba(255, 0, 127, 0.2); color: #f0f0f0; }
+        .theme-cyberpunk .card-bg { background-color: rgba(36, 0, 70, 0.6); border-color: rgba(255, 0, 127, 0.4); box-shadow: 0 0 15px rgba(255, 0, 127, 0.2); color: #f0f0f0; backdrop-filter: blur(12px); }
         .theme-cyberpunk .inner-card-bg { background-color: rgba(16, 0, 43, 0.8); border-color: #7b2cbf; }
-        .theme-cyberpunk .header-bg { background-color: rgba(36, 0, 70, 0.85); border-color: #ff007f; }
+        .theme-cyberpunk .header-bg { background: rgba(36, 0, 70, 0.35); border-color: rgba(255, 0, 127, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .theme-cyberpunk .text-muted { color: #c77dff; }
         .theme-cyberpunk .text-heading { color: #00f5d4; }
         .theme-cyberpunk .modal-bg { background-color: #240046; color: #f0f0f0; border-color: #ff007f; }
@@ -102,6 +102,31 @@
         #mascot-svg { animation: mascotFlip 22s linear infinite; }
         .leg-left { animation: legSwing 0.6s ease-in-out infinite alternate; }
         .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
+
+        /* 🌅 Celestial Cycle Orbit Container */
+        .sun-moon-container {
+            position: relative;
+            width: 130px;
+            height: 65px;
+            overflow: hidden;
+        }
+        .sun-moon-track {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 1.5px dashed rgba(255, 255, 255, 0.25);
+            top: 5px;
+            left: 5px;
+        }
+        .celestial-body {
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            margin-left: -13px;
+            margin-top: -13px;
+            transition: all 1s ease-in-out;
+        }
     </style>
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
@@ -117,38 +142,47 @@
     <!-- 🌧️ Container สร้างเม็ดฝนตก -->
     <div id="rain-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden hidden"></div>
 
-    <!-- ☀️/🌙 แผงตกแต่งสกายไลท์มุมขวาบน -->
-    <div id="sky-element" class="absolute top-4 right-8 pointer-events-none opacity-90 transition-all duration-1000 text-6xl md:text-8xl z-0"></div>
-
-    <!-- Header -->
-    <header class="header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+    <!-- 🌟 Header แบบใส Glassmorphism พร้อมโค้งพระอาทิตย์/ดวงจันทร์ขยับตามเวลาจริง -->
+    <header class="header-bg border-b shadow-lg py-4 px-6 mb-6 sticky top-0 z-30 transition-all duration-500">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            
             <div class="flex items-center gap-3">
-                <div class="bg-indigo-600 p-2.5 rounded-lg text-white text-2xl shadow-lg shadow-indigo-500/30">
+                <div class="bg-indigo-600/80 p-2.5 rounded-2xl text-white text-2xl shadow-lg shadow-indigo-500/20 backdrop-blur-md">
                     <i class="fa-solid fa-cloud-sun"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide text-heading">C-TECH WEATHER REPORT</h1>
+                    <h1 class="text-xl font-extrabold tracking-wide text-heading">WEATHER & AQI REPORT</h1>
                     <p class="text-xs text-indigo-500 font-bold">📍 สถานีตรวจวัดความปลอดภัยทางอากาศ: <span id="header-location-name">อ.เมืองชลบุรี</span></p>
                 </div>
             </div>
 
-            <!-- Controls -->
+            <!-- ☀️/🌙 โค้งการเคลื่อนที่ของดวงอาทิตย์และดวงจันทร์ตามเวลาจริง -->
             <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/40 rounded-xl p-1.5 backdrop-blur-sm">
-                    <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
-                    <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
-                        <option value="auto" class="bg-slate-800 text-white">⚙️ Auto (ตามเวลา)</option>
-                        <option value="dark" class="bg-slate-800 text-white" selected>🌙 Dark (มืด)</option>
-                        <option value="light" class="bg-slate-800 text-white">☀️ Light (สว่าง)</option>
-                        <option value="cyberpunk" class="bg-slate-800 text-white">🔮 Cyberpunk (นีออน)</option>
-                    </select>
+                <div class="sun-moon-container hidden sm:flex flex-col items-center justify-end bg-slate-500/10 rounded-2xl p-2 border border-white/10 backdrop-blur-md">
+                    <div class="sun-moon-track"></div>
+                    <div id="celestial-object" class="celestial-body flex items-center justify-center">
+                        <!-- Icon จะเปลี่ยนและขยับตามตำแหน่งเวลาจริง -->
+                    </div>
+                    <span id="celestial-time-label" class="text-[9px] font-bold text-indigo-400 z-10 -b-1">00:00 น.</span>
                 </div>
-                <div class="text-right hidden sm:block">
-                    <span class="text-xs text-muted font-medium">อัปเดตล่าสุด: </span>
-                    <span id="update-time" class="text-sm font-bold text-indigo-600">กำลังโหลด...</span>
+
+                <!-- Controls Theme Select -->
+                <div class="flex flex-col items-end gap-1">
+                    <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/30 rounded-xl p-1.5 backdrop-blur-md">
+                        <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
+                        <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
+                            <option value="auto" class="bg-slate-800 text-white">⚙️ Auto (ตามเวลา)</option>
+                            <option value="dark" class="bg-slate-800 text-white" selected>🌙 Dark (มืด)</option>
+                            <option value="light" class="bg-slate-800 text-white">☀️ Light (สว่าง)</option>
+                            <option value="cyberpunk" class="bg-slate-800 text-white">🔮 Cyberpunk (นีออน)</option>
+                        </select>
+                    </div>
+                    <div class="text-right text-[10px] text-muted font-semibold">
+                        อัปเดตล่าสุด: <span id="update-time" class="font-bold text-indigo-500">กำลังโหลด...</span>
+                    </div>
                 </div>
             </div>
+
         </div>
     </header>
 
@@ -156,7 +190,7 @@
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
         <!-- 📍 Navigation Tabs เลือกพื้นที่ -->
-        <div class="card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
+        <div class="card-bg border rounded-2xl p-3 mb-6 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
             <div class="px-2 py-1 text-xs font-bold text-indigo-500 flex items-center gap-1.5 border-b sm:border-b-0 sm:border-r border-slate-400/30 pb-2 sm:pb-0 sm:pr-3">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>เลือกพื้นที่:</span>
@@ -164,7 +198,7 @@
             <div class="grid grid-cols-1 sm:flex sm:flex-wrap w-full gap-2">
                 <button onclick="switchLocation('main')" id="tab-main" class="location-tab active px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-building"></i>
-                    <span>อ.เมืองชลบุรี (C-TECH Main)</span>
+                    <span>อ.เมืองชลบุรี (จุดหลัก)</span>
                 </button>
                 <button onclick="switchLocation('pattaya')" id="tab-pattaya" class="location-tab px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-umbrella-beach"></i>
@@ -177,14 +211,14 @@
             </div>
         </div>
 
-        <!-- 🤖 C-TECH Mascot Section -->
-        <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
+        <!-- 🤖 Mascot Assistant Section -->
+        <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
                 <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-500/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
                     🤖
                 </div>
                 <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow border border-indigo-400/30 whitespace-nowrap">
-                    NONG C-TECH
+                    SMART BOT
                 </span>
             </div>
             <div class="flex-grow inner-card-bg border p-4 rounded-xl relative w-full transition-colors duration-500">
@@ -193,23 +227,23 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-400/30">
                     <h3 class="text-xs md:text-sm font-bold text-indigo-600 flex items-center gap-1.5">
                         <i class="fa-solid fa-robot"></i>
-                        <span>น้อง C-TECH AI วิเคราะห์ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)</span>
+                        <span>AI วิเคราะห์สภาพอากาศ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)</span>
                     </h3>
                     <span id="mascot-status-badge" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-600 border border-emerald-500/30">
                         ปกติ
                     </span>
                 </div>
                 <p id="mascot-speech" class="text-xs md:text-sm text-heading font-semibold leading-relaxed">
-                    "สวัสดีครับพี่ๆ ชาว C-TECH! กำลังดึงข้อมูลสภาพอากาศและมลพิษให้อยู่นะครับ..."
+                    "สวัสดีครับ! กำลังดึงข้อมูลสภาพอากาศและมลพิษให้อยู่นะครับ..."
                 </p>
             </div>
         </div>
 
         <div id="rain-alert" class="hidden bg-gradient-to-r from-red-500 to-amber-500 p-4 rounded-xl mb-6 shadow-xl animate-pulse flex items-center gap-3">
-            <span class="text-2xl"><i class="fa-solid fa-cloud-showers-heavy"></i></span>
+            <span class="text-2xl"><i class="fa-solid fa-cloud-showers-heavy text-white"></i></span>
             <div>
                 <h3 class="font-bold text-white">แจ้งเตือนเร่งด่วน: ตรวจพบฝนตกในพื้นที่!</h3>
-                <p class="text-xs text-white/90">โปรดเก็บเสื้อผ้าและพกร่มระหว่างเปลี่ยนอาคารเรียนด่วน!</p>
+                <p class="text-xs text-white/90">โปรดเก็บเสื้อผ้าและพกร่มระหว่างเปลี่ยนอาคารด่วน!</p>
             </div>
         </div>
 
@@ -217,7 +251,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
             <!-- 💡 1. AQI Card -->
-            <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
+            <div onclick="openModal('aqi')" class="card-bg rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
                 </div>
@@ -235,7 +269,7 @@
             </div>
 
             <!-- 💡 2. PM2.5 Card -->
-            <div onclick="openModal('pm25')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
+            <div onclick="openModal('pm25')" class="card-bg rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
                 </div>
@@ -253,8 +287,8 @@
                 </div>
             </div>
 
-            <!-- 💡 3. UV Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
-            <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
+            <!-- 💡 3. UV Card -->
+            <div onclick="openModal('uv')" class="card-bg rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
                 </div>
@@ -272,7 +306,7 @@
             </div>
 
             <!-- 4. Temp/Humidity Card -->
-            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
+            <div class="card-bg rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-[11px] font-bold text-muted uppercase tracking-wider">อุณหภูมิ/ความชื้น</span>
@@ -295,770 +329,4 @@
             </div>
 
             <!-- 💡 5. Heat Index Card -->
-            <div onclick="openModal('heat')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
-                    คลิกดูเกณฑ์ ℹ️
-                </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีความร้อน</span>
-                    <i class="fa-solid fa-fire-flame-curved text-amber-600 text-base"></i>
-                </div>
-                <div class="text-center py-3">
-                    <span id="heat-val" class="text-5xl font-extrabold tracking-tight text-heading">0</span><span class="text-xs text-muted font-bold"> °C</span>
-                    <p id="heat-warning" class="mt-1 text-xs font-bold text-muted">กำลังโหลด...</p>
-                </div>
-                <div class="text-center text-[9px] font-bold text-muted border-t border-slate-400/30 pt-1.5">
-                    เกณฑ์อุตุนิยมวิทยาไทย
-                </div>
-            </div>
-        </div>
-
-        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่ -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
-                <i class="fa-solid fa-layer-group text-indigo-600 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-heading">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div onclick="switchLocation('main')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
-                    <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
-                        <span class="text-sm font-bold text-heading">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
-                        <span id="comp-main-label" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 font-bold border border-emerald-500/30">กำลังโหลด</span>
-                    </div>
-                    <div class="flex items-center justify-around py-2">
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-main-aqi" class="text-2xl font-black text-heading">0</span>
-                        </div>
-                        <div class="w-px h-8 bg-slate-400/30"></div>
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-main-pm25" class="text-2xl font-black text-teal-600">0 <span class="text-xs font-normal text-muted">µg</span></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div onclick="switchLocation('pattaya')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
-                    <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
-                        <span class="text-sm font-bold text-heading">📍 เมืองพัทยา (Pattaya)</span>
-                        <span id="comp-pattaya-label" class="text-xs px-2 py-0.5 rounded bg-slate-300 text-slate-700 font-bold">กำลังโหลด</span>
-                    </div>
-                    <div class="flex items-center justify-around py-2">
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-pattaya-aqi" class="text-2xl font-black text-heading">0</span>
-                        </div>
-                        <div class="w-px h-8 bg-slate-400/30"></div>
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-pattaya-pm25" class="text-2xl font-black text-teal-600">0 <span class="text-xs font-normal text-muted">µg</span></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div onclick="switchLocation('siracha')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
-                    <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
-                        <span class="text-sm font-bold text-heading">📍 อ.ศรีราชา (Si Racha)</span>
-                        <span id="comp-siracha-label" class="text-xs px-2 py-0.5 rounded bg-slate-300 text-slate-700 font-bold">กำลังโหลด</span>
-                    </div>
-                    <div class="flex items-center justify-around py-2">
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ดัชนี AQI</p>
-                            <span id="comp-siracha-aqi" class="text-2xl font-black text-heading">0</span>
-                        </div>
-                        <div class="w-px h-8 bg-slate-400/30"></div>
-                        <div class="text-center">
-                            <p class="text-[10px] font-bold text-muted mb-0.5">ฝุ่น PM2.5</p>
-                            <span id="comp-siracha-pm25" class="text-2xl font-black text-teal-600">0 <span class="text-xs font-normal text-muted">µg</span></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 🔮 พยากรณ์อากาศล่วงหน้า 3 วัน -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
-                <i class="fa-solid fa-calendar-days text-indigo-600 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-heading">พยากรณ์อากาศล่วงหน้า 3 วัน (<span id="forecast-location-name">อ.เมืองชลบุรี</span>)</h2>
-            </div>
-            <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <p class="text-center text-sm text-muted font-bold col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
-            </div>
-        </div>
-
-        <!-- 📈 Chart Section -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 border-b border-slate-400/30 pb-3">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
-                    <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
-                </div>
-                <div class="flex items-center gap-4 text-xs font-bold">
-                    <span class="flex items-center gap-1.5 text-indigo-400">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
-                    </span>
-                    <span class="flex items-center gap-1.5 text-rose-400">
-                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
-                    </span>
-                </div>
-            </div>
-            <div class="relative w-full h-72 md:h-80">
-                <canvas id="historyChart"></canvas>
-            </div>
-        </div>
-    </main>
-
-    <!-- 📢 Unified Details Modal -->
-    <div id="info-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-        <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">
-                ✕
-            </button>
-
-            <!-- Dynamic Header -->
-            <div class="flex items-center gap-3 mb-4 border-b border-slate-500/30 pb-3">
-                <div id="modal-icon-bg" class="bg-indigo-600 text-white p-2.5 rounded-xl">
-                    <i id="modal-icon" class="fa-solid fa-wind text-xl"></i>
-                </div>
-                <div>
-                    <h2 id="modal-title" class="text-lg font-bold text-heading">หัวข้อ</h2>
-                    <p id="modal-subtitle" class="text-xs text-indigo-500 font-semibold">คำอธิบาย</p>
-                </div>
-            </div>
-
-            <!-- Dynamic Description -->
-            <p id="modal-description" class="text-xs text-muted leading-relaxed mb-4">
-                รายละเอียด...
-            </p>
-
-            <!-- Dynamic Content -->
-            <div id="modal-body-content" class="space-y-2.5 mb-6 text-xs">
-            </div>
-
-            <div class="text-center pt-2">
-                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">
-                    เข้าใจแล้ว ปิดหน้าต่างนี้
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation -->
-    <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
-        <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
-            C-TECH Student 🎓
-        </div>
-        <svg id="mascot-svg" width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
-            <g class="mascot-legs">
-                <line x1="40" y1="95" x2="35" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-left"/>
-                <ellipse cx="32" cy="127" rx="8" ry="4" fill="#0f172a"/>
-                <line x1="60" y1="95" x2="65" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-right"/>
-                <ellipse cx="68" cy="127" rx="8" ry="4" fill="#0f172a"/>
-            </g>
-            <path d="M 25 45 L 75 45 L 70 95 L 30 95 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-            <polygon points="50,45 46,50 47,82 50,87 53,82 54,50" fill="#0f172a"/>
-            <rect x="58" y="55" width="10" height="12" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
-            <circle cx="63" cy="61" r="3" fill="#e11d48"/>
-            <circle cx="50" cy="28" r="18" fill="#fde047"/>
-            <path d="M 32 26 C 32 10, 68 10, 68 26 C 62 16, 38 16, 32 26 Z" fill="#1e1b4b"/>
-            <circle cx="43" cy="28" r="2" fill="#0f172a"/>
-            <circle cx="57" cy="28" r="2" fill="#0f172a"/>
-            <path d="M 46 34 Q 50 38 54 34" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-    </div>
-
-    <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-4 text-xs font-semibold z-10">
-        <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ C-TECH</p>
-    </footer>
-
-    <script>
-        let currentLocation = 'main';
-        let myChart = null;
-
-        const locationNames = {
-            'main': 'อ.เมืองชลบุรี',
-            'pattaya': 'เมืองพัทยา (Pattaya)',
-            'siracha': 'อ.ศรีราชา (Si Racha)'
-        };
-
-        function getAqiColorClass(aqi) {
-            if (aqi <= 50) {
-                return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
-            } else if (aqi <= 100) {
-                return { text: 'text-amber-400', bg: 'bg-amber-400' };
-            } else if (aqi <= 150) {
-                return { text: 'text-orange-500', bg: 'bg-orange-500' };
-            } else if (aqi <= 200) {
-                return { text: 'text-red-500', bg: 'bg-red-500' };
-            } else if (aqi <= 300) {
-                return { text: 'text-purple-500', bg: 'bg-purple-500' };
-            } else {
-                return { text: 'text-rose-900', bg: 'bg-rose-900' };
-            }
-        }
-
-        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ UV */
-        function getUvColorClass(uv) {
-            if (uv <= 2) {
-                return { text: 'text-emerald-500' };
-            } else if (uv <= 5) {
-                return { text: 'text-amber-400' };
-            } else if (uv <= 7) {
-                return { text: 'text-orange-500' };
-            } else if (uv <= 10) {
-                return { text: 'text-red-500' };
-            } else {
-                return { text: 'text-purple-500' };
-            }
-        }
-
-        function openModal(type) {
-            const modal = document.getElementById('info-modal');
-            const iconBg = document.getElementById('modal-icon-bg');
-            const icon = document.getElementById('modal-icon');
-            const title = document.getElementById('modal-title');
-            const subtitle = document.getElementById('modal-subtitle');
-            const desc = document.getElementById('modal-description');
-            const body = document.getElementById('modal-body-content');
-
-            if (type === 'aqi') {
-                iconBg.className = "bg-indigo-600 text-white p-2.5 rounded-xl";
-                icon.className = "fa-solid fa-wind text-xl";
-                title.innerText = "ดัชนีคุณภาพอากาศ AQI คืออะไร?";
-                subtitle.innerText = "Air Quality Index (US-EPA Standard)";
-                desc.innerHTML = "<b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศที่คำนวณจากมลพิษรวม เช่น PM2.5, PM10 และก๊าซพิษ โดยแบ่งเป็น 6 ระดับสีสากล:";
-                body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 50</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 คุณภาพอากาศดีมาก (Good)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ไม่มีผลกระทบต่อสุขภาพ เหมาะแก่การทำกิจกรรมกลางแจ้งเต็มที่</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป แต่ผู้ป่วยโรคทางเดินหายใจควรสังเกตอาการ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 150</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 มีผลต่อกลุ่มเสี่ยง (Unhealthy for Sensitive Groups)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เด็ก, ผู้สูงอายุ และผู้ป่วยควรเริ่มสวมหน้ากาก และลดกิจกรรมกลางแจ้ง</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบทุกคน <b>ควรสวมหน้ากาก N95</b> เมื่อออกนอกอาคาร</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">201 - 300</span>
-                        <div>
-                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 มีผลอย่างมาก (Very Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อันตรายร้ายแรง งดกิจกรรมกลางแจ้งทุกชนิด เปิดเครื่องฟอกอากาศ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-800 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-rose-900 text-white font-bold text-[11px] whitespace-nowrap">301+</span>
-                        <div>
-                            <h4 class="font-bold text-rose-500">🟤 อันตรายร้ายแรง (Hazardous)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ภาวะฉุกเฉินทางสุขภาพ ห้ามออกจากอาคารโดยเด็ดขาด</p>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'pm25') {
-                iconBg.className = "bg-teal-600 text-white p-2.5 rounded-xl";
-                icon.className = "fa-solid fa-mask-face text-xl";
-                title.innerText = "ดัชนีฝุ่นละออง PM2.5 คืออะไร?";
-                subtitle.innerText = "PM2.5 Standard (กรมควบคุมมลพิษ ประเทศไทย)";
-                desc.innerHTML = "<b>PM2.5</b> คือฝุ่นละอองขนาดเล็กไม่เกิน 2.5 ไมครอน สามารถเล็ดลอดเข้าสู่ปอดและกระแสเลือดได้โดยตรง กรมควบคุมมลพิษได้กำหนดเกณฑ์มาตรฐานใหม่ไว้ดังนี้:";
-                body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 15.0</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🔵 ดีมาก (0 - 15.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อากาศสะอาด สดชื่น เหมาะแก่การทำกิจกรรมกลางแจ้งทุกประเภท</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-green-500/15 border border-green-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-green-500 text-white font-bold text-[11px] whitespace-nowrap">15.1 - 25.0</span>
-                        <div>
-                            <h4 class="font-bold text-green-600 dark:text-green-400">🟢 ดี (15.1 - 25.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">25.1 - 37.5</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (25.1 - 37.5 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีฝุ่นสะสม ผู้ป่วยโรคภูมิแพ้หรือทางเดินหายใจควรหลีกเลี่ยงการทำกิจกรรมหนักกลางแจ้ง</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">37.6 - 75.0</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลต่อสุขภาพ (37.6 - 75.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบต่อร่างกาย <b>ควรสวมหน้ากากอนามัย N95</b> และลดระยะเวลาทำกิจกรรมกลางแจ้ง</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">75.1+</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพอย่างมาก (75.1+ µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ระดับอันตรายวิกฤต! สวมหน้ากาก N95 ตลอดเวลา หลีกเลี่ยงออกนอกอาคาร และใช้อุปกรณ์ฟอกอากาศ</p>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'uv') {
-                iconBg.className = "bg-amber-500 text-white p-2.5 rounded-xl";
-                icon.className = "fa-solid fa-sun text-xl";
-                title.innerText = "ดัชนีรังสี UV คืออะไร?";
-                subtitle.innerText = "UV Index Standard (WHO - องค์กรอนามัยโลก)";
-                desc.innerHTML = "<b>ดัชนีรังสี UV (Ultraviolet Index)</b> คือค่าชี้วัดความเข้มข้นของรังสีอัลตราไวโอเลตจากดวงอาทิตย์ที่ตกกระทบผิวโลก เพื่อเตือนภัยอันตรายต่อผิวหนังและดวงตา แบ่งเป็น 5 ระดับ:";
-                body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 2</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ / อ่อนมาก (Low)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ปลอดภัยสูง สามารถทำกิจกรรมกลางแจ้งได้ตามปกติโดยไม่ต้องป้องกันพิเศษ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">3 - 5</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ควรสวมแว่นกันแดด สวมหมวก และหลบแดดในที่ร่มช่วงเที่ยงวัน</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">6 - 7</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 สูง (High)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>ทาครีมกันแดด SPF 30+</b> สวมเสื้อแขนยาว หมวกปีกกว้าง และเลี่ยงอยู่กลางแดดจัดเกิน 20 นาที</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">8 - 10</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 สูงมาก (Very High)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ผิวหนังอาจแสบไหม้ได้เร็ว <b>หลีกเลี่ยงการออกแดดช่วง 10:00 - 16:00 น.</b> และทากันแดดซ้ำทุก 2 ชม.</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">11+</span>
-                        <div>
-                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/สุดขีด (Extreme)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> ผิวไหม้แดดได้ภายในไม่กี่นาที งดออกแดดจัดและสวมอุปกรณ์ป้องกันเต็มรูปแบบ</p>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'heat') {
-                iconBg.className = "bg-amber-600 text-white p-2.5 rounded-xl";
-                icon.className = "fa-solid fa-fire-flame-curved text-xl";
-                title.innerText = "ดัชนีความร้อน (Heat Index) คืออะไร?";
-                subtitle.innerText = "Heat Index Standard (กรมอุตุนิยมวิทยา)";
-                desc.innerHTML = "<b>ดัชนีความร้อน (Heat Index)</b> คืออุณหภูมิที่ร่างกายรู้สึกจริง โดยคำนวณจาก <b>อุณหภูมิอากาศร่วมกับความชื้นสัมพัทธ์</b> ซึ่งความชื้นที่สูงจะทำให้เหงื่อระเหยยาก ร่างกายจึงรู้สึกร้อนกว่าอุณหภูมิที่วัดได้จริง:";
-                body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">27 - 32 °C</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 เฝ้าระวัง (Caution)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อาจรู้สึกอ่อนเพลียเมื่อทำกิจกรรมกลางแจ้งนานๆ ควรดื่มน้ำให้เพียงพอ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">32 - 41 °C</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 เตือนภัย (Extreme Caution)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เสี่ยงเกิดอาการตะคริวจากความร้อน เพลียแดด หลีกเลี่ยงการตากแดดนานเกินไป</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">41 - 54 °C</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 อันตราย (Danger)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เกิดตะคริวและเพลียแดดได้ง่าย <b>เสี่ยงต่อการเกิดโรคลมแดด (Heatstroke)</b> หากทำกิจกรรมกลางแจ้งนาน</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">54 °C ขึ้นไป</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 อันตรายมาก (Extreme Danger)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> มีโอกาสเกิดโรคลมแดด (Heatstroke) สูงมาก งดกิจกรรมกลางแจ้งและอยู่ในที่ร่มร่มเย็น</p>
-                        </div>
-                    </div>
-                `;
-            }
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('info-modal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function switchLocation(locationKey) {
-            currentLocation = locationKey;
-            document.querySelectorAll('.location-tab').forEach(tab => tab.classList.remove('active'));
-            const activeTab = document.getElementById(`tab-${locationKey}`);
-            if (activeTab) activeTab.classList.add('active');
-
-            const name = locationNames[locationKey] || 'ชลบุรี';
-            document.getElementById('header-location-name').innerText = name;
-            document.getElementById('mascot-location-name').innerText = name;
-            document.getElementById('forecast-location-name').innerText = name;
-            document.getElementById('chart-location-name').innerText = name;
-
-            fetchWeatherData();
-        }
-
-        function changeTheme(themeName) {
-            const body = document.getElementById('dynamic-bg');
-            localStorage.setItem('ctech_theme', themeName);
-            body.classList.remove('theme-dark', 'theme-light', 'theme-cyberpunk');
-
-            if (themeName === 'auto') {
-                applyAutoTheme();
-            } else {
-                body.classList.add(`theme-${themeName}`);
-                updateSkyElement(themeName);
-            }
-
-            if (myChart) {
-                const textColor = themeName === 'light' ? '#0f172a' : '#94a3b8';
-                const gridColor = themeName === 'light' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
-                
-                myChart.options.scales.x.ticks.color = textColor;
-                myChart.options.scales.yAQI.ticks.color = textColor;
-                myChart.options.scales.yTemp.ticks.color = textColor;
-                myChart.options.scales.x.grid.color = gridColor;
-                myChart.options.scales.yAQI.grid.color = gridColor;
-                myChart.update();
-            }
-        }
-
-        function applyAutoTheme() {
-            const now = new Date();
-            const hours = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
-            const isDayTime = hours >= 6 && hours < 18;
-            const body = document.getElementById('dynamic-bg');
-            body.classList.remove('theme-dark', 'theme-light', 'theme-cyberpunk');
-            
-            if (isDayTime) {
-                body.classList.add('theme-light');
-                updateSkyElement('light');
-            } else {
-                body.classList.add('theme-dark');
-                updateSkyElement('dark');
-            }
-        }
-
-        function updateSkyElement(mode) {
-            const skyElement = document.getElementById('sky-element');
-            if (mode === 'light') {
-                skyElement.innerHTML = `<i class="fa-solid fa-sun text-amber-500 animate-spin-slow drop-shadow-[0_0_15px_rgba(245,158,11,0.4)]"></i>`;
-            } else {
-                skyElement.innerHTML = `
-                    <div class="relative flex items-center justify-center">
-                        <i class="fa-solid fa-moon text-amber-200 drop-shadow-[0_0_15px_rgba(253,230,138,0.6)]"></i>
-                        <i class="fa-solid fa-star text-sm text-amber-100 absolute -top-3 -left-6 animate-pulse"></i>
-                        <i class="fa-solid fa-star text-xs text-sky-200 absolute top-2 -right-6 animate-pulse" style="animation-delay: 0.5s;"></i>
-                    </div>
-                `;
-            }
-        }
-
-        function initTheme() {
-            const savedTheme = localStorage.getItem('ctech_theme') || 'dark';
-            document.getElementById('theme-select').value = savedTheme;
-            changeTheme(savedTheme);
-        }
-
-        function updateMascotAssistant(data) {
-            const avatar = document.getElementById('mascot-avatar');
-            const speech = document.getElementById('mascot-speech');
-            const badge = document.getElementById('mascot-status-badge');
-            const locName = locationNames[currentLocation] || 'พื้นที่นี้';
-
-            if (data.isRaining) {
-                avatar.innerText = "🌧️";
-                speech.innerHTML = `"ฝุ่นน้อยลงเพราะฝนตกใน<b>${locName}</b>ครับพี่ๆ! ☔ <b>อย่าลืมพกร่มก่อนออกจากตึกเรียน</b> และขับขี่มอเตอร์ไซค์ระวังถนนลื่นด้วยนะครับ!"`;
-                badge.innerText = "เตือนฝนตก";
-                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-sky-500/20 text-sky-600 border border-sky-500/30";
-            } else if (data.pm25 > 55) {
-                avatar.innerText = "😷";
-                speech.innerHTML = `"ค่าฝุ่น PM2.5 ใน<b>${locName}</b> สูงถึง <b class='text-red-500'>${data.pm25} µg/m³</b> อันตรายต่อสุขภาพครับ! 🔴 <b>สวมหน้ากากอนามัย N95 ทันที</b> และหลีกเลี่ยงกิจกรรมกลางแจ้งชั่วคราวนะครับ"`;
-                badge.innerText = "ฝุ่นเตือนภัยวิกฤต";
-                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-red-500/20 text-red-600 border border-red-500/30";
-            } else if (data.uvIndex >= 8) {
-                avatar.innerText = "🕶️";
-                speech.innerHTML = `"วันนี้แดดใน<b>${locName}</b>จัดมาก! ดัชนี UV พุ่งสูงระดับ <b class='text-amber-600'>${data.uvIndex} (${data.uvLabel})</b> ☀️ <b>ทาครีมกันแดด หรือเลี่ยงเดินตากแดดนานเกิน 15 นาที</b> นะครับ"`;
-                badge.innerText = "แดดจัด UV สูง";
-                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-600 border border-amber-500/30";
-            } else if (data.heatIndex >= 42) {
-                avatar.innerText = "🥵";
-                speech.innerHTML = `"อากาศใน<b>${locName}</b>ร้อนอบอ้าวมาก รู้สึกร้อนเหมือน <b class='text-orange-600'>${data.heatIndex}°C</b>! 🔥 <b>จิบน้ำบ่อยๆ เพื่อป้องกันโรคลมแดด (Heatstroke)</b> นะครับชาว C-TECH"`;
-                badge.innerText = "ดัชนีความร้อนสูง";
-                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-orange-500/20 text-orange-600 border border-orange-500/30";
-            } else {
-                avatar.innerText = "😊";
-                speech.innerHTML = `"สภาพอากาศใน<b>${locName}</b>วันนี้อยู่ในเกณฑ์ดีครับ! 🍃 คุณภาพอากาศ <b>${data.aqiLabel}</b> เหมาะแก่การเรียนรู้และทำกิจกรรมกลางแจ้งเต็มที่เลยครับ!"`;
-                badge.innerText = "อากาศสดใส";
-                badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-600 border border-emerald-500/30";
-            }
-        }
-
-        function toggleRainEffect(isRaining) {
-            const rainContainer = document.getElementById('rain-container');
-            const rainAlert = document.getElementById('rain-alert');
-            if (isRaining) {
-                if (rainContainer.children.length === 0) {
-                    for (let i = 0; i < 40; i++) {
-                        const drop = document.createElement('div');
-                        drop.className = 'rain-drop';
-                        drop.style.left = `${Math.random() * 100}vw`;
-                        drop.style.animationDuration = `${0.5 + Math.random() * 0.5}s`;
-                        drop.style.animationDelay = `${Math.random() * 2}s`;
-                        rainContainer.appendChild(drop);
-                    }
-                }
-                rainContainer.classList.remove('hidden');
-                if (rainAlert) rainAlert.classList.remove('hidden');
-            } else {
-                rainContainer.classList.add('hidden');
-                if (rainAlert) rainAlert.classList.add('hidden');
-            }
-        }
-
-        function updateChart(dataList) {
-            if (!dataList || dataList.length === 0) return;
-            const labels = dataList.map(d => d.time);
-            const aqiData = dataList.map(d => d.aqi);
-            const tempData = dataList.map(d => d.temp);
-            const ctx = document.getElementById('historyChart').getContext('2d');
-
-            const currentTheme = localStorage.getItem('ctech_theme') || 'dark';
-            const textColor = currentTheme === 'light' ? '#0f172a' : '#94a3b8';
-            const gridColor = currentTheme === 'light' ? '#e2e8f0' : 'rgba(255, 255, 255, 0.08)';
-
-            const gradientAQI = ctx.createLinearGradient(0, 0, 0, 300);
-            gradientAQI.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-            gradientAQI.addColorStop(1, 'rgba(99, 102, 241, 0.0)');
-
-            const gradientTemp = ctx.createLinearGradient(0, 0, 0, 300);
-            gradientTemp.addColorStop(0, 'rgba(244, 63, 94, 0.25)');
-            gradientTemp.addColorStop(1, 'rgba(244, 63, 94, 0.0)');
-
-            if (myChart) {
-                myChart.data.labels = labels;
-                myChart.data.datasets[0].data = aqiData;
-                myChart.data.datasets[1].data = tempData;
-                myChart.options.scales.x.ticks.color = textColor;
-                myChart.options.scales.yAQI.ticks.color = textColor;
-                myChart.options.scales.yTemp.ticks.color = textColor;
-                myChart.options.scales.x.grid.color = gridColor;
-                myChart.options.scales.yAQI.grid.color = gridColor;
-                myChart.update();
-            } else {
-                myChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'ดัชนี AQI',
-                                data: aqiData,
-                                yAxisID: 'yAQI',
-                                borderColor: '#6366f1',
-                                backgroundColor: gradientAQI,
-                                borderWidth: 3,
-                                pointBackgroundColor: '#818cf8',
-                                pointBorderColor: '#ffffff',
-                                pointHoverRadius: 6,
-                                fill: true,
-                                tension: 0.35
-                            },
-                            {
-                                label: 'อุณหภูมิ (°C)',
-                                data: tempData,
-                                yAxisID: 'yTemp',
-                                borderColor: '#f43f5e',
-                                backgroundColor: gradientTemp,
-                                borderWidth: 2.5,
-                                borderDash: [4, 4],
-                                pointBackgroundColor: '#fb7185',
-                                pointBorderColor: '#ffffff',
-                                pointHoverRadius: 6,
-                                fill: true,
-                                tension: 0.35
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                titleFont: { size: 12, weight: 'bold' },
-                                bodyFont: { size: 12 },
-                                padding: 10,
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.dataset.label || '';
-                                        if (label) label += ': ';
-                                        if (context.parsed.y !== null) {
-                                            label += context.parsed.y + (context.dataset.yAxisID === 'yTemp' ? ' °C' : '');
-                                        }
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: {
-                                ticks: { color: textColor, font: { size: 10, weight: 'bold' } },
-                                grid: { color: gridColor, drawBorder: false }
-                            },
-                            yAQI: {
-                                type: 'linear',
-                                display: true,
-                                position: 'left',
-                                title: { display: true, text: 'ดัชนี AQI', color: '#6366f1', font: { size: 11, weight: 'bold' } },
-                                ticks: { color: textColor, font: { size: 10 } },
-                                grid: { color: gridColor, drawBorder: false },
-                                grace: '10%'
-                            },
-                            yTemp: {
-                                type: 'linear',
-                                display: true,
-                                position: 'right',
-                                title: { display: true, text: 'อุณหภูมิ (°C)', color: '#f43f5e', font: { size: 11, weight: 'bold' } },
-                                ticks: { color: textColor, font: { size: 10 } },
-                                grid: { drawOnChartArea: false },
-                                grace: '10%'
-                            }
-                        }
-                    }
-                });
-            }
-        }
-
-        function renderForecast(forecastList) {
-            const container = document.getElementById('forecast-container');
-            if (!forecastList || forecastList.length === 0) {
-                container.innerHTML = `<p class="text-center text-sm text-muted font-bold col-span-3 py-4">ไม่มีข้อมูลพยากรณ์</p>`;
-                return;
-            }
-
-            container.innerHTML = forecastList.map(item => `
-                <div class="inner-card-bg border rounded-xl p-3 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-bold text-heading">${item.day}</p>
-                        <p class="text-[10px] text-muted font-bold capitalize">${item.desc}</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <img src="https://openweathermap.org/img/wn/${item.icon}.png" alt="weather" class="w-10 h-10">
-                        <div class="text-right">
-                            <span class="text-sm font-bold text-heading">${item.temp}°C</span>
-                            <p class="text-[10px] font-bold text-sky-500">💧 ${item.humidity}%</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        async function fetchWeatherData() {
-            try {
-                const res = await fetch(`/api/weather?location=${currentLocation}`);
-                const data = await res.json();
-
-                // 🟢 อัปเดตตัวเลข AQI ข้อความ และสี (Dynamic Color Fix)
-                const aqiValElem = document.getElementById('aqi-val');
-                const aqiLabelElem = document.getElementById('aqi-label');
-                const aqiBarElem = document.getElementById('aqi-bar');
-
-                aqiValElem.innerText = data.aqi;
-                aqiLabelElem.innerText = data.aqiLabel;
-                aqiBarElem.style.width = `${Math.min(100, (data.aqi / 200) * 100)}%`;
-
-                const colorObj = getAqiColorClass(data.aqi);
-                aqiValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${colorObj.text}`;
-                aqiLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${colorObj.text}`;
-                aqiBarElem.className = `h-full transition-all duration-500 ${colorObj.bg}`;
-
-                // 🟢 อัปเดตตัวเลข UV ข้อความ และสี (Dynamic Color Fix)
-                const uvValElem = document.getElementById('uv-val');
-                const uvLabelElem = document.getElementById('uv-label');
-                uvValElem.innerText = data.uvIndex;
-                uvLabelElem.innerText = data.uvLabel;
-                
-                const uvColorObj = getUvColorClass(data.uvIndex);
-                uvValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${uvColorObj.text}`;
-                uvLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${uvColorObj.text}`;
-
-                document.getElementById('pm25-val').innerText = data.pm25;
-
-                document.getElementById('temp-val').innerText = data.temp;
-                document.getElementById('humidity-val').innerText = data.humidity;
-                document.getElementById('weather-desc').innerText = data.weatherDesc;
-
-                document.getElementById('heat-val').innerText = data.heatIndex;
-                document.getElementById('heat-warning').innerText = data.heatWarning;
-                document.getElementById('update-time').innerText = data.updateTime;
-
-                // Comparison Cards Mapping
-                if (data.comparison) {
-                    if (data.comparison.main) {
-                        document.getElementById('comp-main-aqi').innerText = data.comparison.main.aqi;
-                        document.getElementById('comp-main-pm25').innerText = `${data.comparison.main.pm25} µg`;
-                        document.getElementById('comp-main-label').innerText = data.comparison.main.label;
-                    }
-                    if (data.comparison.pattaya) {
-                        document.getElementById('comp-pattaya-aqi').innerText = data.comparison.pattaya.aqi;
-                        document.getElementById('comp-pattaya-pm25').innerText = `${data.comparison.pattaya.pm25} µg`;
-                        document.getElementById('comp-pattaya-label').innerText = data.comparison.pattaya.label;
-                    }
-                    if (data.comparison.siracha) {
-                        document.getElementById('comp-siracha-aqi').innerText = data.comparison.siracha.aqi;
-                        document.getElementById('comp-siracha-pm25').innerText = `${data.comparison.siracha.pm25} µg`;
-                        document.getElementById('comp-siracha-label').innerText = data.comparison.siracha.label;
-                    }
-                }
-
-                updateMascotAssistant(data);
-                toggleRainEffect(data.isRaining);
-                renderForecast(data.forecast);
-                updateChart(data.history);
-
-            } catch (err) {
-                console.error("❌ ไม่สามารถดึงข้อมูล Weather API ได้:", err);
-            }
-        }
-
-        initTheme();
-        fetchWeatherData();
-        setInterval(fetchWeatherData, 300000); // Auto-refresh ทุก 5 นาที
-    </script>
-</body>
-</html>
+            <div onclick="openModal('heat')" class="card-bg rounded-2xl p-4 border shadow-xl flex flex-col justify-be

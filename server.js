@@ -1,4 +1,4 @@
-Require('dotenv').config();
+require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
 const express = require('express'); 
@@ -44,7 +44,6 @@ app.get('/api/weather', (req, res) => {
     const loc = req.query.location || 'main';
     const targetData = storeData[loc] || storeData.main;
 
-    // สร้างข้อมูล Comparison และ History ส่งกลับไปให้ Frontend
     const responseData = {
         ...targetData,
         comparison: {
@@ -123,7 +122,7 @@ function getHeatIndexWarning(HI_C) {
     return { text: "อันตรายมาก 🔴", color: "#c0392b" };
 }
 
-// ☀️ ฟังก์ชันคำนวณรังสี UV ตามเวลาจริงแม่นยำ (คำนวณตามเวลาไทย GMT+7)
+// ☀️ ฟังก์ชันคำนวณรังสี UV ตามเวลาจริงแม่นยำ (เวลาประเทศไทย GMT+7)
 function calculateSmartUVIndex(clouds = 0) {
     const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
 
@@ -132,7 +131,7 @@ function calculateSmartUVIndex(clouds = 0) {
         return { index: 0, label: "ต่ำ 🟢" };
     }
 
-    // 2. เช้าตรู่ (06:00 - 08:59 น.) -> UV = 0 ถึง 2
+    // 2. เช้าตรู่ (06:00 - 08:59 น.) -> UV = 1 ถึง 2
     if (currentHour >= 6 && currentHour < 9) {
         return { index: 1, label: "ต่ำ 🟢" };
     }
@@ -199,23 +198,10 @@ async function fetchCityData(key) {
         const weatherId = weatherRes.data.weather[0].id;
         const clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
 
-        // ☀️ คำนวณ UV Index ใหม่ให้ตรงเวลาจริง
-        let uvIndex = 0;
-        let uvLabel = "ต่ำ 🟢";
-        try {
-            const uvRes = await axios.get(`https://api.openweathermap.org/data/2.5/uvi?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}`);
-            if (uvRes.data && uvRes.data.value !== undefined) {
-                uvIndex = Math.round(uvRes.data.value);
-                uvLabel = uvIndex >= 11 ? "สุดขีด 🟣" : uvIndex >= 8 ? "สูงมาก 🔴" : uvIndex >= 6 ? "สูง 🟠" : uvIndex >= 3 ? "ปานกลาง 🟡" : "ต่ำ 🟢";
-            } else {
-                throw new Error("Invalid UV API response");
-            }
-        } catch (uvErr) {
-            // ใช้ฟังก์ชัน smart fallback คำนวณตามเวลาประเทศไทย
-            const calculatedUV = calculateSmartUVIndex(clouds);
-            uvIndex = calculatedUV.index;
-            uvLabel = calculatedUV.label;
-        }
+        // ☀️ คำนวณ UV Index ใหม่ตามเวลาจริง
+        const calculatedUV = calculateSmartUVIndex(clouds);
+        let uvIndex = calculatedUV.index;
+        let uvLabel = calculatedUV.label;
 
         // Forecast 3 วัน
         const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
@@ -235,6 +221,98 @@ async function fetchCityData(key) {
                     desc: item.weather[0].description,
                     icon: item.weather[0].icon
                 });
+                checkedDates.add(itemDateNum);
+                if (dailyForecast.length >= 3) break;
+            }
+        }
+
+        const heatIndexC = calculateHeatIndex(temp, humidity);
+        const heatWarning = getHeatIndexWarning(heatIndexC);
+        const hasRain = (weatherDesc.includes('ฝน') || (weatherId >= 300 && weatherId < 600)) && humidity >= 75;
+        const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
+
+        // กราฟย้อนหลัง (History)
+        const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+        let history = storeData[key].history || [];
+        if (history.length === 0 || history[history.length - 1].time !== timeLabel) {
+            history.push({ time: timeLabel, aqi: currentAQI, temp: Math.round(temp) });
+        }
+        if (history.length > 12) history.shift();
+
+        // บันทึกลง Store ตาม Key เมือง
+        storeData[key] = {
+            aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
+            weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
+            uvIndex: uvIndex, uvLabel: uvLabel, isRaining: hasRain, updateTime: localTimeFormatted,
+            forecast: dailyForecast, history: history
+        };
+
+    } catch (err) {
+        console.error(`❌ ดึงข้อมูล ${locConfig.name} ขัดข้อง:`, err.message);
+    }
+}
+
+async function checkAirAndWeatherAll(isHourlyReport = false) {
+    await fetchCityData('main');
+    await fetchCityData('pattaya');
+    await fetchCityData('siracha');
+
+    // แจ้งเตือน Telegram ฝุ่นวิกฤต (ใช้จุดหลัก อ.เมืองชลบุรี)
+    const mainData = storeData.main;
+    let currentAlertLevel = "Safe";
+    if (mainData.pm25 > 55) currentAlertLevel = "Danger";
+    else if (mainData.pm25 > 35) currentAlertLevel = "Warning";
+
+    if (currentAlertLevel !== lastPM25AlertLevel && currentAlertLevel !== "Safe") {
+        lastPM25AlertLevel = currentAlertLevel;
+        let alertMsg = `🚨 <b>[แจ้งเตือนด่วน! วิกฤตฝุ่น PM2.5 เกินมาตรฐาน]</b> 🚨\n`;
+        alertMsg += `📍 พิกัดสถานี: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
+        if (currentAlertLevel === "Danger") {
+            alertMsg += `🔴 <b>ระดับอันตรายสูงสุด: ${mainData.pm25} µg/m³</b>\n`;
+            alertMsg += `⚠️ <i>คำแนะนำ: ดัชนีมลพิษสูงเกินเกณฑ์ความปลอดภัยอย่างมาก หลีกเลี่ยงกิจกรรมกลางแจ้ง และสวมหน้ากากอนามัยทันที!</i>\n`;
+        } else {
+            alertMsg += `🟡 <b>ระดับเริ่มมีผลกระทบต่อสุขภาพ: ${mainData.pm25} µg/m³</b>\n`;
+            alertMsg += `⚠️ <i>คำแนะนำ: ปริมาณฝุ่นเริ่มหนาแน่น นักศึกษาและกลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</i>\n`;
+        }
+        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctech-weather-aqi.onrender.com/`;
+        await sendTelegramAlert(alertMsg);
+    } else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
+        lastPM25AlertLevel = "Safe";
+        console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
+    }
+
+    // สรุป รายชั่วโมง
+    if (isHourlyReport) {
+        let themeColor = mainData.aqi <= 25 ? "#2980b9" : mainData.aqi <= 50 ? "#2ecc71" : mainData.aqi <= 100 ? "#f1c40f" : "#e74c3c";
+        const chartConfig = {
+            type: 'radialGauge',
+            data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, label: 'AQI Index' }] },
+            options: {
+                title: { display: true, text: `🌤️ C-TECH WEATHER REPORT (AQI: ${mainData.aqi})`, fontColor: '#ffffff', fontSize: 22 },
+                domain: [0, 200], trackColor: '#34495e', centerPercentage: 70,
+                centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 50, subtext: mainData.aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
+            }
+        };
+        const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+
+        let textCaption = `<b>🌤️ C-TECH WEATHER REPORT</b>\n📍 สถานีตรวจวัด: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
+        textCaption += `🍃 คุณภาพอากาศ: <b>${mainData.aqiLabel}</b>\n😷 ดัชนีฝุ่นรวม AQI: <b>${mainData.aqi}</b>\n💨 ปริมาณฝุ่น PM2.5: <b>${mainData.pm25} µg/m³</b>\n`;
+        textCaption += `☀️ ดัชนีรังสี UV: <b>${mainData.uvIndex} (${mainData.uvLabel})</b>\n🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${mainData.temp} °C</b>\n💧 ความชื้นสัมพัทธ์: <b>${mainData.humidity} %</b>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n`;
+        if (mainData.isRaining) textCaption += `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเข้าตึกด่วน) 🌧️</b>\n`;
+        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctech-weather-aqi.onrender.com/`;
+
+        await sendTelegramPhoto(chartUrl, textCaption);
+    }
+}
+
+cron.schedule('1 * * * *', () => {
+    console.log('⏰ [Cron Job] ทำการอัปเดตข้อมูลสภาพอากาศทั้ง 3 เมือง...');
+    checkAirAndWeatherAll(true); 
+});
+
+checkAirAndWeatherAll(true);
+console.log('🚀 [Ready] บอทสภาพอากาศรองรับ 3 เมือง สแตนด์บาย...');
+         });
                 checkedDates.add(itemDateNum);
                 if (dailyForecast.length >= 3) break;
             }

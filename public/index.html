@@ -216,7 +216,7 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 1. AQI Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
+            <!-- 💡 1. AQI Card -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -253,7 +253,7 @@
                 </div>
             </div>
 
-            <!-- 💡 3. UV Card -->
+            <!-- 💡 3. UV Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
             <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -483,7 +483,6 @@
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
 
-        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (แก้ไขบั๊กสีเขียวขัดกับสีเหลือง) */
         function getAqiColorClass(aqi) {
             if (aqi <= 50) {
                 return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
@@ -497,6 +496,21 @@
                 return { text: 'text-purple-500', bg: 'bg-purple-500' };
             } else {
                 return { text: 'text-rose-900', bg: 'bg-rose-900' };
+            }
+        }
+
+        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ UV */
+        function getUvColorClass(uv) {
+            if (uv <= 2) {
+                return { text: 'text-emerald-500' };
+            } else if (uv <= 5) {
+                return { text: 'text-amber-400' };
+            } else if (uv <= 7) {
+                return { text: 'text-orange-500' };
+            } else if (uv <= 10) {
+                return { text: 'text-red-500' };
+            } else {
+                return { text: 'text-purple-500' };
             }
         }
 
@@ -612,7 +626,7 @@
                     <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
                         <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 2</span>
                         <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ (Low)</h4>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ / อ่อนมาก (Low)</h4>
                             <p class="text-muted text-[11px] mt-0.5">ปลอดภัยสูง สามารถทำกิจกรรมกลางแจ้งได้ตามปกติโดยไม่ต้องป้องกันพิเศษ</p>
                         </div>
                     </div>
@@ -640,7 +654,7 @@
                     <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
                         <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">11+</span>
                         <div>
-                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/อันตรายมาก (Extreme)</h4>
+                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/สุดขีด (Extreme)</h4>
                             <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> ผิวไหม้แดดได้ภายในไม่กี่นาที งดออกแดดจัดและสวมอุปกรณ์ป้องกันเต็มรูปแบบ</p>
                         </div>
                     </div>
@@ -988,17 +1002,22 @@
                 aqiLabelElem.innerText = data.aqiLabel;
                 aqiBarElem.style.width = `${Math.min(100, (data.aqi / 200) * 100)}%`;
 
-                // คำนวณ Class สีแบบ Dynamic
                 const colorObj = getAqiColorClass(data.aqi);
-                
-                // ล้างคลาสสีเดิมออกก่อนใส่คลาสสีใหม่
                 aqiValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${colorObj.text}`;
                 aqiLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${colorObj.text}`;
                 aqiBarElem.className = `h-full transition-all duration-500 ${colorObj.bg}`;
 
+                // 🟢 อัปเดตตัวเลข UV ข้อความ และสี (Dynamic Color Fix)
+                const uvValElem = document.getElementById('uv-val');
+                const uvLabelElem = document.getElementById('uv-label');
+                uvValElem.innerText = data.uvIndex;
+                uvLabelElem.innerText = data.uvLabel;
+                
+                const uvColorObj = getUvColorClass(data.uvIndex);
+                uvValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${uvColorObj.text}`;
+                uvLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${uvColorObj.text}`;
+
                 document.getElementById('pm25-val').innerText = data.pm25;
-                document.getElementById('uv-val').innerText = data.uvIndex;
-                document.getElementById('uv-label').innerText = data.uvLabel;
 
                 document.getElementById('temp-val').innerText = data.temp;
                 document.getElementById('humidity-val').innerText = data.humidity;

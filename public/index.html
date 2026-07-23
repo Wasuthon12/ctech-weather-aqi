@@ -216,7 +216,7 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 1. AQI Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
+            <!-- 💡 1. AQI Card -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -226,11 +226,11 @@
                     <i class="fa-solid fa-wind text-indigo-500 text-base"></i>
                 </div>
                 <div class="text-center py-3">
-                    <span id="aqi-val" class="text-5xl font-extrabold tracking-tight transition-colors duration-500">0</span>
-                    <p id="aqi-label" class="mt-1 text-xs font-bold transition-colors duration-500">กำลังโหลด...</p>
+                    <span id="aqi-val" class="text-5xl font-extrabold tracking-tight text-emerald-500">0</span>
+                    <p id="aqi-label" class="mt-1 text-xs font-bold text-emerald-600">กำลังโหลด...</p>
                 </div>
                 <div class="h-1.5 bg-slate-400/30 rounded-full overflow-hidden mt-2">
-                    <div id="aqi-bar" class="h-full transition-all duration-500" style="width: 0%"></div>
+                    <div id="aqi-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
@@ -317,4 +317,4 @@
         <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
                 <i class="fa-solid fa-layer-group text-indigo-600 text-lg"></i>
-                <h2 class="text-base font-bold tr
+                <h2 class="text-base font-bold tracking-wide text-heading">เปรียบเทียบดัชนีฝ

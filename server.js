@@ -2,7 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const cron = require('node-cron');
 const express = require('express'); 
-const path = require('path');       
+const path = require('path');        
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,9 +16,9 @@ let lastPM25AlertLevel = "Safe";
 
 // 📌 พิกัดสำหรับแต่ละเมือง (Chonburi, Pattaya, Si Racha)
 const LOCATIONS = {
-    main: { name: "อ.เมืองชลบุรี", city: "Chon Buri", state: "Chon Buri", owmQuery: "Chonburi,TH", lat: 13.3611, lon: 100.9847 },
-    pattaya: { name: "เมืองพัทยา (Pattaya)", city: "Pattaya", state: "Chon Buri", owmQuery: "Pattaya,TH", lat: 12.9236, lon: 100.8825 },
-    siracha: { name: "อ.ศรีราชา (Si Racha)", city: "Si Racha", state: "Chon Buri", owmQuery: "Si Racha,TH", lat: 13.1737, lon: 100.9311 }
+    main: { name: "อ.เมืองชลบุรี", owmQuery: "Chonburi,TH", lat: 13.3611, lon: 100.9847 },
+    pattaya: { name: "เมืองพัทยา (Pattaya)", owmQuery: "Pattaya,TH", lat: 12.9236, lon: 100.8825 },
+    siracha: { name: "อ.ศรีราชา (Si Racha)", owmQuery: "Si Racha,TH", lat: 13.1737, lon: 100.9311 }
 };
 
 // 📌 โครงสร้างเก็บข้อมูลแยกตามเมือง
@@ -164,11 +164,11 @@ function calculateSmartUVIndex(clouds = 0) {
 async function fetchCityData(key) {
     const locConfig = LOCATIONS[key];
     try {
-        // 1. IQAir API
+        // 1. IQAir API (ดึงข้อมูลผ่าน Latitude / Longitude เพื่อหลีกเลี่ยงปัญหาชื่อเมืองไม่ตรง)
         let currentAQI = 0;
         let currentPM25 = 0;
         try {
-            const iqRes = await axios.get(`https://api.airvisual.com/v2/city?city=${encodeURIComponent(locConfig.city)}&state=${encodeURIComponent(locConfig.state)}&country=Thailand&key=${IQAIR_KEY}`);
+            const iqRes = await axios.get(`https://api.airvisual.com/v2/nearest_city?lat=${locConfig.lat}&lon=${locConfig.lon}&key=${IQAIR_KEY}`);
             currentAQI = iqRes.data.data.current.pollution.aqius;
             
             if (iqRes.data.data.current.pollution.mainus === "p2") {
@@ -179,7 +179,7 @@ async function fetchCityData(key) {
                 currentPM25 = Math.round(currentAQI * 0.35); 
             }
         } catch (errIQ) {
-            console.log(`⚠️ IQAir ${locConfig.name} ขัดข้อง ใช้สถานีสำรอง/ค่าประมาณ`);
+            console.log(`⚠️ IQAir ${locConfig.name} ขัดข้อง (${errIQ.message}) - ใช้ค่าประมาณการสำรอง`);
             currentAQI = key === 'pattaya' ? 38 : key === 'siracha' ? 56 : 28;
             currentPM25 = key === 'pattaya' ? 13 : key === 'siracha' ? 20 : 7;
         }
@@ -228,7 +228,12 @@ async function fetchCityData(key) {
 
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
-        const hasRain = (weatherDesc.includes('ฝน') || (weatherId >= 300 && weatherId < 600)) && humidity >= 75;
+        
+        // 🌧️ ปรับปรุงเงื่อนไขเช็กฝน: ตรวจสอบปริมาณน้ำฝนจริง (rain volume) หรือ Weather Code ฝนปานกลาง/หนักขึ้นไป (500-531, 200-232)
+        const rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
+        const isRainCode = (weatherId >= 200 && weatherId <= 232) || (weatherId >= 500 && weatherId <= 531);
+        const hasRain = rainVolume > 0 || (isRainCode && humidity >= 80);
+
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
 
         // กราฟย้อนหลัง (History)

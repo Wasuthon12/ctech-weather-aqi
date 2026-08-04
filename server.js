@@ -310,10 +310,19 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
     }
 }
 
-cron.schedule('1 * * * *', () => {
-    console.log('⏰ [Cron Job] ทำการอัปเดตข้อมูลสภาพอากาศทั้ง 3 เมือง...');
-    checkAirAndWeatherAll(true); 
+// ⏰ รันดึงข้อมูลใหม่ทุกๆ 30 นาที
+cron.schedule('*/30 * * * *', () => {
+    // เช็กว่านาทีปัจจุบันคือนาทีที่ 0 (ต้นชั่วโมง) หรือไม่
+    const currentMinute = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getMinutes();
+    const isHourly = (currentMinute === 0);
+
+    console.log(`⏰ [Cron Job] อัปเดตข้อมูลสภาพอากาศ 3 เมือง (${isHourly ? 'ส่งรายงาน Telegram รายชั่วโมง' : 'อัปเดตระบบภายใน'})`);
+    
+    // ส่ง isHourly = true เฉพาะช่วงต้นชั่วโมง (เช่น 10:00, 11:00) 
+    // และส่ง isHourly = false สำหรับรอบครึ่งชั่วโมง (เช่น 10:30, 11:30)
+    checkAirAndWeatherAll(isHourly); 
 });
 
+// เริ่มต้นรันดึงข้อมูลครั้งแรกทันทีที่เปิดเซิร์ฟเวอร์
 checkAirAndWeatherAll(true);
 console.log('🚀 [Ready] บอทสภาพอากาศรองรับ 3 เมือง สแตนด์บาย...');

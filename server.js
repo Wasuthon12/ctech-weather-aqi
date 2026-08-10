@@ -279,7 +279,7 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
             alertMsg += `🟡 <b>ระดับเริ่มมีผลกระทบต่อสุขภาพ: ${mainData.pm25} µg/m³</b>\n`;
             alertMsg += `⚠️ <i>คำแนะนำ: ปริมาณฝุ่นเริ่มหนาแน่น นักศึกษาและกลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</i>\n`;
         }
-        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctech-weather-aqi.onrender.com/`;
+        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctc-weather-report.onrender.com/`;
         await sendTelegramAlert(alertMsg);
     } else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
         lastPM25AlertLevel = "Safe";
@@ -304,7 +304,7 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
         textCaption += `🍃 คุณภาพอากาศ: <b>${mainData.aqiLabel}</b>\n😷 ดัชนีฝุ่นรวม AQI: <b>${mainData.aqi}</b>\n💨 ปริมาณฝุ่น PM2.5: <b>${mainData.pm25} µg/m³</b>\n`;
         textCaption += `☀️ ดัชนีรังสี UV: <b>${mainData.uvIndex} (${mainData.uvLabel})</b>\n🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${mainData.temp} °C</b>\n💧 ความชื้นสัมพัทธ์: <b>${mainData.humidity} %</b>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n`;
         if (mainData.isRaining) textCaption += `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเข้าตึกด่วน) 🌧️</b>\n`;
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctech-weather-aqi.onrender.com/`;
+        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctc-weather-report.onrender.com/`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
     }

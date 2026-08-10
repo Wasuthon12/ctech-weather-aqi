@@ -124,8 +124,27 @@
     <header class="header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-indigo-600 p-2.5 rounded-lg text-white text-2xl shadow-lg shadow-indigo-500/30">
-                    <i class="fa-solid fa-cloud-sun"></i>
+                <!-- 🔴🔵 โลโก้ใหม่: รวมตราวิทยาลัยเทคนิคชลบุรี (CTC) เข้ากับระบบรายงานสภาพอากาศ -->
+                <div class="shadow-lg shadow-red-500/20 rounded-2xl overflow-hidden flex-shrink-0">
+                    <svg width="52" height="52" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="100" height="100" rx="22" fill="url(#ctc_logo_grad)"/>
+                      <!-- วงแหวนอะตอม (สัญลักษณ์เทคโนโลยี CTC) -->
+                      <ellipse cx="50" cy="52" rx="28" ry="9" stroke="#FFFFFF" stroke-width="3" opacity="0.4" transform="rotate(-30 50 52)"/>
+                      <ellipse cx="50" cy="52" rx="28" ry="9" stroke="#FFFFFF" stroke-width="3" opacity="0.4" transform="rotate(30 50 52)"/>
+                      <!-- สภาพอากาศ (พระอาทิตย์) -->
+                      <circle cx="38" cy="36" r="9" fill="#FFC107"/>
+                      <path d="M38 22V24M38 48V50M24 36H26M50 36H52M28 26L29.5 27.5M46.5 44.5L48 46M28 46L29.5 44.5M46.5 27.5L48 26" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/>
+                      <!-- สภาพอากาศ (ก้อนเมฆ) -->
+                      <path d="M42 58C38.5 58 35.5 55.2 35.5 51.5C35.5 48.2 37.8 45.4 41 45C42 40.5 45.8 37 51.5 37 C57.5 37 61.8 41.2 62.2 46.2C65.5 46.2 68.5 49 68.5 52.2C68.5 55.5 65.5 58 62.2 58H42Z" fill="#FFFFFF"/>
+                      <!-- ข้อความ CTC -->
+                      <text x="50" y="80" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="900" font-size="15" letter-spacing="1">CTC</text>
+                      <defs>
+                        <linearGradient id="ctc_logo_grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#DC2626"/>
+                          <stop offset="100%" stop-color="#1E1B4B"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide text-heading">CTC WEATHER REPORT</h1>
@@ -979,7 +998,6 @@
                 const res = await fetch(`/api/weather?location=${currentLocation}`);
                 const data = await res.json();
 
-                // 🟢 อัปเดตตัวเลข AQI ข้อความ และสี (Dynamic Color Fix)
                 const aqiValElem = document.getElementById('aqi-val');
                 const aqiLabelElem = document.getElementById('aqi-label');
                 const aqiBarElem = document.getElementById('aqi-bar');
@@ -988,10 +1006,8 @@
                 aqiLabelElem.innerText = data.aqiLabel;
                 aqiBarElem.style.width = `${Math.min(100, (data.aqi / 200) * 100)}%`;
 
-                // คำนวณ Class สีแบบ Dynamic
                 const colorObj = getAqiColorClass(data.aqi);
                 
-                // ล้างคลาสสีเดิมออกก่อนใส่คลาสสีใหม่
                 aqiValElem.className = `text-5xl font-extrabold tracking-tight transition-colors duration-500 ${colorObj.text}`;
                 aqiLabelElem.className = `mt-1 text-xs font-bold transition-colors duration-500 ${colorObj.text}`;
                 aqiBarElem.className = `h-full transition-all duration-500 ${colorObj.bg}`;
@@ -1027,25 +1043,20 @@
                     }
                 }
 
-                // Rain, Mascot, Chart & Forecast Updates
                 toggleRainEffect(data.isRaining);
                 updateMascotAssistant(data);
-                
-                if (data.history) {
-                    updateChart(data.history);
-                }
-                if (data.forecast) {
-                    renderForecast(data.forecast);
-                }
+                renderForecast(data.forecast);
+                updateChart(data.history);
 
-            } catch (error) {
-                console.error("Error fetching weather data:", error);
+            } catch (err) {
+                console.error("❌ โหลดข้อมูลสภาพอากาศขัดข้อง:", err);
             }
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', () => {
             initTheme();
             switchLocation('main');
+            setInterval(fetchWeatherData, 30000);
         });
     </script>
 </body>

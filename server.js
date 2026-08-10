@@ -257,7 +257,7 @@ async function fetchCityData(key) {
     }
 }
 
-async function checkAirAndWeatherAll(isHourlyReport = false) {
+async function checkAirAndWeatherAll(isReportTime = true) {
     await fetchCityData('main');
     await fetchCityData('pattaya');
     await fetchCityData('siracha');
@@ -279,15 +279,15 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
             alertMsg += `🟡 <b>ระดับเริ่มมีผลกระทบต่อสุขภาพ: ${mainData.pm25} µg/m³</b>\n`;
             alertMsg += `⚠️ <i>คำแนะนำ: ปริมาณฝุ่นเริ่มหนาแน่น นักศึกษาและกลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</i>\n`;
         }
-        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctc-weather-report.onrender.com/`;
+        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctech-weather-aqi.onrender.com/`;
         await sendTelegramAlert(alertMsg);
     } else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
         lastPM25AlertLevel = "Safe";
         console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
     }
 
-    // สรุป รายชั่วโมง
-    if (isHourlyReport) {
+    // สรุป ส่งเข้า Telegram ทุกๆ 30 นาที
+    if (isReportTime) {
         let themeColor = mainData.aqi <= 25 ? "#2980b9" : mainData.aqi <= 50 ? "#2ecc71" : mainData.aqi <= 100 ? "#f1c40f" : "#e74c3c";
         const chartConfig = {
             type: 'radialGauge',
@@ -304,25 +304,18 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
         textCaption += `🍃 คุณภาพอากาศ: <b>${mainData.aqiLabel}</b>\n😷 ดัชนีฝุ่นรวม AQI: <b>${mainData.aqi}</b>\n💨 ปริมาณฝุ่น PM2.5: <b>${mainData.pm25} µg/m³</b>\n`;
         textCaption += `☀️ ดัชนีรังสี UV: <b>${mainData.uvIndex} (${mainData.uvLabel})</b>\n🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${mainData.temp} °C</b>\n💧 ความชื้นสัมพัทธ์: <b>${mainData.humidity} %</b>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n`;
         if (mainData.isRaining) textCaption += `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเข้าตึกด่วน) 🌧️</b>\n`;
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctc-weather-report.onrender.com/`;
+        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctech-weather-aqi.onrender.com/`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
     }
 }
 
-// ⏰ รันดึงข้อมูลใหม่ทุกๆ 30 นาที
+// ⏰ รันดึงข้อมูลใหม่และส่งรายงาน Telegram ทุกๆ 30 นาที
 cron.schedule('*/30 * * * *', () => {
-    // เช็กว่านาทีปัจจุบันคือนาทีที่ 0 (ต้นชั่วโมง) หรือไม่
-    const currentMinute = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getMinutes();
-    const isHourly = (currentMinute === 0);
-
-    console.log(`⏰ [Cron Job] อัปเดตข้อมูลสภาพอากาศ 3 เมือง (${isHourly ? 'ส่งรายงาน Telegram รายชั่วโมง' : 'อัปเดตระบบภายใน'})`);
-    
-    // ส่ง isHourly = true เฉพาะช่วงต้นชั่วโมง (เช่น 10:00, 11:00) 
-    // และส่ง isHourly = false สำหรับรอบครึ่งชั่วโมง (เช่น 10:30, 11:30)
-    checkAirAndWeatherAll(isHourly); 
+    console.log(`⏰ [Cron Job] อัปเดตและส่งรายงานสรุปสภาพอากาศเข้า Telegram ทุกๆ 30 นาที`);
+    checkAirAndWeatherAll(true); 
 });
 
 // เริ่มต้นรันดึงข้อมูลครั้งแรกทันทีที่เปิดเซิร์ฟเวอร์
 checkAirAndWeatherAll(true);
-console.log('🚀 [Ready] บอทสภาพอากาศรองรับ 3 เมือง สแตนด์บาย...');
+console.log('🚀 [Ready] บอทสภาพอากาศส่งรายงานทุก 30 นาที สแตนด์บาย...');

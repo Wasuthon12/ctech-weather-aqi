@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C-TECH Weather & AQI Dashboard</title>
+    <title>CTC Weather & AQI Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -37,7 +37,7 @@
             animation: rainFall 0.8s linear infinite;
         }
 
-        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต C-TECH */
+        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต CTC */
         @keyframes mascotBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
@@ -128,7 +128,7 @@
                     <i class="fa-solid fa-cloud-sun"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide text-heading">C-TECH WEATHER REPORT</h1>
+                    <h1 class="text-xl font-bold tracking-wide text-heading">CTC WEATHER REPORT</h1>
                     <p class="text-xs text-indigo-500 font-bold">📍 สถานีตรวจวัดความปลอดภัยทางอากาศ: <span id="header-location-name">อ.เมืองชลบุรี</span></p>
                 </div>
             </div>
@@ -164,7 +164,7 @@
             <div class="grid grid-cols-1 sm:flex sm:flex-wrap w-full gap-2">
                 <button onclick="switchLocation('main')" id="tab-main" class="location-tab active px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-building"></i>
-                    <span>อ.เมืองชลบุรี (C-TECH Main)</span>
+                    <span>อ.เมืองชลบุรี (CTC Main)</span>
                 </button>
                 <button onclick="switchLocation('pattaya')" id="tab-pattaya" class="location-tab px-3 py-2 rounded-xl text-xs font-bold border border-transparent transition-all duration-300 hover:bg-indigo-600/30 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-umbrella-beach"></i>
@@ -177,14 +177,14 @@
             </div>
         </div>
 
-        <!-- 🤖 C-TECH Mascot Section -->
+        <!-- 🤖 CTC Mascot Section -->
         <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
                 <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-500/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
                     🤖
                 </div>
                 <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow border border-indigo-400/30 whitespace-nowrap">
-                    NONG C-TECH
+                    NONG CTC
                 </span>
             </div>
             <div class="flex-grow inner-card-bg border p-4 rounded-xl relative w-full transition-colors duration-500">
@@ -193,14 +193,14 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-400/30">
                     <h3 class="text-xs md:text-sm font-bold text-indigo-600 flex items-center gap-1.5">
                         <i class="fa-solid fa-robot"></i>
-                        <span>น้อง C-TECH AI วิเคราะห์ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)</span>
+                        <span>น้อง CTC AI วิเคราะห์ (<span id="mascot-location-name">อ.เมืองชลบุรี</span>)</span>
                     </h3>
                     <span id="mascot-status-badge" class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-600 border border-emerald-500/30">
                         ปกติ
                     </span>
                 </div>
                 <p id="mascot-speech" class="text-xs md:text-sm text-heading font-semibold leading-relaxed">
-                    "สวัสดีครับพี่ๆ ชาว C-TECH! กำลังดึงข้อมูลสภาพอากาศและมลพิษให้อยู่นะครับ..."
+                    "สวัสดีครับพี่ๆ ชาว CTC! กำลังดึงข้อมูลสภาพอากาศและมลพิษให้อยู่นะครับ..."
                 </p>
             </div>
         </div>
@@ -216,7 +216,7 @@
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             
-            <!-- 💡 1. AQI Card (ปรับปรุงการดึงสีแบบ Dynamic) -->
+            <!-- 💡 1. AQI Card -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -445,10 +445,10 @@
         </div>
     </div>
 
-    <!-- 🚶‍♂️ C-TECH Student Mascot Walking Animation -->
+    <!-- 🚶‍♂️ CTC Student Mascot Walking Animation -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
         <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
-            C-TECH Student 🎓
+            CTC Student 🎓
         </div>
         <svg id="mascot-svg" width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
             <g class="mascot-legs">
@@ -470,7 +470,7 @@
     </div>
 
     <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-4 text-xs font-semibold z-10">
-        <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ C-TECH</p>
+        <p>พัฒนาโดย แผนกวิชาคอมพิวเตอร์ธุรกิจ - เทคโนโลยีสารสนเทศ CTC</p>
     </footer>
 
     <script>
@@ -483,7 +483,7 @@
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
 
-        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (แก้ไขบั๊กสีเขียวขัดกับสีเหลือง) */
+        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI */
         function getAqiColorClass(aqi) {
             if (aqi <= 50) {
                 return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
@@ -797,7 +797,7 @@
                 badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-600 border border-amber-500/30";
             } else if (data.heatIndex >= 42) {
                 avatar.innerText = "🥵";
-                speech.innerHTML = `"อากาศใน<b>${locName}</b>ร้อนอบอ้าวมาก รู้สึกร้อนเหมือน <b class='text-orange-600'>${data.heatIndex}°C</b>! 🔥 <b>จิบน้ำบ่อยๆ เพื่อป้องกันโรคลมแดด (Heatstroke)</b> นะครับชาว C-TECH"`;
+                speech.innerHTML = `"อากาศใน<b>${locName}</b>ร้อนอบอ้าวมาก รู้สึกร้อนเหมือน <b class='text-orange-600'>${data.heatIndex}°C</b>! 🔥 <b>จิบน้ำบ่อยๆ เพื่อป้องกันโรคลมแดด (Heatstroke)</b> นะครับชาว CTC"`;
                 badge.innerText = "ดัชนีความร้อนสูง";
                 badge.className = "text-[10px] px-2 py-0.5 rounded font-bold bg-orange-500/20 text-orange-600 border border-orange-500/30";
             } else {
@@ -1027,19 +1027,26 @@
                     }
                 }
 
-                updateMascotAssistant(data);
+                // Rain, Mascot, Chart & Forecast Updates
                 toggleRainEffect(data.isRaining);
-                renderForecast(data.forecast);
-                updateChart(data.history);
+                updateMascotAssistant(data);
+                
+                if (data.history) {
+                    updateChart(data.history);
+                }
+                if (data.forecast) {
+                    renderForecast(data.forecast);
+                }
 
-            } catch (err) {
-                console.error("❌ ไม่สามารถดึงข้อมูล Weather API ได้:", err);
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
             }
         }
 
-        initTheme();
-        fetchWeatherData();
-        setInterval(fetchWeatherData, 300000); // Auto-refresh ทุก 5 นาที
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            switchLocation('main');
+        });
     </script>
 </body>
 </html>

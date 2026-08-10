@@ -1,5 +1,5 @@
 {
-  "name": "ctech-weather-aqi",
+  "name": "ctc-weather-report",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "C-TECH Weather and PM2.5 Alert Dashboard",
+  "description": "CTC Weather and PM2.5 Alert Dashboard",
   "dependencies": {
     "axios": "^1.18.1",
     "dotenv": "^17.4.2",

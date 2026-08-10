@@ -293,14 +293,14 @@ async function checkAirAndWeatherAll(isHourlyReport = false) {
             type: 'radialGauge',
             data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, label: 'AQI Index' }] },
             options: {
-                title: { display: true, text: `🌤️ C-TECH WEATHER REPORT (AQI: ${mainData.aqi})`, fontColor: '#ffffff', fontSize: 22 },
+                title: { display: true, text: `🌤️ CTC WEATHER REPORT (AQI: ${mainData.aqi})`, fontColor: '#ffffff', fontSize: 22 },
                 domain: [0, 200], trackColor: '#34495e', centerPercentage: 70,
                 centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 50, subtext: mainData.aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
             }
         };
         const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
-        let textCaption = `<b>🌤️ C-TECH WEATHER REPORT</b>\n📍 สถานีตรวจวัด: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
+        let textCaption = `<b>🌤️ CTC WEATHER REPORT</b>\n📍 สถานีตรวจวัด: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
         textCaption += `🍃 คุณภาพอากาศ: <b>${mainData.aqiLabel}</b>\n😷 ดัชนีฝุ่นรวม AQI: <b>${mainData.aqi}</b>\n💨 ปริมาณฝุ่น PM2.5: <b>${mainData.pm25} µg/m³</b>\n`;
         textCaption += `☀️ ดัชนีรังสี UV: <b>${mainData.uvIndex} (${mainData.uvLabel})</b>\n🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${mainData.temp} °C</b>\n💧 ความชื้นสัมพัทธ์: <b>${mainData.humidity} %</b>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n`;
         if (mainData.isRaining) textCaption += `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเข้าตึกด่วน) 🌧️</b>\n`;

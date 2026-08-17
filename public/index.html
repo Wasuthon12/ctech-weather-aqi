@@ -103,6 +103,16 @@
         .leg-left { animation: legSwing 0.6s ease-in-out infinite alternate; }
         .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
     </style>
+    <!-- PWA Settings -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1a1f2c">
+<link rel="apple-touch-icon" href="/logo.png">
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
 

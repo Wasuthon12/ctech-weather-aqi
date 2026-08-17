@@ -1,0 +1,21 @@
+{
+  "name": "CTC Weather & AQI",
+  "short_name": "CTC Weather",
+  "description": "รายงานสภาพอากาศและฝุ่น PM2.5 ชลบุรี",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1f2c",
+  "theme_color": "#1a1f2c",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,20 +1,25 @@
 {
+  "id": "/",
   "short_name": "CTC Weather",
   "name": "CTC Weather & AQI Dashboard",
   "icons": [
     {
       "src": "/icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/",
-  "background_color": "#ffffff",
+  "scope": "/",
+  "background_color": "#0f172a",
   "theme_color": "#4f46e5",
-  "display": "standalone"
+  "display": "standalone",
+  "orientation": "portrait"
 }

@@ -82,12 +82,12 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
         }
 
-        /* 🚶‍♂️ Mascot Walk Animations */
+        /* 🚶‍♂️ Mascot Walking Animation Physics */
         @keyframes mascotWalk {
-            0% { transform: translateX(-60px); }
-            50% { transform: translateX(calc(100vw + 10px)); }
-            50.01% { transform: translateX(calc(100vw + 10px)); }
-            100% { transform: translateX(-60px); }
+            0% { transform: translateX(-80px); }
+            50% { transform: translateX(calc(100vw + 20px)); }
+            50.01% { transform: translateX(calc(100vw + 20px)); }
+            100% { transform: translateX(-80px); }
         }
 
         @keyframes mascotFlip {
@@ -96,15 +96,20 @@
             100% { transform: scaleX(1); }
         }
 
-        @keyframes legSwing {
-            0%, 100% { transform: rotate(-15deg); transform-origin: top center; }
-            50% { transform: rotate(15deg); transform-origin: top center; }
+        @keyframes legSwingLeft {
+            0%, 100% { transform: rotate(-20deg); transform-origin: 47px 105px; }
+            50% { transform: rotate(20deg); transform-origin: 47px 105px; }
+        }
+
+        @keyframes legSwingRight {
+            0%, 100% { transform: rotate(20deg); transform-origin: 73px 105px; }
+            50% { transform: rotate(-20deg); transform-origin: 73px 105px; }
         }
 
         #walking-mascot { animation: mascotWalk 22s linear infinite; }
         #mascot-svg { animation: mascotFlip 22s linear infinite; }
-        .leg-left { animation: legSwing 0.6s ease-in-out infinite alternate; }
-        .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
+        .leg-left { animation: legSwingLeft 0.5s ease-in-out infinite; }
+        .leg-right { animation: legSwingRight 0.5s ease-in-out infinite; }
     </style>
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
@@ -152,7 +157,7 @@
 
             <!-- Controls -->
             <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-                <!-- 🎨 1. เมนูสลับธีม (อยู่ซ้าย) -->
+                <!-- 🎨 1. เมนูสลับธีม -->
                 <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/40 rounded-xl p-1.5 backdrop-blur-sm">
                     <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
                     <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
@@ -163,7 +168,7 @@
                     </select>
                 </div>
 
-                <!-- 📱 2. ปุ่มติดตั้ง PWA (ย้ายมาขวามือตรงจุดวงกลมแดง) -->
+                <!-- 📱 2. ปุ่มติดตั้ง PWA -->
                 <button id="pwa-install-btn" class="hidden flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
                     <i class="fa-solid fa-download animate-bounce"></i>
                     <span>ติดตั้งแอป</span>
@@ -464,27 +469,126 @@
         </div>
     </div>
 
-    <!-- 🚶‍♂️ CTC Student Mascot Walking Animation -->
+    <!-- 🚶‍♂️ CTC Student Mascot (Redesigned Anime/Chibi Vector Version with Official Uniform) -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
-        <div class="bg-indigo-600/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-lg border border-indigo-400/50 mb-0.5 whitespace-nowrap animate-bounce">
-            CTC Student 🎓
+        <!-- Glassmorphism Badge -->
+        <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] border border-indigo-300/40 mb-1 flex items-center gap-1.5 animate-bounce">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>CTC Student</span> 🎓
         </div>
-        <svg id="mascot-svg" width="35" height="50" viewBox="0 0 100 140" class="drop-shadow-md">
+        
+        <!-- Ultra-Detailed Vector SVG (Updated Uniform according to Official Photo) -->
+        <svg id="mascot-svg" width="55" height="75" viewBox="0 0 120 160" class="drop-shadow-[0_10px_15px_rgba(0,0,0,0.4)]">
+            <defs>
+                <!-- Skin Gradient -->
+                <linearGradient id="ctcSkin" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#FFE4C4"/>
+                    <stop offset="100%" stop-color="#F5C29B"/>
+                </linearGradient>
+                <!-- Hair Gradient (Dark Natural Hair) -->
+                <linearGradient id="ctcHair" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1E293B"/>
+                    <stop offset="100%" stop-color="#090D16"/>
+                </linearGradient>
+                <!-- Official Dark Navy Blazer Suit Gradient -->
+                <linearGradient id="ctcSuit" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stop-color="#242C3D"/>
+                    <stop offset="100%" stop-color="#111622"/>
+                </linearGradient>
+                <!-- Dark Official Necktie Gradient -->
+                <linearGradient id="ctcTie" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1E2433"/>
+                    <stop offset="100%" stop-color="#0A0D14"/>
+                </linearGradient>
+                <!-- Cap Gradient -->
+                <linearGradient id="ctcCap" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1E293B"/>
+                    <stop offset="100%" stop-color="#0F172A"/>
+                </linearGradient>
+            </defs>
+
+            <!-- Dynamic Ground Shadow -->
+            <ellipse cx="60" cy="152" rx="26" ry="5" fill="rgba(0,0,0,0.3)" class="animate-pulse"/>
+
+            <!-- Animated Legs -->
             <g class="mascot-legs">
-                <line x1="40" y1="95" x2="35" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-left"/>
-                <ellipse cx="32" cy="127" rx="8" ry="4" fill="#0f172a"/>
-                <line x1="60" y1="95" x2="65" y2="125" stroke="#1e293b" stroke-width="8" stroke-linecap="round" class="leg-right"/>
-                <ellipse cx="68" cy="127" rx="8" ry="4" fill="#0f172a"/>
+                <!-- Left Leg -->
+                <g class="leg-left">
+                    <rect x="42" y="102" width="11" height="38" rx="5" fill="#111622"/>
+                    <path d="M 36 138 C 36 132, 53 132, 53 142 C 53 145, 36 145, 36 138 Z" fill="#0A0D14"/>
+                    <rect x="36" y="142" width="17" height="3" fill="#475569" rx="1"/>
+                </g>
+                <!-- Right Leg -->
+                <g class="leg-right">
+                    <rect x="67" y="102" width="11" height="38" rx="5" fill="#111622"/>
+                    <path d="M 61 138 C 61 132, 78 132, 78 142 C 78 145, 61 145, 61 138 Z" fill="#0A0D14"/>
+                    <rect x="61" y="142" width="17" height="3" fill="#475569" rx="1"/>
+                </g>
             </g>
-            <path d="M 25 45 L 75 45 L 70 95 L 30 95 Z" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
-            <polygon points="50,45 46,50 47,82 50,87 53,82 54,50" fill="#0f172a"/>
-            <rect x="58" y="55" width="10" height="12" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>
-            <circle cx="63" cy="61" r="3" fill="#e11d48"/>
-            <circle cx="50" cy="28" r="18" fill="#fde047"/>
-            <path d="M 32 26 C 32 10, 68 10, 68 26 C 62 16, 38 16, 32 26 Z" fill="#1e1b4b"/>
-            <circle cx="43" cy="28" r="2" fill="#0f172a"/>
-            <circle cx="57" cy="28" r="2" fill="#0f172a"/>
-            <path d="M 46 34 Q 50 38 54 34" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- White Shirt Base -->
+            <path d="M 35 58 L 85 58 L 80 108 L 40 108 Z" fill="#FFFFFF"/>
+            
+            <!-- Official CTC Dark Navy Blazer Outer Jacket -->
+            <path d="M 31 58 Q 48 58 52 82 L 41 108 L 31 108 Z" fill="url(#ctcSuit)"/>
+            <path d="M 89 58 Q 72 58 68 82 L 79 108 L 89 108 Z" fill="url(#ctcSuit)"/>
+            
+            <!-- Shirt Collar & Dark Necktie -->
+            <polygon points="45,58 60,72 52,58" fill="#F8FAFC"/>
+            <polygon points="75,58 60,72 68,58" fill="#F8FAFC"/>
+            <polygon points="57,65 63,65 65,96 60,103 55,96" fill="url(#ctcTie)"/>
+
+            <!-- Official Round Emblem Badge on Student's Left Chest -->
+            <circle cx="74" cy="74" r="5" fill="#DC2626"/>
+            <circle cx="74" cy="74" r="3.6" fill="#FFFFFF"/>
+            <circle cx="74" cy="74" r="1.8" fill="#1E1B4B"/>
+
+            <!-- Animated Arms (Dark Suit Sleeves) -->
+            <g class="leg-right">
+                <rect x="23" y="60" width="10" height="34" rx="5" fill="url(#ctcSuit)" transform="rotate(12 28 60)"/>
+                <circle cx="26" cy="94" r="5" fill="url(#ctcSkin)"/>
+            </g>
+            <g class="leg-left">
+                <rect x="87" y="60" width="10" height="34" rx="5" fill="url(#ctcSuit)" transform="rotate(-12 92 60)"/>
+                <circle cx="94" cy="94" r="5" fill="url(#ctcSkin)"/>
+            </g>
+
+            <!-- Head & Facial Features -->
+            <circle cx="33" cy="38" r="5" fill="url(#ctcSkin)"/>
+            <circle cx="87" cy="38" r="5" fill="url(#ctcSkin)"/>
+            <rect x="35" y="16" width="50" height="44" rx="22" fill="url(#ctcSkin)"/>
+            
+            <!-- Expressive Anime Eyes -->
+            <ellipse cx="49" cy="36" rx="5" ry="7" fill="#1E1B4B"/>
+            <circle cx="51" cy="33" r="2.2" fill="#FFFFFF"/>
+            <circle cx="47" cy="38" r="1" fill="#FFFFFF"/>
+            
+            <ellipse cx="71" cy="36" rx="5" ry="7" fill="#1E1B4B"/>
+            <circle cx="73" cy="33" r="2.2" fill="#FFFFFF"/>
+            <circle cx="69" cy="38" r="1" fill="#FFFFFF"/>
+
+            <!-- Eyebrows & Blush -->
+            <path d="M 43 25 Q 49 22 55 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path d="M 65 25 Q 71 22 77 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <ellipse cx="44" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
+            <ellipse cx="76" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
+
+            <!-- Smile -->
+            <path d="M 54 43 Q 60 49 66 43" fill="none" stroke="#991B1B" stroke-width="2.2" stroke-linecap="round"/>
+
+            <!-- Layered Natural Dark Hair Style -->
+            <path d="M 33 25 C 33 6, 87 6, 87 25 C 87 16, 75 8, 60 8 C 45 8, 33 16, 33 25 Z" fill="url(#ctcHair)"/>
+            <path d="M 33 22 Q 45 32 48 20 Q 58 34 62 18 Q 72 32 87 20 C 82 10, 71 10, 60 10 C 49 10, 38 10, 33 22 Z" fill="url(#ctcHair)"/>
+
+            <!-- Graduation Cap (Mortarboard) -->
+            <polygon points="60,2 8,14 60,25 112,14" fill="url(#ctcCap)"/>
+            <rect x="42" y="14" width="36" height="9" fill="#1E293B" rx="2"/>
+            <circle cx="60" cy="13.5" r="2.2" fill="#F59E0B"/>
+            <path d="M 60 13.5 Q 82 18 87 31" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="87" cy="33" r="2.8" fill="#F59E0B"/>
         </svg>
     </div>
 

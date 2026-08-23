@@ -177,8 +177,8 @@ async function fetchCityData(key) {
         else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-        // 2. OpenWeather API (พร้อม Try-Catch กันระบบล่ม)
-        let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0;
+        // 2. OpenWeather API (แก้ไขการประกาศตัวแปรให้อยู่ใน Scope เดียวกัน)
+        let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
         let dailyForecast = [];
 
         try {
@@ -188,6 +188,7 @@ async function fetchCityData(key) {
             weatherDesc = weatherRes.data.weather[0].description;
             weatherId = weatherRes.data.weather[0].id;
             clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
+            rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
 
             const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
             const checkedDates = new Set();
@@ -217,7 +218,6 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        const rainVolume = weatherRes?.data?.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
         const isRainCode = (weatherId >= 200 && weatherId <= 232) || (weatherId >= 500 && weatherId <= 531);
         const hasRain = rainVolume > 0 || (isRainCode && humidity >= 80);
 

@@ -126,24 +126,13 @@ function getHeatIndexWarning(HI_C) {
 function calculateSmartUVIndex(clouds = 0) {
     const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
 
-    // 1. กลางคืน/ย่ำค่ำ (18:00 - 05:59 น.) -> UV = 0
-    if (currentHour >= 18 || currentHour < 6) {
-        return { index: 0, label: "ต่ำ 🟢" };
-    }
-
-    // 2. เช้าตรู่ (06:00 - 08:59 น.) -> UV = 1 ถึง 2
-    if (currentHour >= 6 && currentHour < 9) {
-        return { index: 1, label: "ต่ำ 🟢" };
-    }
-
-    // 3. ช่วงสาย (09:00 - 10:59 น.) -> UV = 3 ถึง 5
+    if (currentHour >= 18 || currentHour < 6) return { index: 0, label: "ต่ำ 🟢" };
+    if (currentHour >= 6 && currentHour < 9) return { index: 1, label: "ต่ำ 🟢" };
     if (currentHour >= 9 && currentHour < 11) {
         const baseUV = Math.round(5 * (1 - clouds / 100));
         const uv = Math.max(2, baseUV);
         return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
     }
-
-    // 4. ช่วงเที่ยงวันพีค (11:00 - 14:59 น.) -> UV = 6 ถึง 11+
     if (currentHour >= 11 && currentHour < 15) {
         const baseUV = Math.round(10 * (1 - clouds / 100));
         const uv = Math.max(4, baseUV);
@@ -153,8 +142,6 @@ function calculateSmartUVIndex(clouds = 0) {
         else if (uv <= 5) label = "ปานกลาง 🟡";
         return { index: uv, label: label };
     }
-
-    // 5. ช่วงบ่ายแก่ๆ (15:00 - 17:59 น.) -> UV = 1 ถึง 4
     const baseUV = Math.round(4 * (1 - clouds / 100));
     const uv = Math.max(1, baseUV);
     return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
@@ -164,7 +151,7 @@ function calculateSmartUVIndex(clouds = 0) {
 async function fetchCityData(key) {
     const locConfig = LOCATIONS[key];
     try {
-        // 1. IQAir API (ดึงข้อมูลผ่าน Latitude / Longitude เพื่อหลีกเลี่ยงปัญหาชื่อเมืองไม่ตรง)
+        // 1. IQAir API
         let currentAQI = 0;
         let currentPM25 = 0;
         try {
@@ -190,65 +177,63 @@ async function fetchCityData(key) {
         else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-        // 2. OpenWeather API
-        const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
-        const temp = weatherRes.data.main.temp;
-        const humidity = weatherRes.data.main.humidity;
-        const weatherDesc = weatherRes.data.weather[0].description;
-        const weatherId = weatherRes.data.weather[0].id;
-        const clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
+        // 2. OpenWeather API (พร้อม Try-Catch กันระบบล่ม)
+        let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0;
+        let dailyForecast = [];
 
-        // ☀️ คำนวณ UV Index ใหม่ตามเวลาจริง
-        const calculatedUV = calculateSmartUVIndex(clouds);
-        let uvIndex = calculatedUV.index;
-        let uvLabel = calculatedUV.label;
+        try {
+            const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+            temp = weatherRes.data.main.temp;
+            humidity = weatherRes.data.main.humidity;
+            weatherDesc = weatherRes.data.weather[0].description;
+            weatherId = weatherRes.data.weather[0].id;
+            clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
 
-        // Forecast 3 วัน
-        const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
-        const dailyForecast = [];
-        const checkedDates = new Set();
-        const todayDateNum = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getDate();
+            const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+            const checkedDates = new Set();
+            const todayDateNum = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getDate();
 
-        for (const item of forecastRes.data.list) {
-            const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-            const itemDateNum = itemDate.getDate();
+            for (const item of forecastRes.data.list) {
+                const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+                const itemDateNum = itemDate.getDate();
 
-            if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
-                dailyForecast.push({
-                    day: itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }),
-                    temp: Math.round(item.main.temp),
-                    humidity: item.main.humidity,
-                    desc: item.weather[0].description,
-                    icon: item.weather[0].icon
-                });
-                checkedDates.add(itemDateNum);
-                if (dailyForecast.length >= 3) break;
+                if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
+                    dailyForecast.push({
+                        day: itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }),
+                        temp: Math.round(item.main.temp),
+                        humidity: item.main.humidity,
+                        desc: item.weather[0].description,
+                        icon: item.weather[0].icon
+                    });
+                    checkedDates.add(itemDateNum);
+                    if (dailyForecast.length >= 3) break;
+                }
             }
+        } catch (errOWM) {
+            console.log(`⚠️ OpenWeather ${locConfig.name} ขัดข้อง (${errOWM.message})`);
         }
 
+        const calculatedUV = calculateSmartUVIndex(clouds);
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        // 🌧️ ปรับปรุงเงื่อนไขเช็กฝน: ตรวจสอบปริมาณน้ำฝนจริง (rain volume) หรือ Weather Code ฝนปานกลาง/หนักขึ้นไป (500-531, 200-232)
-        const rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
+        const rainVolume = weatherRes?.data?.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
         const isRainCode = (weatherId >= 200 && weatherId <= 232) || (weatherId >= 500 && weatherId <= 531);
         const hasRain = rainVolume > 0 || (isRainCode && humidity >= 80);
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
-
-        // กราฟย้อนหลัง (History)
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+        
         let history = storeData[key].history || [];
         if (history.length === 0 || history[history.length - 1].time !== timeLabel) {
             history.push({ time: timeLabel, aqi: currentAQI, temp: Math.round(temp) });
         }
         if (history.length > 12) history.shift();
 
-        // บันทึกลง Store ตาม Key เมือง
         storeData[key] = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
-            uvIndex: uvIndex, uvLabel: uvLabel, isRaining: hasRain, updateTime: localTimeFormatted,
+            uvIndex: calculatedUV.index, uvLabel: calculatedUV.label, isRaining: hasRain, updateTime: localTimeFormatted,
             forecast: dailyForecast, history: history
         };
 
@@ -257,12 +242,15 @@ async function fetchCityData(key) {
     }
 }
 
-async function checkAirAndWeatherAll(isReportTime = true) {
-    await fetchCityData('main');
-    await fetchCityData('pattaya');
-    await fetchCityData('siracha');
+async function checkAirAndWeatherAll(isReportTime = false) {
+    // ⚡ ดึงข้อมูล 3 เมืองพร้อมกันเพื่อความรวดเร็ว
+    await Promise.all([
+        fetchCityData('main'),
+        fetchCityData('pattaya'),
+        fetchCityData('siracha')
+    ]);
 
-    // แจ้งเตือน Telegram ฝุ่นวิกฤต (ใช้จุดหลัก อ.เมืองชลบุรี)
+    // แจ้งเตือน Telegram ฝุ่นวิกฤต (เช็กทุกครั้งที่ดึงข้อมูล)
     const mainData = storeData.main;
     let currentAlertLevel = "Safe";
     if (mainData.pm25 > 55) currentAlertLevel = "Danger";
@@ -286,7 +274,7 @@ async function checkAirAndWeatherAll(isReportTime = true) {
         console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
     }
 
-    // สรุป ส่งเข้า Telegram ทุกๆ 30 นาที
+    // ส่งรายงานสรุปสภาพอากาศเข้า Telegram (เฉพาะรอบส่งรายงานทุก 1 ชม.)
     if (isReportTime) {
         let themeColor = mainData.aqi <= 25 ? "#2980b9" : mainData.aqi <= 50 ? "#2ecc71" : mainData.aqi <= 100 ? "#f1c40f" : "#e74c3c";
         const chartConfig = {
@@ -310,12 +298,18 @@ async function checkAirAndWeatherAll(isReportTime = true) {
     }
 }
 
-// ⏰ รันดึงข้อมูลใหม่และส่งรายงาน Telegram ทุกๆ 30 นาที
-cron.schedule('*/30 * * * *', () => {
-    console.log(`⏰ [Cron Job] อัปเดตและส่งรายงานสรุปสภาพอากาศเข้า Telegram ทุกๆ 30 นาที`);
+// 🔄 1. ดึงข้อมูลสภาพอากาศใหม่และเช็กฝุ่นวิกฤตทุกๆ 15 นาที
+cron.schedule('*/15 * * * *', () => {
+    console.log(`⏰ [Cron Job] อัปเดตข้อมูลสภาพอากาศลง Store (ทุก 15 นาที)`);
+    checkAirAndWeatherAll(false); 
+});
+
+// 📢 2. ส่งรายงานสรุปสภาพอากาศเข้า Telegram ทุกๆ 1 ชั่วโมง (ตรงนาทีที่ 0)
+cron.schedule('0 * * * *', () => {
+    console.log(`⏰ [Cron Job] ส่งรายงานสรุปเข้า Telegram (ทุก 1 ชั่วโมง)`);
     checkAirAndWeatherAll(true); 
 });
 
 // เริ่มต้นรันดึงข้อมูลครั้งแรกทันทีที่เปิดเซิร์ฟเวอร์
 checkAirAndWeatherAll(true);
-console.log('🚀 [Ready] บอทสภาพอากาศส่งรายงานทุก 30 นาที สแตนด์บาย...');
+console.log('🚀 [Ready] ระบบสแตนด์บาย รันข้อมูลทุก 15 นาที และส่งสรุป Telegram ทุก 1 ชม.');

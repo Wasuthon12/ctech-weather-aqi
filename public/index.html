@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    
     <style>
         /* ☀️ อนิเมชันหมุนพระอาทิตย์ */
         @keyframes spinSlow {
@@ -103,16 +106,6 @@
         .leg-left { animation: legSwing 0.6s ease-in-out infinite alternate; }
         .leg-right { animation: legSwing 0.6s ease-in-out infinite alternate-reverse; }
     </style>
-    <!-- PWA Settings -->
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1a1f2c">
-<link rel="apple-touch-icon" href="/logo.png">
-
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
 
@@ -134,19 +127,14 @@
     <header class="header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <!-- 🔴🔵 โลโก้ใหม่: รวมตราวิทยาลัยเทคนิคชลบุรี (CTC) เข้ากับระบบรายงานสภาพอากาศ -->
                 <div class="shadow-lg shadow-red-500/20 rounded-2xl overflow-hidden flex-shrink-0">
                     <svg width="52" height="52" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect width="100" height="100" rx="22" fill="url(#ctc_logo_grad)"/>
-                      <!-- วงแหวนอะตอม (สัญลักษณ์เทคโนโลยี CTC) -->
                       <ellipse cx="50" cy="52" rx="28" ry="9" stroke="#FFFFFF" stroke-width="3" opacity="0.4" transform="rotate(-30 50 52)"/>
                       <ellipse cx="50" cy="52" rx="28" ry="9" stroke="#FFFFFF" stroke-width="3" opacity="0.4" transform="rotate(30 50 52)"/>
-                      <!-- สภาพอากาศ (พระอาทิตย์) -->
                       <circle cx="38" cy="36" r="9" fill="#FFC107"/>
                       <path d="M38 22V24M38 48V50M24 36H26M50 36H52M28 26L29.5 27.5M46.5 44.5L48 46M28 46L29.5 44.5M46.5 27.5L48 26" stroke="#FFC107" stroke-width="2.5" stroke-linecap="round"/>
-                      <!-- สภาพอากาศ (ก้อนเมฆ) -->
                       <path d="M42 58C38.5 58 35.5 55.2 35.5 51.5C35.5 48.2 37.8 45.4 41 45C42 40.5 45.8 37 51.5 37 C57.5 37 61.8 41.2 62.2 46.2C65.5 46.2 68.5 49 68.5 52.2C68.5 55.5 65.5 58 62.2 58H42Z" fill="#FFFFFF"/>
-                      <!-- ข้อความ CTC -->
                       <text x="50" y="80" text-anchor="middle" fill="#FFFFFF" font-family="Arial, sans-serif" font-weight="900" font-size="15" letter-spacing="1">CTC</text>
                       <defs>
                         <linearGradient id="ctc_logo_grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
@@ -163,7 +151,13 @@
             </div>
 
             <!-- Controls -->
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3">
+                <!-- 📱 ปุ่มติดตั้ง PWA -->
+                <button id="pwa-install-btn" class="hidden flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
+                    <i class="fa-solid fa-download animate-bounce"></i>
+                    <span>ติดตั้งแอป</span>
+                </button>
+
                 <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/40 rounded-xl p-1.5 backdrop-blur-sm">
                     <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
                     <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
@@ -244,8 +238,6 @@
 
         <!-- 📊 Real-time Metrics Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            
-            <!-- 💡 1. AQI Card -->
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -263,7 +255,6 @@
                 </div>
             </div>
 
-            <!-- 💡 2. PM2.5 Card -->
             <div onclick="openModal('pm25')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -282,7 +273,6 @@
                 </div>
             </div>
 
-            <!-- 💡 3. UV Card -->
             <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -300,7 +290,6 @@
                 </div>
             </div>
 
-            <!-- 4. Temp/Humidity Card -->
             <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -323,7 +312,6 @@
                 </div>
             </div>
 
-            <!-- 💡 5. Heat Index Card -->
             <div onclick="openModal('heat')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -505,12 +493,54 @@
     <script>
         let currentLocation = 'main';
         let myChart = null;
+        let deferredPrompt = null;
 
         const locationNames = {
             'main': 'อ.เมืองชลบุรี',
             'pattaya': 'เมืองพัทยา (Pattaya)',
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
+
+        /* 📱 ระบบจัดการปุ่มติดตั้ง PWA */
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('✅ Service Worker Registered:', reg.scope))
+                    .catch(err => console.error('❌ Service Worker Registration Failed:', err));
+            });
+        }
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+            }
+        });
+
+        function setupPwaInstall() {
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        console.log('👍 ผู้ใช้ยอมรับการติดตั้ง PWA');
+                    }
+                    deferredPrompt = null;
+                    installBtn.classList.add('hidden');
+                });
+            }
+        }
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            const installBtn = document.getElementById('pwa-install-btn');
+            if (installBtn) installBtn.classList.add('hidden');
+            console.log('🎉 ติดตั้ง PWA เรียบร้อยแล้ว');
+        });
 
         /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI */
         function getAqiColorClass(aqi) {
@@ -1034,7 +1064,6 @@
                 document.getElementById('heat-warning').innerText = data.heatWarning;
                 document.getElementById('update-time').innerText = data.updateTime;
 
-                // Comparison Cards Mapping
                 if (data.comparison) {
                     if (data.comparison.main) {
                         document.getElementById('comp-main-aqi').innerText = data.comparison.main.aqi;
@@ -1065,6 +1094,7 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
+            setupPwaInstall();
             switchLocation('main');
             setInterval(fetchWeatherData, 30000);
         });

@@ -434,18 +434,6 @@
                     <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
                     <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
                 </div>
-                
-                <!-- 📥 ปุ่มดาวน์โหลดกราฟ และ ส่งออกข้อมูล CSV -->
-                <div class="flex items-center gap-2 flex-wrap">
-                    <button onclick="downloadChartImage()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all duration-300 cursor-pointer">
-                        <i class="fa-solid fa-file-image"></i>
-                        <span>รูปกราฟ (PNG)</span>
-                    </button>
-                    <button onclick="downloadCSVData()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all duration-300 cursor-pointer">
-                        <i class="fa-solid fa-file-csv"></i>
-                        <span>ข้อมูล (CSV)</span>
-                    </button>
-                </div>
             </div>
 
             <div class="flex items-center gap-4 text-xs font-bold mb-3 justify-end">
@@ -641,56 +629,6 @@
                 deferredPrompt = null;
             } else {
                 alert('📱 วิธีสร้างทางลัดเข้าสู่หน้าจอมือถือ:\n\n1. กดปุ่มจุดสามจุด (⋮) ที่มุมขวาบนเบราว์เซอร์\n2. เลือก "ติดตั้งและสร้างทางลัด" หรือ "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม" เพื่อเสร็จสิ้นครับ');
-            }
-        }
-
-        /* 🖼️ ฟังก์ชันดาวน์โหลดกราฟเป็นรูปภาพ PNG */
-        function downloadChartImage() {
-            const chartCanvas = document.getElementById('historyChart');
-            if (!chartCanvas) return alert('ไม่พบตัวแปรกราฟ');
-
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = chartCanvas.width;
-            tempCanvas.height = chartCanvas.height;
-            const ctx = tempCanvas.getContext('2d');
-
-            const currentTheme = localStorage.getItem('ctech_theme') || 'dark';
-            ctx.fillStyle = currentTheme === 'light' ? '#ffffff' : '#0f172a';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.drawImage(chartCanvas, 0, 0);
-
-            const imageURI = tempCanvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = `techno-chon-chart-${currentLocation}-${new Date().toISOString().slice(0, 10)}.png`;
-            link.href = imageURI;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        /* 📊 ฟังก์ชันดาวน์โหลดประวัติเป็นไฟล์ CSV */
-        async function downloadCSVData() {
-            try {
-                const res = await fetch(`/api/historical?location=${currentLocation}`);
-                const data = await res.json();
-                if (!data || data.length === 0) return alert('ยังไม่มีข้อมูลประวัติย้อนหลัง');
-
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-                csvContent += "เวลา,ดัชนี AQI,อุณหภูมิ (°C)\n";
-
-                data.forEach(row => {
-                    csvContent += `"${row.time}",${row.aqi},${row.temp}\n`;
-                });
-
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement('a');
-                link.setAttribute('href', encodedUri);
-                link.setAttribute('download', `weather_history_${currentLocation}_${new Date().toISOString().slice(0, 10)}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            } catch (err) {
-                alert('ไม่สามารถดึงข้อมูล CSV ได้');
             }
         }
 

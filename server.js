@@ -16,9 +16,9 @@ let lastPM25AlertLevel = "Safe";
 
 // 📌 พิกัดสำหรับแต่ละเมือง (Chonburi, Pattaya, Si Racha)
 const LOCATIONS = {
-    main: { name: "อ.เมืองชลบุรี", owmQuery: "Chonburi,TH", lat: 13.3611, lon: 100.9847 },
-    pattaya: { name: "เมืองพัทยา (Pattaya)", owmQuery: "Pattaya,TH", lat: 12.9236, lon: 100.8825 },
-    siracha: { name: "อ.ศรีราชา (Si Racha)", owmQuery: "Si Racha,TH", lat: 13.1737, lon: 100.9311 }
+    main: { name: "อ.เมืองชลบุรี", lat: 13.3611, lon: 100.9847 },
+    pattaya: { name: "เมืองพัทยา (Pattaya)", lat: 12.9236, lon: 100.8825 },
+    siracha: { name: "อ.ศรีราชา (Si Racha)", lat: 13.1737, lon: 100.9311 }
 };
 
 // 📌 โครงสร้างเก็บข้อมูลแยกตามเมือง
@@ -177,12 +177,12 @@ async function fetchCityData(key) {
         else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-        // 2. OpenWeather API
+        // 2. OpenWeather API (ใช้ lat & lon แทนชื่อเมือง)
         let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
         let dailyForecast = [];
 
         try {
-            const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+            const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
             temp = weatherRes.data.main.temp;
             humidity = weatherRes.data.main.humidity;
             weatherDesc = weatherRes.data.weather[0].description;
@@ -190,7 +190,7 @@ async function fetchCityData(key) {
             clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
             rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
 
-            const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?q=${locConfig.owmQuery}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+            const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
             const checkedDates = new Set();
             const todayDateNum = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getDate();
 
@@ -334,6 +334,6 @@ cron.schedule('0 * * * *', () => {
     checkAirAndWeatherAll(true); 
 });
 
-// เริ่มต้นรันดึงข้อมูลครั้งแรกทันทีที่เปิดเซิร์ฟเวอร์
-checkAirAndWeatherAll(true);
+// เริ่มต้นรันดึงข้อมูลครั้งแรกเมื่อเปิดเซิร์ฟเวอร์ (ดึงเฉพาะข้อมูลเข้า Store ไม่ส่งรูป Telegram ซ้ำ)
+checkAirAndWeatherAll(false);
 console.log('🚀 [Ready] ระบบสแตนด์บาย รันข้อมูลทุก 15 นาที และส่งสรุป Telegram ทุก 1 ชม.');

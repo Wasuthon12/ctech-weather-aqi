@@ -114,6 +114,23 @@
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
 
+    <!-- 📱 แถบปุ่มติดตั้งทางลัด PWA บนสุด (แสดงผลถาวร) -->
+    <div id="pwa-top-bar" class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-2.5 shadow-xl sticky top-0 z-50 border-b border-white/20">
+        <div class="max-w-6xl mx-auto flex items-center justify-between gap-2 px-2">
+            <div class="flex items-center gap-2">
+                <span class="text-xl animate-bounce">📱</span>
+                <div>
+                    <h4 class="text-xs font-bold leading-tight">ติดตั้งทางลัดแอป Techno-Chon Weather</h4>
+                    <p class="text-[10px] text-indigo-100 hidden sm:block">กดติดตั้งเพื่อเพิ่มไอคอนลงหน้าจอมือถือ เข้าใช้งานได้สะดวกยิ่งขึ้น</p>
+                </div>
+            </div>
+            <button onclick="triggerPwaInstall()" class="bg-white text-indigo-700 hover:bg-indigo-50 active:scale-95 text-xs font-black px-3 py-1.5 rounded-xl shadow-lg cursor-pointer transition-all flex items-center gap-1.5 whitespace-nowrap">
+                <i class="fa-solid fa-download"></i>
+                <span>ติดตั้งทางลัด</span>
+            </button>
+        </div>
+    </div>
+
     <!-- ☁️ เมฆลอยขยับได้ในพื้นหลัง -->
     <div class="absolute top-10 left-0 pointer-events-none opacity-25 text-6xl text-slate-500 animate-cloud-1 z-0">
         <i class="fa-solid fa-cloud"></i>
@@ -157,7 +174,6 @@
 
             <!-- Controls -->
             <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-                <!-- 🎨 1. เมนูสลับธีม -->
                 <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/40 rounded-xl p-1.5 backdrop-blur-sm">
                     <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
                     <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
@@ -168,10 +184,10 @@
                     </select>
                 </div>
 
-                <!-- 📱 2. ปุ่มติดตั้ง PWA -->
-                <button id="pwa-install-btn" class="hidden flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
+                <!-- ปุ่มติดตั้งประจำ Header แสดงผลตลอดเวลา -->
+                <button onclick="triggerPwaInstall()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
                     <i class="fa-solid fa-download animate-bounce"></i>
-                    <span>ติดตั้งแอป</span>
+                    <span>ติดตั้งทางลัด</span>
                 </button>
 
                 <div class="text-right hidden sm:block">
@@ -413,20 +429,34 @@
 
         <!-- 📈 Chart Section -->
         <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4 border-b border-slate-400/30 pb-3">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 border-b border-slate-400/30 pb-3">
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
                     <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
                 </div>
-                <div class="flex items-center gap-4 text-xs font-bold">
-                    <span class="flex items-center gap-1.5 text-indigo-400">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
-                    </span>
-                    <span class="flex items-center gap-1.5 text-rose-400">
-                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
-                    </span>
+                
+                <!-- 📥 ปุ่มดาวน์โหลดกราฟ และ ส่งออกข้อมูล CSV -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="downloadChartImage()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all duration-300 cursor-pointer">
+                        <i class="fa-solid fa-file-image"></i>
+                        <span>รูปกราฟ (PNG)</span>
+                    </button>
+                    <button onclick="downloadCSVData()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow transition-all duration-300 cursor-pointer">
+                        <i class="fa-solid fa-file-csv"></i>
+                        <span>ข้อมูล (CSV)</span>
+                    </button>
                 </div>
             </div>
+
+            <div class="flex items-center gap-4 text-xs font-bold mb-3 justify-end">
+                <span class="flex items-center gap-1.5 text-indigo-400">
+                    <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
+                </span>
+                <span class="flex items-center gap-1.5 text-rose-400">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
+                </span>
+            </div>
+
             <div class="relative w-full h-72 md:h-80">
                 <canvas id="historyChart"></canvas>
             </div>
@@ -469,59 +499,50 @@
         </div>
     </div>
 
-    <!-- 🚶‍♂️ Techno-Chon Student Mascot (Redesigned Anime/Chibi Vector Version with Official Uniform) -->
+    <!-- 🚶‍♂️ Techno-Chon Student Mascot (Mini Size Version) -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
-        <!-- Glassmorphism Badge -->
-        <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] border border-indigo-300/40 mb-1 flex items-center gap-1.5 animate-bounce">
-            <span class="relative flex h-2 w-2">
+        <!-- Glassmorphism Badge (Compact Size) -->
+        <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.5)] border border-indigo-300/40 mb-0.5 flex items-center gap-1 animate-bounce">
+            <span class="relative flex h-1.5 w-1.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
             </span>
             <span>Techno-Chon Student</span> 🎓
         </div>
         
-        <!-- Ultra-Detailed Vector SVG (Updated Uniform according to Official Photo) -->
-        <svg id="mascot-svg" width="55" height="75" viewBox="0 0 120 160" class="drop-shadow-[0_10px_15px_rgba(0,0,0,0.4)]">
+        <!-- Compact Vector SVG (Width: 38px, Height: 52px) -->
+        <svg id="mascot-svg" width="38" height="52" viewBox="0 0 120 160" class="drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]">
             <defs>
-                <!-- Skin Gradient -->
                 <linearGradient id="ctcSkin" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#FFE4C4"/>
                     <stop offset="100%" stop-color="#F5C29B"/>
                 </linearGradient>
-                <!-- Hair Gradient (Dark Natural Hair) -->
                 <linearGradient id="ctcHair" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#1E293B"/>
                     <stop offset="100%" stop-color="#090D16"/>
                 </linearGradient>
-                <!-- Official Dark Navy Blazer Suit Gradient -->
                 <linearGradient id="ctcSuit" x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stop-color="#242C3D"/>
                     <stop offset="100%" stop-color="#111622"/>
                 </linearGradient>
-                <!-- Dark Official Necktie Gradient -->
                 <linearGradient id="ctcTie" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#1E2433"/>
                     <stop offset="100%" stop-color="#0A0D14"/>
                 </linearGradient>
-                <!-- Cap Gradient -->
                 <linearGradient id="ctcCap" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#1E293B"/>
                     <stop offset="100%" stop-color="#0F172A"/>
                 </linearGradient>
             </defs>
 
-            <!-- Dynamic Ground Shadow -->
             <ellipse cx="60" cy="152" rx="26" ry="5" fill="rgba(0,0,0,0.3)" class="animate-pulse"/>
 
-            <!-- Animated Legs -->
             <g class="mascot-legs">
-                <!-- Left Leg -->
                 <g class="leg-left">
                     <rect x="42" y="102" width="11" height="38" rx="5" fill="#111622"/>
                     <path d="M 36 138 C 36 132, 53 132, 53 142 C 53 145, 36 145, 36 138 Z" fill="#0A0D14"/>
                     <rect x="36" y="142" width="17" height="3" fill="#475569" rx="1"/>
                 </g>
-                <!-- Right Leg -->
                 <g class="leg-right">
                     <rect x="67" y="102" width="11" height="38" rx="5" fill="#111622"/>
                     <path d="M 61 138 C 61 132, 78 132, 78 142 C 78 145, 61 145, 61 138 Z" fill="#0A0D14"/>
@@ -529,24 +550,19 @@
                 </g>
             </g>
 
-            <!-- White Shirt Base -->
             <path d="M 35 58 L 85 58 L 80 108 L 40 108 Z" fill="#FFFFFF"/>
             
-            <!-- Official Techno-Chon Dark Navy Blazer Outer Jacket -->
             <path d="M 31 58 Q 48 58 52 82 L 41 108 L 31 108 Z" fill="url(#ctcSuit)"/>
             <path d="M 89 58 Q 72 58 68 82 L 79 108 L 89 108 Z" fill="url(#ctcSuit)"/>
             
-            <!-- Shirt Collar & Dark Necktie -->
             <polygon points="45,58 60,72 52,58" fill="#F8FAFC"/>
             <polygon points="75,58 60,72 68,58" fill="#F8FAFC"/>
             <polygon points="57,65 63,65 65,96 60,103 55,96" fill="url(#ctcTie)"/>
 
-            <!-- Official Round Emblem Badge on Student's Left Chest -->
             <circle cx="74" cy="74" r="5" fill="#DC2626"/>
             <circle cx="74" cy="74" r="3.6" fill="#FFFFFF"/>
             <circle cx="74" cy="74" r="1.8" fill="#1E1B4B"/>
 
-            <!-- Animated Arms (Dark Suit Sleeves) -->
             <g class="leg-right">
                 <rect x="23" y="60" width="10" height="34" rx="5" fill="url(#ctcSuit)" transform="rotate(12 28 60)"/>
                 <circle cx="26" cy="94" r="5" fill="url(#ctcSkin)"/>
@@ -556,12 +572,10 @@
                 <circle cx="94" cy="94" r="5" fill="url(#ctcSkin)"/>
             </g>
 
-            <!-- Head & Facial Features -->
             <circle cx="33" cy="38" r="5" fill="url(#ctcSkin)"/>
             <circle cx="87" cy="38" r="5" fill="url(#ctcSkin)"/>
             <rect x="35" y="16" width="50" height="44" rx="22" fill="url(#ctcSkin)"/>
             
-            <!-- Expressive Anime Eyes -->
             <ellipse cx="49" cy="36" rx="5" ry="7" fill="#1E1B4B"/>
             <circle cx="51" cy="33" r="2.2" fill="#FFFFFF"/>
             <circle cx="47" cy="38" r="1" fill="#FFFFFF"/>
@@ -570,20 +584,16 @@
             <circle cx="73" cy="33" r="2.2" fill="#FFFFFF"/>
             <circle cx="69" cy="38" r="1" fill="#FFFFFF"/>
 
-            <!-- Eyebrows & Blush -->
             <path d="M 43 25 Q 49 22 55 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
             <path d="M 65 25 Q 71 22 77 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
             <ellipse cx="44" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
             <ellipse cx="76" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
 
-            <!-- Smile -->
             <path d="M 54 43 Q 60 49 66 43" fill="none" stroke="#991B1B" stroke-width="2.2" stroke-linecap="round"/>
 
-            <!-- Layered Natural Dark Hair Style -->
             <path d="M 33 25 C 33 6, 87 6, 87 25 C 87 16, 75 8, 60 8 C 45 8, 33 16, 33 25 Z" fill="url(#ctcHair)"/>
             <path d="M 33 22 Q 45 32 48 20 Q 58 34 62 18 Q 72 32 87 20 C 82 10, 71 10, 60 10 C 49 10, 38 10, 33 22 Z" fill="url(#ctcHair)"/>
 
-            <!-- Graduation Cap (Mortarboard) -->
             <polygon points="60,2 8,14 60,25 112,14" fill="url(#ctcCap)"/>
             <rect x="42" y="14" width="36" height="9" fill="#1E293B" rx="2"/>
             <circle cx="60" cy="13.5" r="2.2" fill="#F59E0B"/>
@@ -619,34 +629,70 @@
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) {
-                installBtn.classList.remove('hidden');
-            }
         });
 
-        function setupPwaInstall() {
-            const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) {
-                installBtn.addEventListener('click', async () => {
-                    if (!deferredPrompt) return;
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        console.log('👍 ผู้ใช้ยอมรับการติดตั้ง PWA');
-                    }
-                    deferredPrompt = null;
-                    installBtn.classList.add('hidden');
-                });
+        async function triggerPwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('👍 ผู้ใช้ยอมรับการติดตั้งทางลัด');
+                }
+                deferredPrompt = null;
+            } else {
+                alert('📱 วิธีสร้างทางลัดเข้าสู่หน้าจอมือถือ:\n\n1. กดปุ่มจุดสามจุด (⋮) ที่มุมขวาบนเบราว์เซอร์\n2. เลือก "ติดตั้งและสร้างทางลัด" หรือ "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม" เพื่อเสร็จสิ้นครับ');
             }
         }
 
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            const installBtn = document.getElementById('pwa-install-btn');
-            if (installBtn) installBtn.classList.add('hidden');
-            console.log('🎉 ติดตั้ง PWA เรียบร้อยแล้ว');
-        });
+        /* 🖼️ ฟังก์ชันดาวน์โหลดกราฟเป็นรูปภาพ PNG */
+        function downloadChartImage() {
+            const chartCanvas = document.getElementById('historyChart');
+            if (!chartCanvas) return alert('ไม่พบตัวแปรกราฟ');
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = chartCanvas.width;
+            tempCanvas.height = chartCanvas.height;
+            const ctx = tempCanvas.getContext('2d');
+
+            const currentTheme = localStorage.getItem('ctech_theme') || 'dark';
+            ctx.fillStyle = currentTheme === 'light' ? '#ffffff' : '#0f172a';
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(chartCanvas, 0, 0);
+
+            const imageURI = tempCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `techno-chon-chart-${currentLocation}-${new Date().toISOString().slice(0, 10)}.png`;
+            link.href = imageURI;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /* 📊 ฟังก์ชันดาวน์โหลดประวัติเป็นไฟล์ CSV */
+        async function downloadCSVData() {
+            try {
+                const res = await fetch(`/api/historical?location=${currentLocation}`);
+                const data = await res.json();
+                if (!data || data.length === 0) return alert('ยังไม่มีข้อมูลประวัติย้อนหลัง');
+
+                let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+                csvContent += "เวลา,ดัชนี AQI,อุณหภูมิ (°C)\n";
+
+                data.forEach(row => {
+                    csvContent += `"${row.time}",${row.aqi},${row.temp}\n`;
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `weather_history_${currentLocation}_${new Date().toISOString().slice(0, 10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (err) {
+                alert('ไม่สามารถดึงข้อมูล CSV ได้');
+            }
+        }
 
         /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI */
         function getAqiColorClass(aqi) {
@@ -1200,7 +1246,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initTheme();
-            setupPwaInstall();
             switchLocation('main');
             setInterval(fetchWeatherData, 30000);
         });

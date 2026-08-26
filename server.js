@@ -177,7 +177,7 @@ async function fetchCityData(key) {
         else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-        // 2. OpenWeather API (แก้ไขการประกาศตัวแปรให้อยู่ใน Scope เดียวกัน)
+        // 2. OpenWeather API
         let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
         let dailyForecast = [];
 
@@ -243,56 +243,80 @@ async function fetchCityData(key) {
 }
 
 async function checkAirAndWeatherAll(isReportTime = false) {
-    // ⚡ ดึงข้อมูล 3 เมืองพร้อมกันเพื่อความรวดเร็ว
     await Promise.all([
         fetchCityData('main'),
         fetchCityData('pattaya'),
         fetchCityData('siracha')
     ]);
 
-    // แจ้งเตือน Telegram ฝุ่นวิกฤต (เช็กทุกครั้งที่ดึงข้อมูล)
     const mainData = storeData.main;
     let currentAlertLevel = "Safe";
     if (mainData.pm25 > 55) currentAlertLevel = "Danger";
     else if (mainData.pm25 > 35) currentAlertLevel = "Warning";
 
+    // 🚨 1. การ์ดแจ้งเตือนวิกฤตฝุ่นด่วน
     if (currentAlertLevel !== lastPM25AlertLevel && currentAlertLevel !== "Safe") {
         lastPM25AlertLevel = currentAlertLevel;
-        let alertMsg = `🚨 <b>[แจ้งเตือนด่วน! วิกฤตฝุ่น PM2.5 เกินมาตรฐาน]</b> 🚨\n`;
-        alertMsg += `📍 พิกัดสถานี: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
+        
+        let alertMsg = `🚨 <b>[ แจ้งเตือนด่วน! ฝุ่น PM2.5 ]</b>\n📍 <i>สถานีตรวจวัด: จ.ชลบุรี</i>\n\n`;
         if (currentAlertLevel === "Danger") {
-            alertMsg += `🔴 <b>ระดับอันตรายสูงสุด: ${mainData.pm25} µg/m³</b>\n`;
-            alertMsg += `⚠️ <i>คำแนะนำ: ดัชนีมลพิษสูงเกินเกณฑ์ความปลอดภัยอย่างมาก หลีกเลี่ยงกิจกรรมกลางแจ้ง และสวมหน้ากากอนามัยทันที!</i>\n`;
+            alertMsg += `<blockquote>🔴 <b>ระดับอันตรายสูงสุด (Hazardous)</b>\n`;
+            alertMsg += `• PM2.5: <code>${mainData.pm25} µg/m³</code>\n`;
+            alertMsg += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
+            alertMsg += `• ⚠️ <b>คำแนะนำ:</b> สวมหน้ากาก N95 และงดกิจกรรมกลางแจ้งทันที</blockquote>\n\n`;
         } else {
-            alertMsg += `🟡 <b>ระดับเริ่มมีผลกระทบต่อสุขภาพ: ${mainData.pm25} µg/m³</b>\n`;
-            alertMsg += `⚠️ <i>คำแนะนำ: ปริมาณฝุ่นเริ่มหนาแน่น นักศึกษาและกลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</i>\n`;
+            alertMsg += `<blockquote>🟡 <b>เริ่มมีผลกระทบต่อสุขภาพ (Unhealthy)</b>\n`;
+            alertMsg += `• PM2.5: <code>${mainData.pm25} µg/m³</code>\n`;
+            alertMsg += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
+            alertMsg += `• ⚠️ <b>คำแนะนำ:</b> กลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</blockquote>\n\n`;
         }
-        alertMsg += `━━━━━━━━━━━━━━━━━━━━\n⏰ ตรวจพบเวลา: ${mainData.updateTime}\n💻 ดูรายละเอียดกราฟสด: https://ctc-weather-report.onrender.com/`;
+        alertMsg += `⏰ <i>ตรวจพบเมื่อ: ${mainData.updateTime} น.</i>\n`;
+        alertMsg += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ดสภาพอากาศสด</a>`;
+        
         await sendTelegramAlert(alertMsg);
     } else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
         lastPM25AlertLevel = "Safe";
         console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
     }
 
-    // ส่งรายงานสรุปสภาพอากาศเข้า Telegram (เฉพาะรอบส่งรายงานทุก 1 ชม.)
+    // 🌤️ 2. รายงานสรุปรายชั่วโมง
     if (isReportTime) {
-        let themeColor = mainData.aqi <= 25 ? "#2980b9" : mainData.aqi <= 50 ? "#2ecc71" : mainData.aqi <= 100 ? "#f1c40f" : "#e74c3c";
+        let themeColor = mainData.aqi <= 25 ? "#3b82f6" : mainData.aqi <= 50 ? "#10b981" : mainData.aqi <= 100 ? "#f59e0b" : "#ef4444";
+        
         const chartConfig = {
             type: 'radialGauge',
-            data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, label: 'AQI Index' }] },
+            data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, borderWidth: 0 }] },
             options: {
-                title: { display: true, text: `🌤️ CTC WEATHER REPORT (AQI: ${mainData.aqi})`, fontColor: '#ffffff', fontSize: 22 },
-                domain: [0, 200], trackColor: '#34495e', centerPercentage: 70,
-                centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 50, subtext: mainData.aqiLabel, subfontColor: '#bdc3c7', subfontSize: 16 }
+                title: { display: true, text: 'TECHNO-CHON WEATHER', fontColor: '#64748b', fontSize: 16 },
+                domain: [0, 200], trackColor: '#1e293b', centerPercentage: 75,
+                centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 54, subtext: `AQI (${mainData.aqiLabel.split(' ')[0]})`, subfontColor: '#94a3b8', subfontSize: 16 }
             }
         };
-        const chartUrl = `https://quickchart.io/chart?bkg=%232c3e50&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
+        const chartUrl = `https://quickchart.io/chart?bkg=%230f172a&w=700&h=420&devicePixelRatio=2&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
-        let textCaption = `<b>🌤️ CTC WEATHER REPORT</b>\n📍 สถานีตรวจวัด: จังหวัดชลบุรี\n━━━━━━━━━━━━━━━━━━━━\n`;
-        textCaption += `🍃 คุณภาพอากาศ: <b>${mainData.aqiLabel}</b>\n😷 ดัชนีฝุ่นรวม AQI: <b>${mainData.aqi}</b>\n💨 ปริมาณฝุ่น PM2.5: <b>${mainData.pm25} µg/m³</b>\n`;
-        textCaption += `☀️ ดัชนีรังสี UV: <b>${mainData.uvIndex} (${mainData.uvLabel})</b>\n🌡️ อุณหภูมิบนเทอร์โมมิเตอร์: <b>${mainData.temp} °C</b>\n💧 ความชื้นสัมพัทธ์: <b>${mainData.humidity} %</b>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n`;
-        if (mainData.isRaining) textCaption += `⚠️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (รีบเข้าตึกด่วน) 🌧️</b>\n`;
-        textCaption += `━━━━━━━━━━━━━━━━━━━━\n🔥 ดัชนีความร้อน: <b>${mainData.heatIndex} °C</b>\n⚠️ ประเมินความเสี่ยง: ${mainData.heatWarning}\n━━━━━━━━━━━━━━━━━━━━\n🔗 https://ctc-weather-report.onrender.com/`;
+        let textCaption = `<b>🌤️ TECHNO-CHON WEATHER REPORT</b>\n📍 <i>สถานีหลัก: อ.เมืองชลบุรี</i>\n\n`;
+        
+        textCaption += `<blockquote>🍃 <b>คุณภาพอากาศ (Air Quality)</b>\n`;
+        textCaption += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
+        textCaption += `• PM2.5: <code>${mainData.pm25} µg/m³</code></blockquote>\n\n`;
+
+        textCaption += `<blockquote>🌡️ <b>สภาพอากาศ (Weather Info)</b>\n`;
+        textCaption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
+        textCaption += `• ดัชนีความร้อน: ${mainData.heatWarning}\n`;
+        textCaption += `• รังสี UV: <code>${mainData.uvIndex}</code> (${mainData.uvLabel}) | ความชื้น: <code>${mainData.humidity}%</code>\n`;
+        textCaption += `• สภาพท้องฟ้า: ${mainData.weatherDesc}</blockquote>\n\n`;
+
+        textCaption += `<blockquote>🏙️ <b>เปรียบเทียบคุณภาพอากาศ 3 พื้นที่</b>\n`;
+        textCaption += `• 🏢 <b>อ.เมืองชลบุรี:</b> AQI <code>${storeData.main.aqi}</code> (${storeData.main.aqiLabel})\n`;
+        textCaption += `• 🏖️ <b>พัทยา:</b> AQI <code>${storeData.pattaya.aqi}</code> (${storeData.pattaya.aqiLabel})\n`;
+        textCaption += `• 🏭 <b>ศรีราชา:</b> AQI <code>${storeData.siracha.aqi}</code> (${storeData.siracha.aqiLabel})</blockquote>\n\n`;
+
+        if (mainData.isRaining) {
+            textCaption += `<blockquote>🌧️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (เข้าตึกด่วน)</b></blockquote>\n\n`;
+        }
+
+        textCaption += `⏰ <i>อัปเดตล่าสุด: ${mainData.updateTime} น.</i>\n`;
+        textCaption += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมระบบแดชบอร์ดสดแบบเต็ม</a>`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
     }

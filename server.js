@@ -218,9 +218,8 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        // 🌧️ ปรับปรุงเงื่อนไขตรวจจับฝนตกให้แม่นยำ ป้องกันการแจ้งเตือนผิดพลาด
-        const isHeavyRainCode = (weatherId >= 202 && weatherId <= 232) || (weatherId >= 502 && weatherId <= 531);
-        const hasRain = rainVolume > 0 || (isHeavyRainCode && humidity >= 90);
+        // 🌧️ ปรับเงื่อนไขฝนตก: ต้องมีปริมาณน้ำฝนวัดได้ตั้งแต่ 0.5 mm/ชม. ขึ้นไป เพื่อป้องกันแจ้งเตือนผิดพลาดจากละอองฝนเล็กน้อย
+        const hasRain = rainVolume >= 0.5;
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });

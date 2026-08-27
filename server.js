@@ -218,8 +218,9 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        const isRainCode = (weatherId >= 200 && weatherId <= 232) || (weatherId >= 500 && weatherId <= 531);
-        const hasRain = rainVolume > 0 || (isRainCode && humidity >= 80);
+        // 🌧️ ปรับปรุงเงื่อนไขตรวจจับฝนตกให้แม่นยำ ป้องกันการแจ้งเตือนผิดพลาด
+        const isHeavyRainCode = (weatherId >= 202 && weatherId <= 232) || (weatherId >= 502 && weatherId <= 531);
+        const hasRain = rainVolume > 0 || (isHeavyRainCode && humidity >= 90);
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
@@ -334,6 +335,6 @@ cron.schedule('0 * * * *', () => {
     checkAirAndWeatherAll(true); 
 });
 
-// เริ่มต้นรันดึงข้อมูลครั้งแรกเมื่อเปิดเซิร์ฟเวอร์ (ดึงเฉพาะข้อมูลเข้า Store ไม่ส่งรูป Telegram ซ้ำ)
+// เริ่มต้นรันดึงข้อมูลครั้งแรกเมื่อเปิดเซิร์ฟเวอร์
 checkAirAndWeatherAll(false);
 console.log('🚀 [Ready] ระบบสแตนด์บาย รันข้อมูลทุก 15 นาที และส่งสรุป Telegram ทุก 1 ชม.');

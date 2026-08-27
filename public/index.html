@@ -114,7 +114,7 @@
 </head>
 <body id="dynamic-bg" class="theme-dark font-sans min-h-screen flex flex-col justify-between transition-colors duration-700 relative overflow-x-hidden pb-16">
 
-    <!-- 📱 แถบปุ่มติดตั้งทางลัด PWA บนสุด (แสดงผลถาวร) -->
+    <!-- 📱 แถบปุ่มติดตั้งทางลัด PWA บนสุด -->
     <div id="pwa-top-bar" class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-2.5 shadow-xl sticky top-0 z-50 border-b border-white/20">
         <div class="max-w-6xl mx-auto flex items-center justify-between gap-2 px-2">
             <div class="flex items-center gap-2">
@@ -184,7 +184,6 @@
                     </select>
                 </div>
 
-                <!-- ปุ่มติดตั้งประจำ Header แสดงผลตลอดเวลา -->
                 <button onclick="triggerPwaInstall()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
                     <i class="fa-solid fa-download animate-bounce"></i>
                     <span>ติดตั้งทางลัด</span>
@@ -487,9 +486,8 @@
         </div>
     </div>
 
-    <!-- 🚶‍♂️ Techno-Chon Student Mascot (Mini Size Version) -->
+    <!-- 🚶‍♂️ Techno-Chon Student Mascot -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
-        <!-- Glassmorphism Badge (Compact Size) -->
         <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.5)] border border-indigo-300/40 mb-0.5 flex items-center gap-1 animate-bounce">
             <span class="relative flex h-1.5 w-1.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -498,7 +496,6 @@
             <span>Techno-Chon Student</span> 🎓
         </div>
         
-        <!-- Compact Vector SVG (Width: 38px, Height: 52px) -->
         <svg id="mascot-svg" width="38" height="52" viewBox="0 0 120 160" class="drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]">
             <defs>
                 <linearGradient id="ctcSkin" x1="0" y1="0" x2="0" y2="1">
@@ -632,20 +629,18 @@
             }
         }
 
-        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI */
+        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (เกณฑ์มาตรฐานไทย PCD) */
         function getAqiColorClass(aqi) {
-            if (aqi <= 50) {
+            if (aqi <= 25) {
+                return { text: 'text-sky-400', bg: 'bg-sky-400' };
+            } else if (aqi <= 50) {
                 return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
             } else if (aqi <= 100) {
                 return { text: 'text-amber-400', bg: 'bg-amber-400' };
-            } else if (aqi <= 150) {
-                return { text: 'text-orange-500', bg: 'bg-orange-500' };
             } else if (aqi <= 200) {
-                return { text: 'text-red-500', bg: 'bg-red-500' };
-            } else if (aqi <= 300) {
-                return { text: 'text-purple-500', bg: 'bg-purple-500' };
+                return { text: 'text-orange-500', bg: 'bg-orange-500' };
             } else {
-                return { text: 'text-rose-900', bg: 'bg-rose-900' };
+                return { text: 'text-red-500', bg: 'bg-red-500' };
             }
         }
 
@@ -662,49 +657,42 @@
                 iconBg.className = "bg-indigo-600 text-white p-2.5 rounded-xl";
                 icon.className = "fa-solid fa-wind text-xl";
                 title.innerText = "ดัชนีคุณภาพอากาศ AQI คืออะไร?";
-                subtitle.innerText = "Air Quality Index (US-EPA Standard)";
-                desc.innerHTML = "<b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศที่คำนวณจากมลพิษรวม เช่น PM2.5, PM10 และก๊าซพิษ โดยแบ่งเป็น 6 ระดับสีสากล:";
+                subtitle.innerText = "AQI Standard (กรมควบคุมมลพิษ ประเทศไทย)";
+                desc.innerHTML = "<b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศตามเกณฑ์มาตรฐานของกรมควบคุมมลพิษ (PCD) ประเทศไทย โดยแบ่งออกเป็น 5 ระดับสี:";
                 body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 50</span>
+                    <div class="p-3 rounded-xl bg-sky-500/15 border border-sky-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-sky-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 25</span>
                         <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 คุณภาพอากาศดีมาก (Good)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ไม่มีผลกระทบต่อสุขภาพ เหมาะแก่การทำกิจกรรมกลางแจ้งเต็มที่</p>
+                            <h4 class="font-bold text-sky-600 dark:text-sky-400">🔵 ดีมาก (Very Good)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดีมาก เหมาะสำหรับกิจกรรมกลางแจ้งและการท่องเที่ยวทุกประเภท</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
+                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">26 - 50</span>
+                        <div>
+                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ดี (Good)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p>
                         </div>
                     </div>
                     <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
                         <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
                         <div>
                             <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป แต่ผู้ป่วยโรคทางเดินหายใจควรสังเกตอาการ</p>
+                            <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป ประชาชนทำกิจกรรมได้ตามปกติ กลุ่มเสี่ยงควรสังเกตอาการเบื้องต้น</p>
                         </div>
                     </div>
                     <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 150</span>
+                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 200</span>
                         <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 มีผลต่อกลุ่มเสี่ยง (Unhealthy for Sensitive Groups)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เด็ก, ผู้สูงอายุ และผู้ป่วยควรเริ่มสวมหน้ากาก และลดกิจกรรมกลางแจ้ง</p>
+                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลกระทบต่อสุขภาพ (Unhealthy)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ประชาชนทั่วไปควรลดกิจกรรมกลางแจ้ง กลุ่มเสี่ยงควรสวมหน้ากากอนามัยป้องกันฝุ่น</p>
                         </div>
                     </div>
                     <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">151 - 200</span>
+                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">201+</span>
                         <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพ (Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบทุกคน <b>ควรสวมหน้ากาก N95</b> เมื่อออกนอกอาคาร</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">201 - 300</span>
-                        <div>
-                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 มีผลอย่างมาก (Very Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อันตรายร้ายแรง งดกิจกรรมกลางแจ้งทุกชนิด เปิดเครื่องฟอกอากาศ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-rose-950/20 border border-rose-800 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-rose-900 text-white font-bold text-[11px] whitespace-nowrap">301+</span>
-                        <div>
-                            <h4 class="font-bold text-rose-500">🟤 อันตรายร้ายแรง (Hazardous)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ภาวะฉุกเฉินทางสุขภาพ ห้ามออกจากอาคารโดยเด็ดขาด</p>
+                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลกระทบต่อสุขภาพ (Very Unhealthy)</h4>
+                            <p class="text-muted text-[11px] mt-0.5">ทุกคนควรหลีกเลี่ยงกิจกรรมกลางแจ้ง งดออกนอกอาคาร และสวมหน้ากาก N95 เมื่อจำเป็น</p>
                         </div>
                     </div>
                 `;
@@ -713,7 +701,7 @@
                 icon.className = "fa-solid fa-mask-face text-xl";
                 title.innerText = "ดัชนีฝุ่นละออง PM2.5 คืออะไร?";
                 subtitle.innerText = "PM2.5 Standard (กรมควบคุมมลพิษ ประเทศไทย)";
-                desc.innerHTML = "<b>PM2.5</b> คือฝุ่นละอองขนาดเล็กไม่เกิน 2.5 ไมครอน สามารถเล็ดลอดเข้าสู่ปอดและกระแสเลือดได้โดยตรง กรมควบคุมมลพิษได้กำหนดเกณฑ์มาตรฐานใหม่ไว้ดังนี้:";
+                desc.innerHTML = "<b>PM2.5</b> คือฝุ่นละอองขนาดเล็กไม่เกิน 2.5 ไมครอน สามารถเล็ดลอดเข้าสู่ปอดและกระแสเลือดได้โดยตรง กรมควบคุมมลพิษได้กำหนดเกณฑ์มาตรฐานไว้ดังนี้:";
                 body.innerHTML = `
                     <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
                         <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 15.0</span>

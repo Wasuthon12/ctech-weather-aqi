@@ -13,8 +13,6 @@ const OPENWEATHER_KEY = process.env.OPENWEATHER_KEY;
 const TELEGRAM_CHANNEL = '@ctech_pm25_alert'; 
 
 let lastPM25AlertLevel = "Safe";
-// 🌧️ ตัวแปรจำสถานะฝนตกของแต่ละพื้นที่ (ป้องกันการแจ้งเตือนซ้ำซ้อน)
-let lastRainStates = { main: false, pattaya: false, siracha: false };
 
 // 📌 พิกัดสำหรับแต่ละเมือง (Chonburi, Pattaya, Si Racha)
 const LOCATIONS = {
@@ -68,21 +66,16 @@ app.listen(PORT, () => {
     console.log(`🌐 [Web Server] แดชบอร์ดพร้อมทำงาน พอร์ต: ${PORT}`);
 });
 
-// 🚨 ฟังก์ชันส่งข้อความเตือนภัยด่วน พร้อมปุ่ม Inline Button
+// 🚨 ฟังก์ชันส่งข้อความเตือนภัยด่วน
 async function sendTelegramAlert(message) {
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
         await axios.post(url, {
             chat_id: TELEGRAM_CHANNEL,
             text: message,
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '🌐 เข้าชมแดชบอร์ดสภาพอากาศสด', url: 'https://ctc-weather-report.onrender.com/' }]
-                ]
-            }
+            parse_mode: 'HTML'
         });
-        console.log('🚨 [Telegram Alert] ส่งข้อความแจ้งเตือนด่วนเรียบร้อย!');
+        console.log('🚨 [Telegram Alert] ส่งข้อความแจ้งเตือนวิกฤตด่วนเรียบร้อย!');
     } catch (error) {
         console.error('❌ ไม่สามารถส่งข้อความแจ้งเตือนด่วนเข้า Telegram ได้:', error.message);
     }
@@ -95,12 +88,7 @@ async function sendTelegramPhoto(photoUrl, caption) {
             chat_id: TELEGRAM_CHANNEL,
             photo: photoUrl,
             caption: caption,
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{ text: '🌐 เข้าชมแดชบอร์ดสภาพอากาศสด', url: 'https://ctc-weather-report.onrender.com/' }]
-                ]
-            }
+            parse_mode: 'HTML'
         });
         console.log('🎨 [Telegram] ส่งสรุปรายงานเรียบร้อย!');
     } catch (error) {
@@ -159,8 +147,8 @@ function calculateSmartUVIndex(clouds = 0) {
     return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
 }
 
-// 🔄 ฟังก์ชันดึงข้อมูลแบบไดนามิกตามเมือง (ประหยัด API Quota)
-async function fetchCityData(key, isReportTime = false) {
+// 🔄 ฟังก์ชันดึงข้อมูลแบบไดนามิกตามเมือง
+async function fetchCityData(key) {
     const locConfig = LOCATIONS[key];
     try {
         // 1. IQAir API
@@ -178,8 +166,9 @@ async function fetchCityData(key, isReportTime = false) {
                 currentPM25 = Math.round(currentAQI * 0.35); 
             }
         } catch (errIQ) {
-            currentAQI = storeData[key].aqi || (key === 'pattaya' ? 38 : key === 'siracha' ? 56 : 28);
-            currentPM25 = storeData[key].pm25 || (key === 'pattaya' ? 13 : key === 'siracha' ? 20 : 7);
+            console.log(`⚠️ IQAir ${locConfig.name} ขัดข้อง (${errIQ.message}) - ใช้ค่าประมาณการสำรอง`);
+            currentAQI = key === 'pattaya' ? 38 : key === 'siracha' ? 56 : 28;
+            currentPM25 = key === 'pattaya' ? 13 : key === 'siracha' ? 20 : 7;
         }
 
         let aqiLabel = "";
@@ -188,9 +177,9 @@ async function fetchCityData(key, isReportTime = false) {
         else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-        // 2. OpenWeather API
+        // 2. OpenWeather API (ใช้ lat & lon แทนชื่อเมือง)
         let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
-        let dailyForecast = storeData[key].forecast || [];
+        let dailyForecast = [];
 
         try {
             const weatherRes = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
@@ -201,28 +190,24 @@ async function fetchCityData(key, isReportTime = false) {
             clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
             rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
 
-            // 💡 ดึง Forecast เฉพาะรอบส่งรายงานสรุป 30 นาที เท่านั้นเพื่อประหยัด Quota
-            if (isReportTime || dailyForecast.length === 0) {
-                const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
-                const checkedDates = new Set();
-                const todayDateNum = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getDate();
-                dailyForecast = [];
+            const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
+            const checkedDates = new Set();
+            const todayDateNum = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getDate();
 
-                for (const item of forecastRes.data.list) {
-                    const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
-                    const itemDateNum = itemDate.getDate();
+            for (const item of forecastRes.data.list) {
+                const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+                const itemDateNum = itemDate.getDate();
 
-                    if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
-                        dailyForecast.push({
-                            day: itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }),
-                            temp: Math.round(item.main.temp),
-                            humidity: item.main.humidity,
-                            desc: item.weather[0].description,
-                            icon: item.weather[0].icon
-                        });
-                        checkedDates.add(itemDateNum);
-                        if (dailyForecast.length >= 3) break;
-                    }
+                if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
+                    dailyForecast.push({
+                        day: itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }),
+                        temp: Math.round(item.main.temp),
+                        humidity: item.main.humidity,
+                        desc: item.weather[0].description,
+                        icon: item.weather[0].icon
+                    });
+                    checkedDates.add(itemDateNum);
+                    if (dailyForecast.length >= 3) break;
                 }
             }
         } catch (errOWM) {
@@ -233,8 +218,8 @@ async function fetchCityData(key, isReportTime = false) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        // 🌧️ ตรวจจับฝนตก: ปริมาณน้ำฝน >= 0.5 mm/ชม. หรือ Weather ID หมวดฝน (2xx, 3xx, 5xx)
-        const hasRain = rainVolume >= 0.5 || (weatherId >= 200 && weatherId < 600);
+        // 🌧️ ปรับเงื่อนไขฝนตก: ต้องมีปริมาณน้ำฝนวัดได้ตั้งแต่ 0.5 mm/ชม. ขึ้นไป เพื่อป้องกันแจ้งเตือนผิดพลาดจากละอองฝนเล็กน้อย
+        const hasRain = rainVolume >= 0.5;
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
@@ -259,41 +244,17 @@ async function fetchCityData(key, isReportTime = false) {
 
 async function checkAirAndWeatherAll(isReportTime = false) {
     await Promise.all([
-        fetchCityData('main', isReportTime),
-        fetchCityData('pattaya', isReportTime),
-        fetchCityData('siracha', isReportTime)
+        fetchCityData('main'),
+        fetchCityData('pattaya'),
+        fetchCityData('siracha')
     ]);
 
     const mainData = storeData.main;
-
-    // 🌧️ 1. ตรวจจับเหตุการณ์ฝนตกทันที (Immediate Rain Alert)
-    for (const key of Object.keys(LOCATIONS)) {
-        const locData = storeData[key];
-        const locName = LOCATIONS[key].name;
-
-        // เมื่อตรวจพบฝนเริ่มตก (เปลี่ยนสถานะจาก false เป็น true)
-        if (locData.isRaining && !lastRainStates[key]) {
-            lastRainStates[key] = true;
-            
-            let rainAlertMsg = `🌧️ <b>[ แจ้งเตือนฝนตกด่วน! ]</b>\n📍 <i>พื้นที่: ${locName}</i>\n\n`;
-            rainAlertMsg += `<blockquote>☔ <b>ตรวจพบฝนตกในพื้นที่ทันที!</b>\n`;
-            rainAlertMsg += `• สภาพอากาศ: <code>${locData.weatherDesc}</code>\n`;
-            rainAlertMsg += `• อุณหภูมิ: <code>${locData.temp}°C</code> | ความชื้น: <code>${locData.humidity}%</code>\n`;
-            rainAlertMsg += `• ⚠️ <b>คำแนะนำ:</b> โปรดเก็บเสื้อผ้า และพกร่มขณะเปลี่ยนอาคารเรียนด่วน</blockquote>\n\n`;
-            rainAlertMsg += `⏰ <i>ตรวจพบเมื่อ: ${locData.updateTime} น.</i>`;
-            
-            await sendTelegramAlert(rainAlertMsg);
-        } else if (!locData.isRaining && lastRainStates[key]) {
-            // เมื่อฝนหยุดตก รีเซ็ตสถานะ
-            lastRainStates[key] = false;
-        }
-    }
-
-    // 🚨 2. ตรวจจับเหตุการณ์วิกฤตฝุ่น PM2.5 ทันที (Immediate PM2.5 Alert)
     let currentAlertLevel = "Safe";
     if (mainData.pm25 > 55) currentAlertLevel = "Danger";
     else if (mainData.pm25 > 35) currentAlertLevel = "Warning";
 
+    // 🚨 1. การ์ดแจ้งเตือนวิกฤตฝุ่นด่วน
     if (currentAlertLevel !== lastPM25AlertLevel && currentAlertLevel !== "Safe") {
         lastPM25AlertLevel = currentAlertLevel;
         
@@ -309,7 +270,8 @@ async function checkAirAndWeatherAll(isReportTime = false) {
             alertMsg += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
             alertMsg += `• ⚠️ <b>คำแนะนำ:</b> กลุ่มเสี่ยงควรลดระยะเวลาทำกิจกรรมกลางแจ้ง</blockquote>\n\n`;
         }
-        alertMsg += `⏰ <i>ตรวจพบเมื่อ: ${mainData.updateTime} น.</i>`;
+        alertMsg += `⏰ <i>ตรวจพบเมื่อ: ${mainData.updateTime} น.</i>\n`;
+        alertMsg += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ดสภาพอากาศสด</a>`;
         
         await sendTelegramAlert(alertMsg);
     } else if (currentAlertLevel === "Safe" && lastPM25AlertLevel !== "Safe") {
@@ -317,7 +279,7 @@ async function checkAirAndWeatherAll(isReportTime = false) {
         console.log("🍃 [Alert System] สภาพอากาศกลับเข้าสู่สภาวะปกติเรียบร้อย");
     }
 
-    // 🌤️ 3. ส่งรายงานสรุปประจำรอบ (ทุกๆ 30 นาที)
+    // 🌤️ 2. รายงานสรุปรายชั่วโมง
     if (isReportTime) {
         let themeColor = mainData.aqi <= 25 ? "#3b82f6" : mainData.aqi <= 50 ? "#10b981" : mainData.aqi <= 100 ? "#f59e0b" : "#ef4444";
         
@@ -332,7 +294,7 @@ async function checkAirAndWeatherAll(isReportTime = false) {
         };
         const chartUrl = `https://quickchart.io/chart?bkg=%230f172a&w=700&h=420&devicePixelRatio=2&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
-        let textCaption = `<b>🌤️ TECHNO-CHON WEATHER REPORT (สรุป 30 นาที)</b>\n📍 <i>สถานีหลัก: อ.เมืองชลบุรี</i>\n\n`;
+        let textCaption = `<b>🌤️ TECHNO-CHON WEATHER REPORT</b>\n📍 <i>สถานีหลัก: อ.เมืองชลบุรี</i>\n\n`;
         
         textCaption += `<blockquote>🍃 <b>คุณภาพอากาศ (Air Quality)</b>\n`;
         textCaption += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
@@ -350,27 +312,28 @@ async function checkAirAndWeatherAll(isReportTime = false) {
         textCaption += `• 🏭 <b>ศรีราชา:</b> AQI <code>${storeData.siracha.aqi}</code> (${storeData.siracha.aqiLabel})</blockquote>\n\n`;
 
         if (mainData.isRaining) {
-            textCaption += `<blockquote>🌧️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (พกร่มก่อนเปลี่ยนอาคาร)</b></blockquote>\n\n`;
+            textCaption += `<blockquote>🌧️ <b>แจ้งเตือน: ตรวจพบฝนตกในพื้นที่! (เข้าตึกด่วน)</b></blockquote>\n\n`;
         }
 
-        textCaption += `⏰ <i>อัปเดตล่าสุด: ${mainData.updateTime} น.</i>`;
+        textCaption += `⏰ <i>อัปเดตล่าสุด: ${mainData.updateTime} น.</i>\n`;
+        textCaption += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมระบบแดชบอร์ดสดแบบเต็ม</a>`;
 
         await sendTelegramPhoto(chartUrl, textCaption);
     }
 }
 
-// 🔄 1. ตรวจเช็กสภาพอากาศและฝนตกด่วนทุก 6 นาที (เพื่อให้ไม่เกินโควตา OpenWeather 1,000 calls/วัน)
-cron.schedule('*/6 * * * *', () => {
-    console.log(`⏰ [Cron Job] ตรวจเช็กสภาพอากาศสด (ทุก 6 นาที)`);
+// 🔄 1. ดึงข้อมูลสภาพอากาศใหม่และเช็กฝุ่นวิกฤตทุกๆ 15 นาที
+cron.schedule('*/15 * * * *', () => {
+    console.log(`⏰ [Cron Job] อัปเดตข้อมูลสภาพอากาศลง Store (ทุก 15 นาที)`);
     checkAirAndWeatherAll(false); 
 });
 
-// 📢 2. ส่งรายงานสรุปสภาพอากาศเข้า Telegram ทุกๆ 30 นาที (ตรงนาทีที่ 0 และ 30)
-cron.schedule('*/30 * * * *', () => {
-    console.log(`⏰ [Cron Job] ส่งรายงานสรุปเข้า Telegram (ทุก 30 นาที)`);
+// 📢 2. ส่งรายงานสรุปสภาพอากาศเข้า Telegram ทุกๆ 1 ชั่วโมง (ตรงนาทีที่ 0)
+cron.schedule('0 * * * *', () => {
+    console.log(`⏰ [Cron Job] ส่งรายงานสรุปเข้า Telegram (ทุก 1 ชั่วโมง)`);
     checkAirAndWeatherAll(true); 
 });
 
 // เริ่มต้นรันดึงข้อมูลครั้งแรกเมื่อเปิดเซิร์ฟเวอร์
 checkAirAndWeatherAll(false);
-console.log('🚀 [Ready] ระบบสแตนด์บาย เช็กเหตุการณ์ด่วนทุก 6 นาที และส่งสรุป Telegram ทุก 30 นาที');
+console.log('🚀 [Ready] ระบบสแตนด์บาย รันข้อมูลทุก 15 นาที และส่งสรุป Telegram ทุก 1 ชม.');

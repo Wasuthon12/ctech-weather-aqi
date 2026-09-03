@@ -72,7 +72,7 @@ app.listen(PORT, () => {
     console.log(`🌐 [Web Server] แดชบอร์ดพร้อมทำงาน พอร์ต: ${PORT}`);
 });
 
-// 🚨 ฟังก์ชันส่งภาพและข้อความแจ้งเตือนด่วนเข้า Telegram
+// 🚨 ฟังก์ชันส่งภาพและข้อความแจ้งเตือนด่วนเข้า Telegram (แก้ไขจุดที่ 1)
 async function sendTelegramPhoto(photoUrl, caption) {
     try {
         const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`;
@@ -83,8 +83,10 @@ async function sendTelegramPhoto(photoUrl, caption) {
             parse_mode: 'HTML'
         });
         console.log('🚨 [Telegram Alert] ส่งการ์ดแจ้งเตือนสภาวะเตือนภัยเรียบร้อย!');
+        return true; // ส่งสำเร็จ
     } catch (error) {
         console.error('❌ ไม่สามารถส่งภาพเข้า Telegram ได้:', error.message);
+        return false; // ส่งไม่สำเร็จ
     }
 }
 
@@ -210,7 +212,9 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        const hasRain = rainVolume >= 0.5;
+        // 🌧️ แก้ไขจุดที่ 2: ปรับปรุงเงื่อนไขตรวจจับฝนด้วย Weather ID
+        const isRainingByCode = weatherId >= 200 && weatherId < 600;
+        const hasRain = rainVolume >= 0.2 || isRainingByCode;
 
         const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
@@ -267,6 +271,9 @@ async function checkAirAndWeatherAll() {
     const hasUVAlert = currentUVState !== lastAlertStates.uv && currentUVState !== "Normal";
     const hasRainAlert = currentRainState && !lastAlertStates.rain;
 
+    // 🛑 แก้ไขจุดที่ 3: ป้องกัน State Trap ถ้ายิง Telegram ไม่เข้า
+    let shouldUpdateState = true;
+
     // หากพบเงื่อนไขเตือนภัยข้อใดข้อหนึ่ง ให้ส่งการ์ดแจ้งเตือนด่วนเข้า Telegram
     if (hasPM25Alert || hasHeatAlert || hasUVAlert || hasRainAlert) {
         
@@ -274,7 +281,7 @@ async function checkAirAndWeatherAll() {
         if (hasPM25Alert) alertReasons.push(`😷 <b>ฝุ่น PM2.5 เกินเกณฑ์มาตรฐาน (${mainData.pm25} µg/m³)!</b>`);
         if (hasHeatAlert) alertReasons.push(`🔥 <b>ดัชนีความร้อนอยู่ในระดับเสี่ยง (${mainData.heatIndex}°C)!</b>`);
         if (hasUVAlert) alertReasons.push(`☀️ <b>ความเข้มข้นรังสี UV สูงเกินมาตรฐาน (ระดับ ${mainData.uvIndex})!</b>`);
-        if (hasRainAlert) alertReasons.push(`🌧️ <b>ตรวจพบฝนตกในบริเวณสถานศึกษา (เข้าตึกด่วน)!</b>`);
+        if (hasRainAlert) alertReasons.push(`🌧️ <b>ตรวจพบฝนตกในบริเวณสถานศึกษา (ระวังถนนลื่นและเตรียมร่ม)!</b>`);
 
         let themeColor = currentPM25State === "Danger" || currentHeatState === "Danger" || currentUVState === "Danger" ? "#ef4444" : "#f59e0b";
 
@@ -305,16 +312,24 @@ async function checkAirAndWeatherAll() {
         textCaption += `⏰ <i>ตรวจพบเมื่อ: ${mainData.updateTime} น.</i>\n`;
         textCaption += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ดสดแบบเต็ม</a>`;
 
-        await sendTelegramPhoto(chartUrl, textCaption);
+        // รอผลลัพธ์จากฟังก์ชันส่ง
+        const isSuccess = await sendTelegramPhoto(chartUrl, textCaption);
+        
+        if (!isSuccess) {
+            shouldUpdateState = false; 
+            console.log("⚠️ [System] ระงับการบันทึกสถานะ เนื่องจากส่ง Telegram ไม่สำเร็จ");
+        }
     }
 
-    // อัปเดตสถานะล่าสุดเก็บไว้ในระบบ
-    lastAlertStates = {
-        pm25: currentPM25State,
-        heat: currentHeatState,
-        uv: currentUVState,
-        rain: currentRainState
-    };
+    // อัปเดตสถานะล่าสุดเก็บไว้ในระบบ (อัปเดตเฉพาะเมื่อยิงผ่าน หรือไม่มีเตือนภัย)
+    if (shouldUpdateState) {
+        lastAlertStates = {
+            pm25: currentPM25State,
+            heat: currentHeatState,
+            uv: currentUVState,
+            rain: currentRainState
+        };
+    }
 }
 
 // 🔄 ดึงข้อมูลสภาพอากาศและเช็กดัชนีเตือนภัยทุกๆ 15 นาที

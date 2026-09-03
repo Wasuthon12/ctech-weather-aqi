@@ -1,3 +1,14 @@
+ผมได้อัปเดตโครงสร้างโค้ดทั้งหมดโดยรวมปุ่ม Telegram เข้าไปใน `<footer>` ตามที่ต้องการ พร้อมทั้งเพิ่มเอฟเฟกต์ **Fade-in แบบไล่ระดับ (Staggered Animation)** เมื่อเปิดหน้าเว็บ และเอฟเฟกต์ **Shimmer (แสงวิ่ง)** ที่ปุ่ม Telegram เพื่อดึงดูดให้ผู้ใช้กดเข้าไปรับการแจ้งเตือนสภาพอากาศและ PM2.5 ครับ
+
+**สิ่งที่เพิ่มเข้ามาในเวอร์ชันนี้:**
+
+* **Load Animation:** เพิ่ม `@keyframes fadeIn` ให้ส่วนประกอบต่างๆ ค่อยๆ ปรากฏขึ้นมาอย่างนุ่มนวล (Smooth Load)
+* **Shimmer Effect:** เพิ่มลูกเล่นแสงวิ่งพาดผ่านปุ่ม Telegram
+* **Glow Footer:** เพิ่มแสงพื้นหลังจางๆ (Gradient Blur) ในส่วนท้ายของเว็บให้ดูมีมิติเข้ากับธีม
+
+สามารถคัดลอกโค้ดฉบับสมบูรณ์ด้านล่างนี้ไปใช้งานแทนไฟล์เดิมได้เลยครับ
+
+```html
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -40,12 +51,32 @@
             animation: rainFall 0.8s linear infinite;
         }
 
-        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต Techno-Chon */
+        /* 🤖 อนิเมชันขยับดุ๊กดิ๊กของมาสคอต */
         @keyframes mascotBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
         }
         .animate-mascot { animation: mascotBounce 3s ease-in-out infinite; }
+
+        /* 🌟 เอฟเฟกต์ Fade-in ตอนโหลดหน้าเว็บ (ใหม่) */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { 
+            opacity: 0;
+            animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; 
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        .delay-500 { animation-delay: 500ms; }
+
+        /* ✨ เอฟเฟกต์แสงวิ่งสำหรับปุ่ม (ใหม่) */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
 
         /* 🎨 Custom Classes สำหรับสลับธีม */
         /* 🌙 Dark Theme */
@@ -145,8 +176,8 @@
     <!-- ☀️/🌙 แผงตกแต่งสกายไลท์มุมขวาบน -->
     <div id="sky-element" class="absolute top-4 right-8 pointer-events-none opacity-90 transition-all duration-1000 text-6xl md:text-8xl z-0"></div>
 
-    <!-- Header -->
-    <header class="header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
+    <!-- Header (Fade In) -->
+    <header class="animate-fade-in header-bg backdrop-blur-md border-b shadow-lg py-4 px-6 mb-6 z-10 transition-colors duration-500">
         <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div class="shadow-lg shadow-red-500/20 rounded-2xl overflow-hidden flex-shrink-0">
@@ -200,8 +231,8 @@
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
-        <!-- 📍 Navigation Tabs เลือกพื้นที่ -->
-        <div class="card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
+        <!-- 📍 Navigation Tabs เลือกพื้นที่ (Fade In Delay 100) -->
+        <div class="animate-fade-in delay-100 card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
             <div class="px-2 py-1 text-xs font-bold text-indigo-500 flex items-center gap-1.5 border-b sm:border-b-0 sm:border-r border-slate-400/30 pb-2 sm:pb-0 sm:pr-3">
                 <i class="fa-solid fa-location-dot"></i>
                 <span>เลือกพื้นที่:</span>
@@ -222,8 +253,8 @@
             </div>
         </div>
 
-        <!-- 🤖 Techno-Chon Mascot Section -->
-        <div class="card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
+        <!-- 🤖 Techno-Chon Mascot Section (Fade In Delay 200) -->
+        <div class="animate-fade-in delay-200 card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
                 <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-500/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
                     🤖
@@ -258,8 +289,8 @@
             </div>
         </div>
 
-        <!-- 📊 Real-time Metrics Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <!-- 📊 Real-time Metrics Grid (Fade In Delay 300) -->
+        <div class="animate-fade-in delay-300 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
                 <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
                     คลิกดูเกณฑ์ ℹ️
@@ -352,8 +383,8 @@
             </div>
         </div>
 
-        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่ -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
+        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่ (Fade In Delay 400) -->
+        <div class="animate-fade-in delay-400 card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
                 <i class="fa-solid fa-layer-group text-indigo-600 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-heading">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
@@ -415,37 +446,38 @@
             </div>
         </div>
 
-        <!-- 🔮 พยากรณ์อากาศล่วงหน้า 3 วัน -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
-            <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
-                <i class="fa-solid fa-calendar-days text-indigo-600 text-lg"></i>
-                <h2 class="text-base font-bold tracking-wide text-heading">พยากรณ์อากาศล่วงหน้า 3 วัน (<span id="forecast-location-name">อ.เมืองชลบุรี</span>)</h2>
-            </div>
-            <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <p class="text-center text-sm text-muted font-bold col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
-            </div>
-        </div>
-
-        <!-- 📈 Chart Section -->
-        <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 border-b border-slate-400/30 pb-3">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
-                    <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
+        <!-- 🔮 พยากรณ์อากาศล่วงหน้า 3 วัน & 📈 Chart Section (Fade In Delay 500) -->
+        <div class="animate-fade-in delay-500">
+            <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
+                <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
+                    <i class="fa-solid fa-calendar-days text-indigo-600 text-lg"></i>
+                    <h2 class="text-base font-bold tracking-wide text-heading">พยากรณ์อากาศล่วงหน้า 3 วัน (<span id="forecast-location-name">อ.เมืองชลบุรี</span>)</h2>
+                </div>
+                <div id="forecast-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <p class="text-center text-sm text-muted font-bold col-span-3 py-4">กำลังโหลดข้อมูลพยากรณ์ล่วงหน้า...</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-4 text-xs font-bold mb-3 justify-end">
-                <span class="flex items-center gap-1.5 text-indigo-400">
-                    <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
-                </span>
-                <span class="flex items-center gap-1.5 text-rose-400">
-                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
-                </span>
-            </div>
+            <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl transition-colors duration-500">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 border-b border-slate-400/30 pb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-indigo-500 text-lg"></i>
+                        <h2 class="text-base font-bold tracking-wide text-heading">กราฟวิเคราะห์แนวโน้มสภาพอากาศย้อนหลัง (<span id="chart-location-name">อ.เมืองชลบุรี</span>)</h2>
+                    </div>
+                </div>
 
-            <div class="relative w-full h-72 md:h-80">
-                <canvas id="historyChart"></canvas>
+                <div class="flex items-center gap-4 text-xs font-bold mb-3 justify-end">
+                    <span class="flex items-center gap-1.5 text-indigo-400">
+                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (แกนซ้าย)
+                    </span>
+                    <span class="flex items-center gap-1.5 text-rose-400">
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (แกนขวา)
+                    </span>
+                </div>
+
+                <div class="relative w-full h-72 md:h-80">
+                    <canvas id="historyChart"></canvas>
+                </div>
             </div>
         </div>
     </main>
@@ -519,9 +551,7 @@
                     <stop offset="100%" stop-color="#0F172A"/>
                 </linearGradient>
             </defs>
-
             <ellipse cx="60" cy="152" rx="26" ry="5" fill="rgba(0,0,0,0.3)" class="animate-pulse"/>
-
             <g class="mascot-legs">
                 <g class="leg-left">
                     <rect x="42" y="102" width="11" height="38" rx="5" fill="#111622"/>
@@ -534,20 +564,15 @@
                     <rect x="61" y="142" width="17" height="3" fill="#475569" rx="1"/>
                 </g>
             </g>
-
             <path d="M 35 58 L 85 58 L 80 108 L 40 108 Z" fill="#FFFFFF"/>
-            
             <path d="M 31 58 Q 48 58 52 82 L 41 108 L 31 108 Z" fill="url(#ctcSuit)"/>
             <path d="M 89 58 Q 72 58 68 82 L 79 108 L 89 108 Z" fill="url(#ctcSuit)"/>
-            
             <polygon points="45,58 60,72 52,58" fill="#F8FAFC"/>
             <polygon points="75,58 60,72 68,58" fill="#F8FAFC"/>
             <polygon points="57,65 63,65 65,96 60,103 55,96" fill="url(#ctcTie)"/>
-
             <circle cx="74" cy="74" r="5" fill="#DC2626"/>
             <circle cx="74" cy="74" r="3.6" fill="#FFFFFF"/>
             <circle cx="74" cy="74" r="1.8" fill="#1E1B4B"/>
-
             <g class="leg-right">
                 <rect x="23" y="60" width="10" height="34" rx="5" fill="url(#ctcSuit)" transform="rotate(12 28 60)"/>
                 <circle cx="26" cy="94" r="5" fill="url(#ctcSkin)"/>
@@ -556,29 +581,22 @@
                 <rect x="87" y="60" width="10" height="34" rx="5" fill="url(#ctcSuit)" transform="rotate(-12 92 60)"/>
                 <circle cx="94" cy="94" r="5" fill="url(#ctcSkin)"/>
             </g>
-
             <circle cx="33" cy="38" r="5" fill="url(#ctcSkin)"/>
             <circle cx="87" cy="38" r="5" fill="url(#ctcSkin)"/>
             <rect x="35" y="16" width="50" height="44" rx="22" fill="url(#ctcSkin)"/>
-            
             <ellipse cx="49" cy="36" rx="5" ry="7" fill="#1E1B4B"/>
             <circle cx="51" cy="33" r="2.2" fill="#FFFFFF"/>
             <circle cx="47" cy="38" r="1" fill="#FFFFFF"/>
-            
             <ellipse cx="71" cy="36" rx="5" ry="7" fill="#1E1B4B"/>
             <circle cx="73" cy="33" r="2.2" fill="#FFFFFF"/>
             <circle cx="69" cy="38" r="1" fill="#FFFFFF"/>
-
             <path d="M 43 25 Q 49 22 55 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
             <path d="M 65 25 Q 71 22 77 25" stroke="#1E1B4B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
             <ellipse cx="44" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
             <ellipse cx="76" cy="43" rx="4" ry="2" fill="#FF7B7B" opacity="0.5"/>
-
             <path d="M 54 43 Q 60 49 66 43" fill="none" stroke="#991B1B" stroke-width="2.2" stroke-linecap="round"/>
-
             <path d="M 33 25 C 33 6, 87 6, 87 25 C 87 16, 75 8, 60 8 C 45 8, 33 16, 33 25 Z" fill="url(#ctcHair)"/>
             <path d="M 33 22 Q 45 32 48 20 Q 58 34 62 18 Q 72 32 87 20 C 82 10, 71 10, 60 10 C 49 10, 38 10, 33 22 Z" fill="url(#ctcHair)"/>
-
             <polygon points="60,2 8,14 60,25 112,14" fill="url(#ctcCap)"/>
             <rect x="42" y="14" width="36" height="9" fill="#1E293B" rx="2"/>
             <circle cx="60" cy="13.5" r="2.2" fill="#F59E0B"/>
@@ -587,8 +605,23 @@
         </svg>
     </div>
 
-    <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-4 text-xs font-semibold z-10">
-        <p>พัฒนาโดย สาขาวิชาเทคโนโลยีธุรกิจดิจิทัล Techno-Chon</p>
+    <!-- 📢 Footer ฉบับอัปเดต (รวมปุ่ม Telegram & เอฟเฟกต์ Glow/Shimmer) -->
+    <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-5 text-xs font-semibold z-10 flex flex-col items-center justify-center gap-4 relative overflow-hidden mt-6">
+        <!-- เอฟเฟกต์ Gradient เรืองแสงเบาๆ ในพื้นหลัง Footer -->
+        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 opacity-60 blur-xl pointer-events-none"></div>
+
+        <p class="relative z-10">พัฒนาโดย สาขาวิชาเทคโนโลยีธุรกิจดิจิทัล Techno-Chon</p>
+        
+        <!-- 💬 ปุ่ม Telegram Link พร้อมเอฟเฟกต์ Shimmer -->
+        <a href="https://t.me/weather_techno_chon" target="_blank" rel="noopener noreferrer" 
+           class="relative z-10 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#0088cc]/20 to-[#0088cc]/10 hover:from-[#0088cc] hover:to-[#00A3F5] text-[#0088cc] hover:text-white border border-[#0088cc]/40 hover:border-transparent rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(0,136,204,0.15)] hover:shadow-[0_0_25px_rgba(0,136,204,0.5)] active:scale-95 group overflow-hidden">
+            
+            <!-- Shimmer แสงวิ่ง -->
+            <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent transform skew-x-12"></div>
+            
+            <i class="fa-brands fa-telegram text-lg group-hover:animate-bounce relative z-10"></i>
+            <span class="text-xs font-bold tracking-wide relative z-10">รับแจ้งเตือนสภาพอากาศและ PM2.5 ผ่าน Telegram</span>
+        </a>
     </footer>
 
     <script>
@@ -653,17 +686,11 @@
 
         /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (เกณฑ์มาตรฐานไทย PCD) */
         function getAqiColorClass(aqi) {
-            if (aqi <= 25) {
-                return { text: 'text-sky-400', bg: 'bg-sky-400' };
-            } else if (aqi <= 50) {
-                return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
-            } else if (aqi <= 100) {
-                return { text: 'text-amber-400', bg: 'bg-amber-400' };
-            } else if (aqi <= 200) {
-                return { text: 'text-orange-500', bg: 'bg-orange-500' };
-            } else {
-                return { text: 'text-red-500', bg: 'bg-red-500' };
-            }
+            if (aqi <= 25) return { text: 'text-sky-400', bg: 'bg-sky-400' };
+            if (aqi <= 50) return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
+            if (aqi <= 100) return { text: 'text-amber-400', bg: 'bg-amber-400' };
+            if (aqi <= 200) return { text: 'text-orange-500', bg: 'bg-orange-500' };
+            return { text: 'text-red-500', bg: 'bg-red-500' };
         }
 
         function openModal(type) {
@@ -1200,4 +1227,6 @@
         });
     </script>
 </body>
-</html>
+</html> 
+
+```

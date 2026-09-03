@@ -596,16 +596,13 @@
 
     <!-- 📢 Footer ฉบับอัปเดต (รวมปุ่ม Telegram & เอฟเฟกต์ Glow/Shimmer) -->
     <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-5 text-xs font-semibold z-10 flex flex-col items-center justify-center gap-4 relative overflow-hidden mt-6">
-        <!-- เอฟเฟกต์ Gradient เรืองแสงเบาๆ ในพื้นหลัง Footer -->
         <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 opacity-60 blur-xl pointer-events-none"></div>
 
         <p class="relative z-10">พัฒนาโดย สาขาวิชาเทคโนโลยีธุรกิจดิจิทัล Techno-Chon</p>
         
-        <!-- 💬 ปุ่ม Telegram Link พร้อมเอฟเฟกต์ Shimmer -->
         <a href="https://t.me/weather_techno_chon" target="_blank" rel="noopener noreferrer" 
            class="relative z-10 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#0088cc]/20 to-[#0088cc]/10 hover:from-[#0088cc] hover:to-[#00A3F5] text-[#0088cc] hover:text-white border border-[#0088cc]/40 hover:border-transparent rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(0,136,204,0.15)] hover:shadow-[0_0_25px_rgba(0,136,204,0.5)] active:scale-95 group overflow-hidden">
             
-            <!-- Shimmer แสงวิ่ง -->
             <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent transform skew-x-12"></div>
             
             <i class="fa-brands fa-telegram text-lg group-hover:animate-bounce relative z-10"></i>
@@ -642,10 +639,27 @@
             }
         }
 
+        // --- เพิ่มฟังก์ชันขออนุญาตส่งการแจ้งเตือน ---
+        function requestNotificationPermission() {
+            if ('Notification' in window && 'PushManager' in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('🔔 ผู้ใช้อนุญาตให้รับการแจ้งเตือนแล้ว');
+                    } else {
+                        console.log('🔕 ผู้ใช้ปิดกั้นการแจ้งเตือน');
+                    }
+                });
+            }
+        }
+
+        // --- ลงทะเบียน Service Worker และเรียกใช้ขอสิทธิ์แจ้งเตือน ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('✅ Service Worker Registered:', reg.scope))
+                    .then(reg => {
+                        console.log('✅ Service Worker Registered:', reg.scope);
+                        requestNotificationPermission();
+                    })
                     .catch(err => console.error('❌ Service Worker Registration Failed:', err));
             });
         }
@@ -1005,7 +1019,6 @@
             }
         }
 
-        // ฟังก์ชัน updateChart ที่ปรับเป็น Mixed Chart เรียบร้อยแล้ว
         function updateChart(dataList) {
             if (!dataList || dataList.length === 0) return;
             const labels = dataList.map(d => d.time);
@@ -1042,7 +1055,7 @@
                         labels: labels,
                         datasets: [
                             {
-                                type: 'bar', // กราฟแท่ง AQI
+                                type: 'bar',
                                 label: 'ดัชนี AQI',
                                 data: aqiData,
                                 yAxisID: 'yAQI',
@@ -1051,10 +1064,10 @@
                                 borderWidth: 1,
                                 borderRadius: 6,
                                 barPercentage: 0.5,
-                                order: 2 // ให้อยู่ด้านหลัง
+                                order: 2
                             },
                             {
-                                type: 'line', // กราฟเส้น อุณหภูมิ
+                                type: 'line',
                                 label: 'อุณหภูมิ (°C)',
                                 data: tempData,
                                 yAxisID: 'yTemp',
@@ -1068,7 +1081,7 @@
                                 pointHoverRadius: 7,
                                 fill: true,
                                 tension: 0.4,
-                                order: 1 // ให้อยู่ด้านหน้า
+                                order: 1
                             }
                         ]
                     },

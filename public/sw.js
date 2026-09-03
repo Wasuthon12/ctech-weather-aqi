@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ctc-weather-v2'; // อัปเดตเวอร์ชันเป็น v2
+const CACHE_NAME = 'weather-techno-chon-v2'; // เปลี่ยนชื่อ Cache 
 const urlsToCache = [
   '/',
   '/index.html',
@@ -48,5 +48,26 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => caches.match(event.request))
+  );
+});
+
+// --- เพิ่มส่วนนี้สำหรับการแจ้งเตือน (Push Notifications) ---
+self.addEventListener('push', function(event) {
+  // ตั้งค่าเริ่มต้น และเปลี่ยนชื่อเป็น Weather Techno Chon
+  let payload = { title: 'Weather Techno Chon', body: 'มีการอัปเดตสภาพอากาศและ PM2.5' };
+
+  // ถ้ารับข้อมูลเป็น JSON จากเซิร์ฟเวอร์
+  if (event.data) {
+    payload = event.data.json(); 
+  }
+
+  const options = {
+    body: payload.body,
+    icon: '/icon-192.png', // เปลี่ยนชื่อไฟล์ให้ตรงกับรูปโลโก้โปรเจกต์
+    badge: '/icon-192.png'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, options)
   );
 });

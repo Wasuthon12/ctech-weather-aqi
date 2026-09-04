@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const IQAIR_KEY = process.env.IQAIR_KEY;
 const OPENWEATHER_KEY = process.env.OPENWEATHER_KEY;
-const TELEGRAM_CHANNEL = '@ctech_pm25_alert'; 
+
+// 📌 แก้ไข Username ให้ตรงกับแชนแนลจริง
+const TELEGRAM_CHANNEL = process.env.TELEGRAM_CHANNEL || '@weather_techno_chon'; 
 
 // 📌 ตัวแปรจำสถานะการแจ้งเตือนล่าสุดเพื่อป้องกันการส่งข้อความซ้ำ
 let lastAlertStates = {
@@ -82,7 +84,7 @@ async function sendTelegramAlert(photoUrl, caption) {
         console.log('🚨 [Telegram Alert] ส่งการ์ดแจ้งเตือนสำเร็จ!');
         return true;
     } catch (error) {
-        console.warn('⚠️ [Telegram Photo Fail] ส่งรูปภาพไม่ผ่าน สลับเป็นข้อความตัวอักษร:', error.message);
+        console.warn('⚠️ [Telegram Photo Fail] ส่งรูปภาพไม่ผ่าน สลับเป็นข้อความตัวอักษร:', error.response?.data?.description || error.message);
         try {
             const messageApiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
             await axios.post(messageApiUrl, {
@@ -94,7 +96,7 @@ async function sendTelegramAlert(photoUrl, caption) {
             console.log('🚨 [Telegram Alert] ส่งข้อความแจ้งเตือน (Fallback Text) สำเร็จ!');
             return true;
         } catch (msgErr) {
-            console.error('❌ [Telegram Text Fail] ส่งข้อความไม่สำเร็จ:', msgErr.message);
+            console.error('❌ [Telegram Text Fail] ส่งข้อความไม่สำเร็จ:', msgErr.response?.data?.description || msgErr.message);
             return false;
         }
     }
@@ -220,7 +222,7 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        // 🌧️ ตรวจจับสภาพฝนตกจาก Weather ID (2xx พายุ, 3xx ฝนปรอย, 5xx ฝนตก) หรือปริมาณน้ำฝน
+        // 🌧️ ตรวจจับสภาพฝนตกจาก Weather ID หรือปริมาณน้ำฝน
         const isRainingByCode = weatherId >= 200 && weatherId < 600;
         const hasRain = rainVolume >= 0.2 || isRainingByCode;
 
@@ -260,7 +262,7 @@ async function sendSystemStartupNotice() {
     const chartUrl = `https://quickchart.io/chart?bkg=%230f172a&w=700&h=420&devicePixelRatio=2&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
     let caption = `🚀 <b>[ TECHNO-CHON WEATHER UPDATED ]</b>\n`;
-    caption += `✅ <i>อัปเดตรอบระบบแจ้งเตือนเรียบร้อย (ระบบจะแจ้งเตือนเฉพาะเมื่อมีฝนตก หรือค่าดัชนีเกินเกณฑ์เท่านั้น)</i>\n\n`;
+    caption += `✅ <i>ระบบได้รับการอัปเดตและพร้อมทำงานแล้ว (จะแจ้งเตือนเมื่อฝนตก หรือค่าดัชนีเกินเกณฑ์เท่านั้น)</i>\n\n`;
     caption += `📍 <b>สภาวะปัจจุบัน (อ.เมืองชลบุรี):</b>\n`;
     caption += `• สภาพอากาศ: ${mainData.weatherDesc} ${mainData.isRaining ? '🌧️ (ฝนตก)' : '☀️'}\n`;
     caption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
@@ -356,7 +358,7 @@ async function checkAirAndWeatherAll() {
     }
 }
 
-// 🔄 เช็กสภาวะเตือนภัยทุกๆ 15 นาที (ไม่มีส่งสรุปทุก 1 ชั่วโมงแล้ว)
+// 🔄 เช็กสภาวะเตือนภัยทุกๆ 15 นาที
 cron.schedule('*/15 * * * *', () => {
     console.log(`⏰ [Cron Job] ตรวจเช็กสภาวะเตือนภัย (ทุก 15 นาที)`);
     checkAirAndWeatherAll(); 

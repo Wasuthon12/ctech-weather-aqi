@@ -89,16 +89,28 @@ app.listen(PORT, () => {
 async function sendTelegramAlert(photoUrl, caption) {
     try {
         const photoApiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`;
-        await axios.post(photoApiUrl, { chat_id: TELEGRAM_CHANNEL, photo: photoUrl, caption: caption, parse_mode: 'HTML' });
+        await axios.post(photoApiUrl, {
+            chat_id: TELEGRAM_CHANNEL,
+            photo: photoUrl,
+            caption: caption,
+            parse_mode: 'HTML'
+        });
         console.log('🚨 [Telegram Alert] ส่งการ์ดแจ้งเตือนสำเร็จ!');
         return true;
     } catch (error) {
-        console.warn('⚠️ [Telegram Photo Fail] ส่งรูปภาพไม่ผ่าน สลับเป็นข้อความ:', error.message);
+        console.warn('⚠️ [Telegram Photo Fail] ส่งรูปภาพไม่ผ่าน สลับเป็นข้อความตัวอักษร:', error.response?.data?.description || error.message);
         try {
             const messageApiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
-            await axios.post(messageApiUrl, { chat_id: TELEGRAM_CHANNEL, text: caption, parse_mode: 'HTML' });
+            await axios.post(messageApiUrl, {
+                chat_id: TELEGRAM_CHANNEL,
+                text: caption,
+                parse_mode: 'HTML',
+                disable_web_page_preview: false
+            });
+            console.log('🚨 [Telegram Alert] ส่งข้อความแจ้งเตือน (Fallback Text) สำเร็จ!');
             return true;
         } catch (msgErr) {
+            console.error('❌ [Telegram Text Fail] ส่งข้อความไม่สำเร็จ:', msgErr.response?.data?.description || msgErr.message);
             return false;
         }
     }
@@ -131,20 +143,25 @@ function getHeatIndexWarning(HI_C) {
 
 function calculateSmartUVIndex(clouds = 0) {
     const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+
     if (currentHour >= 18 || currentHour < 6) return { index: 0, label: "ต่ำ 🟢" };
     if (currentHour >= 6 && currentHour < 9) return { index: 1, label: "ต่ำ 🟢" };
     if (currentHour >= 9 && currentHour < 11) {
-        const uv = Math.max(2, Math.round(5 * (1 - clouds / 100)));
+        const baseUV = Math.round(5 * (1 - clouds / 100));
+        const uv = Math.max(2, baseUV);
         return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
     }
     if (currentHour >= 11 && currentHour < 15) {
-        const uv = Math.max(4, Math.round(10 * (1 - clouds / 100)));
-        if (uv >= 11) return { index: uv, label: "สุดขีด 🟣" };
-        if (uv >= 8) return { index: uv, label: "สูงมาก 🔴" };
-        if (uv <= 5) return { index: uv, label: "ปานกลาง 🟡" };
-        return { index: uv, label: "สูง 🟠" };
+        const baseUV = Math.round(10 * (1 - clouds / 100));
+        const uv = Math.max(4, baseUV);
+        let label = "สูง 🟠";
+        if (uv >= 11) label = "สุดขีด 🟣";
+        else if (uv >= 8) label = "สูงมาก 🔴";
+        else if (uv <= 5) label = "ปานกลาง 🟡";
+        return { index: uv, label: label };
     }
-    const uv = Math.max(1, Math.round(4 * (1 - clouds / 100)));
+    const baseUV = Math.round(4 * (1 - clouds / 100));
+    const uv = Math.max(1, baseUV);
     return { index: uv, label: uv <= 2 ? "ต่ำ 🟢" : "ปานกลาง 🟡" };
 }
 
@@ -153,6 +170,7 @@ async function getWeatherDataCore(lat, lon, locName) {
     try {
         const iqRes = await axios.get(`https://api.airvisual.com/v2/nearest_city?lat=${lat}&lon=${lon}&key=${IQAIR_KEY}`);
         currentAQI = iqRes.data.data.current.pollution.aqius;
+        
         if (iqRes.data.data.current.pollution.mainus === "p2") {
             if (currentAQI <= 50) currentPM25 = Math.round(currentAQI * 0.24);
             else if (currentAQI <= 100) currentPM25 = Math.round(12.1 + (currentAQI - 50) * 0.46);
@@ -160,14 +178,20 @@ async function getWeatherDataCore(lat, lon, locName) {
         } else {
             currentPM25 = Math.round(currentAQI * 0.35); 
         }
-    } catch (err) {
+    } catch (errIQ) {
+        console.log(`⚠️ IQAir ${locName} ขัดข้อง (${errIQ.message}) - ใช้ค่าประมาณการสำรอง`);
         currentAQI = locName.includes('Pattaya') ? 38 : locName.includes('Si Racha') ? 56 : 28;
         currentPM25 = locName.includes('Pattaya') ? 13 : locName.includes('Si Racha') ? 20 : 7;
     }
 
-    let aqiLabel = currentAQI <= 25 ? "ดีมาก 🔵" : currentAQI <= 50 ? "ดี 🟢" : currentAQI <= 100 ? "ปานกลาง 🟡" : "อันตราย 🔴";
+    let aqiLabel = "";
+    if (currentAQI <= 25) aqiLabel = "ดีมาก 🔵";
+    else if (currentAQI <= 50) aqiLabel = "ดี 🟢";
+    else if (currentAQI <= 100) aqiLabel = "ปานกลาง 🟡";
+    else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
-    let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0, windSpeed = 0, windDesc = "ลมสงบ";
+    let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
+    let windSpeed = 0, windDesc = "ลมสงบ";
     let dailyForecast = [];
 
     try {
@@ -177,8 +201,9 @@ async function getWeatherDataCore(lat, lon, locName) {
         weatherDesc = weatherRes.data.weather[0].description;
         weatherId = weatherRes.data.weather[0].id;
         clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
-        windSpeed = weatherRes.data.wind ? weatherRes.data.wind.speed : 0;
+        rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
         
+        windSpeed = weatherRes.data.wind ? weatherRes.data.wind.speed : 0;
         if (windSpeed < 1) windDesc = "ลมสงบ";
         else if (windSpeed < 5) windDesc = "ลมพัดเบาๆ";
         else if (windSpeed < 10) windDesc = "ลมพัดปานกลาง";
@@ -191,6 +216,7 @@ async function getWeatherDataCore(lat, lon, locName) {
         for (const item of forecastRes.data.list) {
             const itemDate = new Date(new Date(item.dt * 1000).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
             const itemDateNum = itemDate.getDate();
+
             if (itemDateNum !== todayDateNum && !checkedDates.has(itemDateNum)) {
                 dailyForecast.push({
                     day: itemDate.toLocaleDateString('th-TH', { weekday: 'long', timeZone: 'Asia/Bangkok' }),
@@ -203,35 +229,38 @@ async function getWeatherDataCore(lat, lon, locName) {
                 if (dailyForecast.length >= 3) break;
             }
         }
-    } catch (err) {}
+    } catch (errOWM) {
+        console.log(`⚠️ OpenWeather ${locName} ขัดข้อง (${errOWM.message})`);
+    }
 
-    // 🎯 แยกแยะสภาพอากาศแบบละเอียดจาก OpenWeather ID
+    // 🎯 จำแนกสภาพอากาศอย่างละเอียด
     let conditionCode = "clear";
     if (weatherId >= 200 && weatherId < 300) conditionCode = "thunderstorm";
-    else if (weatherId >= 300 && weatherId < 400) conditionCode = "drizzle"; // ฝนตกปรอยๆ
-    else if (weatherId >= 500 && weatherId < 600) conditionCode = "rain"; // ฝนตกปกติ-หนัก
-    else if (weatherId >= 700 && weatherId < 800) conditionCode = "haze"; // ฝุ่น/ควัน/หมอก
-    else if (weatherId === 801 || weatherId === 802) conditionCode = "clouds"; // เมฆบางส่วน
-    else if (weatherId === 803 || weatherId === 804) conditionCode = "overcast"; // มืดครึ้ม
+    else if (weatherId >= 300 && weatherId < 400) conditionCode = "drizzle";
+    else if (weatherId >= 500 && weatherId < 600) conditionCode = "rain";
+    else if (weatherId >= 700 && weatherId < 800) conditionCode = "haze";
+    else if (weatherId === 801 || weatherId === 802) conditionCode = "clouds";
+    else if (weatherId === 803 || weatherId === 804) conditionCode = "overcast";
+
+    const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
+    const isDayTime = currentHour >= 6 && currentHour < 18;
 
     const calculatedUV = calculateSmartUVIndex(clouds);
     const heatIndexC = calculateHeatIndex(temp, humidity);
     const heatWarning = getHeatIndexWarning(heatIndexC);
     
-    const isRaining = conditionCode === "thunderstorm" || conditionCode === "drizzle" || conditionCode === "rain";
-    
-    // คำนวณว่าเป็นช่วงกลางวันหรือกลางคืน (ใช้ปรับ UI)
-    const currentHour = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' })).getHours();
-    const isDayTime = currentHour >= 6 && currentHour < 18;
+    const isRainingByCode = weatherId >= 200 && weatherId < 600;
+    const hasRain = rainVolume >= 0.2 || isRainingByCode;
 
+    const localTimeFormatted = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' });
+    
     return {
         aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
         weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
         uvIndex: calculatedUV.index, uvLabel: calculatedUV.label, 
         windSpeed: windSpeed, windDesc: windDesc,
-        isRaining: isRaining, conditionCode: conditionCode, isDayTime: isDayTime,
-        updateTime: new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' }),
-        forecast: dailyForecast
+        isRaining: hasRain, conditionCode: conditionCode, isDayTime: isDayTime, 
+        updateTime: localTimeFormatted, forecast: dailyForecast
     };
 }
 
@@ -239,13 +268,17 @@ async function fetchCityData(key) {
     const locConfig = LOCATIONS[key];
     try {
         const data = await getWeatherDataCore(locConfig.lat, locConfig.lon, locConfig.name);
+        
         const timeLabel = new Date().toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit' });
+        
         let history = storeData[key].history || [];
         if (history.length === 0 || history[history.length - 1].time !== timeLabel) {
             history.push({ time: timeLabel, aqi: data.aqi, temp: Math.round(data.temp) });
         }
         if (history.length > 12) history.shift();
+
         storeData[key] = { ...data, history: history };
+
     } catch (err) {
         console.error(`❌ ระบบดึงข้อมูล ${locConfig.name} ขัดข้อง:`, err.message);
     }
@@ -254,17 +287,38 @@ async function fetchCityData(key) {
 async function sendSystemStartupNotice() {
     const mainData = storeData.main;
     const chartConfig = {
-        type: 'radialGauge', data: { datasets: [{ data: [mainData.aqi], backgroundColor: '#4f46e5', borderWidth: 0 }] },
-        options: { title: { display: true, text: 'SYSTEM UPDATED', fontColor: '#38bdf8', fontSize: 16 }, domain: [0, 200], trackColor: '#1e293b', centerPercentage: 75, centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 54, subtext: `AQI Status`, subfontColor: '#94a3b8', subfontSize: 16 } }
+        type: 'radialGauge',
+        data: { datasets: [{ data: [mainData.aqi], backgroundColor: '#4f46e5', borderWidth: 0 }] },
+        options: {
+            title: { display: true, text: 'SYSTEM UPDATED & ONLINE', fontColor: '#38bdf8', fontSize: 16 },
+            domain: [0, 200], trackColor: '#1e293b', centerPercentage: 75,
+            centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 54, subtext: `AQI Status`, subfontColor: '#94a3b8', subfontSize: 16 }
+        }
     };
     const chartUrl = `https://quickchart.io/chart?bkg=%230f172a&w=700&h=420&devicePixelRatio=2&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
-    let caption = `🚀 <b>[ TECHNO-CHON WEATHER UPDATED ]</b>\n✅ <i>ระบบพร้อมทำงาน</i>\n\n📍 <b>อ.เมืองชลบุรี:</b>\n• สภาพอากาศ: ${mainData.weatherDesc} ${mainData.isRaining ? '🌧️' : '☀️'}\n• อุณหภูมิ: <code>${mainData.temp}°C</code>\n• AQI: <code>${mainData.aqi}</code> | PM2.5: <code>${mainData.pm25} µg/m³</code>\n\n⏰ <i>อัปเดต: ${mainData.updateTime} น.</i>`;
+    let caption = `🚀 <b>[ TECHNO-CHON WEATHER UPDATED ]</b>\n`;
+    caption += `✅ <i>ระบบได้รับการอัปเดตและพร้อมทำงานแล้ว (จะแจ้งเตือนเมื่อฝนตก หรือค่าดัชนีเกินเกณฑ์เท่านั้น)</i>\n\n`;
+    caption += `📍 <b>สภาวะปัจจุบัน (อ.เมืองชลบุรี):</b>\n`;
+    caption += `• สภาพอากาศ: ${mainData.weatherDesc} ${mainData.isRaining ? '🌧️ (ฝนตก)' : '☀️'}\n`;
+    caption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
+    caption += `• ความเร็วลม: <code>${mainData.windSpeed} m/s</code> (${mainData.windDesc})\n`;
+    caption += `• คุณภาพอากาศ: AQI <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
+    caption += `• ฝุ่น PM2.5: <code>${mainData.pm25} µg/m³</code>\n`;
+    caption += `• ความชื้น: <code>${mainData.humidity}%</code> | รังสี UV: <code>${mainData.uvIndex}</code>\n\n`;
+    caption += `⏰ <i>เวลาอัปเดต: ${mainData.updateTime} น.</i>\n`;
+    caption += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ดสดแบบเต็ม</a>`;
+
     await sendTelegramAlert(chartUrl, caption);
 }
 
 async function checkAirAndWeatherAll() {
-    await Promise.all([fetchCityData('main'), fetchCityData('pattaya'), fetchCityData('siracha')]);
+    await Promise.all([
+        fetchCityData('main'),
+        fetchCityData('pattaya'),
+        fetchCityData('siracha')
+    ]);
+
     const mainData = storeData.main;
 
     let currentPM25State = "Safe";
@@ -276,33 +330,73 @@ async function checkAirAndWeatherAll() {
     else if (mainData.heatIndex >= 33) currentHeatState = "Warning";
 
     const currentRainState = mainData.isRaining;
+
     const hasPM25Alert = currentPM25State !== lastAlertStates.pm25 && currentPM25State !== "Safe";
     const hasHeatAlert = currentHeatState !== lastAlertStates.heat && currentHeatState !== "Safe";
     const hasRainAlert = currentRainState && !lastAlertStates.rain;
 
     let shouldUpdateState = true;
+
     if (hasPM25Alert || hasHeatAlert || hasRainAlert) {
         let alertReasons = [];
-        if (hasPM25Alert) alertReasons.push(`😷 <b>ฝุ่น PM2.5 / AQI เกินเกณฑ์!</b>`);
-        if (hasHeatAlert) alertReasons.push(`🔥 <b>ดัชนีความร้อนระดับเสี่ยง (${mainData.heatIndex}°C)!</b>`);
-        if (hasRainAlert) alertReasons.push(`🌧️ <b>ตรวจพบฝนตกบริเวณวิทยาลัย! (${mainData.weatherDesc})</b>`);
+        if (hasPM25Alert) alertReasons.push(`😷 <b>ฝุ่น PM2.5 / AQI เกินเกณฑ์มาตรฐาน (${mainData.pm25} µg/m³ / AQI ${mainData.aqi})!</b>`);
+        if (hasHeatAlert) alertReasons.push(`🔥 <b>ดัชนีความร้อนอยู่ในระดับเสี่ยง (${mainData.heatIndex}°C)!</b>`);
+        if (hasRainAlert) alertReasons.push(`🌧️ <b>ตรวจพบฝนตกในบริเวณสถานศึกษา (ระวังถนนลื่นและเตรียมร่ม)!</b>`);
 
         let themeColor = currentPM25State === "Danger" || currentHeatState === "Danger" ? "#ef4444" : "#f59e0b";
+
         const chartConfig = {
-            type: 'radialGauge', data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, borderWidth: 0 }] },
-            options: { title: { display: true, text: 'ALERT DETECTED', fontColor: '#ef4444', fontSize: 16 }, domain: [0, 200], trackColor: '#1e293b', centerPercentage: 75, centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 54, subtext: `AQI`, subfontColor: '#94a3b8', subfontSize: 16 } }
+            type: 'radialGauge',
+            data: { datasets: [{ data: [mainData.aqi], backgroundColor: themeColor, borderWidth: 0 }] },
+            options: {
+                title: { display: true, text: 'ALERT DETECTED', fontColor: '#ef4444', fontSize: 16 },
+                domain: [0, 200], trackColor: '#1e293b', centerPercentage: 75,
+                centerArea: { text: `${mainData.aqi}`, fontColor: '#ffffff', fontSize: 54, subtext: `AQI (${mainData.aqiLabel.split(' ')[0]})`, subfontColor: '#94a3b8', subfontSize: 16 }
+            }
         };
         const chartUrl = `https://quickchart.io/chart?bkg=%230f172a&w=700&h=420&devicePixelRatio=2&c=${encodeURIComponent(JSON.stringify(chartConfig))}`;
 
-        let textCaption = `🚨 <b>[ แจ้งเตือนด่วน! ]</b>\n` + alertReasons.map(r => `• ${r}`).join('\n') + `\n\n🍃 AQI: <code>${mainData.aqi}</code> | PM2.5: <code>${mainData.pm25} µg</code>\n🌡️ อุณหภูมิ: <code>${mainData.temp}°C</code>\n☁️ สภาพท้องฟ้า: ${mainData.weatherDesc}\n\n🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ด</a>`;
+        let textCaption = `🚨 <b>[ แจ้งเตือนสภาพอากาศด่วน! ]</b>\n📍 <i>สถานีหลัก: วิทยาลัยเทคโนโลยีชลบุรี</i>\n\n`;
+        textCaption += `<blockquote>⚠️ <b>รายการเฝ้าระวัง:</b>\n` + alertReasons.map(r => `• ${r}`).join('\n') + `</blockquote>\n\n`;
+
+        textCaption += `<blockquote>🍃 <b>ข้อมูลคุณภาพอากาศ & มลพิษ</b>\n`;
+        textCaption += `• AQI: <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
+        textCaption += `• PM2.5: <code>${mainData.pm25} µg/m³</code></blockquote>\n\n`;
+
+        textCaption += `<blockquote>🌡️ <b>สภาพอากาศปัจจุบัน</b>\n`;
+        textCaption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
+        textCaption += `• ดัชนีความร้อน: ${mainData.heatWarning}\n`;
+        textCaption += `• ความเร็วลม: <code>${mainData.windSpeed} m/s</code>\n`;
+        textCaption += `• รังสี UV: <code>${mainData.uvIndex}</code> (${mainData.uvLabel}) | ความชื้น: <code>${mainData.humidity}%</code>\n`;
+        textCaption += `• สภาพท้องฟ้า: ${mainData.weatherDesc}</blockquote>\n\n`;
+
+        textCaption += `⏰ <i>ตรวจพบเมื่อ: ${mainData.updateTime} น.</i>\n`;
+        textCaption += `🌐 <a href="https://ctc-weather-report.onrender.com/">เข้าชมแดชบอร์ดสดแบบเต็ม</a>`;
+
         const isSuccess = await sendTelegramAlert(chartUrl, textCaption);
-        if (!isSuccess) shouldUpdateState = false; 
+        
+        if (!isSuccess) {
+            shouldUpdateState = false; 
+            console.log("⚠️ [System] ระงับการบันทึกสถานะ เนื่องจากส่ง Telegram ไม่สำเร็จ");
+        }
     }
 
     if (shouldUpdateState) {
-        lastAlertStates = { pm25: currentPM25State, heat: currentHeatState, rain: currentRainState };
+        lastAlertStates = {
+            pm25: currentPM25State,
+            heat: currentHeatState,
+            rain: currentRainState
+        };
     }
 }
 
-cron.schedule('*/15 * * * *', () => { checkAirAndWeatherAll(); });
-(async () => { await checkAirAndWeatherAll(); await sendSystemStartupNotice(); })();
+cron.schedule('*/15 * * * *', () => {
+    console.log(`⏰ [Cron Job] ตรวจเช็กสภาวะเตือนภัย (ทุก 15 นาที)`);
+    checkAirAndWeatherAll(); 
+});
+
+(async () => {
+    await checkAirAndWeatherAll();
+    console.log('🚀 [Ready] ดึงข้อมูลรอบแรกเรียบร้อย กำลังส่งข้อความอัปเดตระบบ 1 ครั้ง...');
+    await sendSystemStartupNotice();
+})();

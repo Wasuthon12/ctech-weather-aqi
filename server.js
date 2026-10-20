@@ -32,8 +32,8 @@ function createEmptyLocationData() {
     return {
         aqi: 0, aqiLabel: "กำลังโหลด...", pm25: 0, temp: 0, humidity: 0,
         weatherDesc: "กำลังโหลด...", heatIndex: 0, heatWarning: "กำลังโหลด...",
-        uvIndex: 0, uvLabel: "กำลังโหลด...", isRaining: false, updateTime: "-",
-        forecast: [], history: []
+        uvIndex: 0, uvLabel: "กำลังโหลด...", windSpeed: 0, windDesc: "กำลังโหลด...", 
+        isRaining: false, updateTime: "-", forecast: [], history: []
     };
 }
 
@@ -71,7 +71,7 @@ app.listen(PORT, () => {
     console.log(`🌐 [Web Server] แดชบอร์ดพร้อมทำงาน พอร์ต: ${PORT}`);
 });
 
-// 🚨 ฟังก์ชันส่งการแจ้งเตือนเข้า Telegram (มีระบบ Fallback ส่งข้อความธรรมดาถ้ารูปภาพมีปัญหา)
+// 🚨 ฟังก์ชันส่งการแจ้งเตือนเข้า Telegram
 async function sendTelegramAlert(photoUrl, caption) {
     try {
         const photoApiUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`;
@@ -183,6 +183,7 @@ async function fetchCityData(key) {
         else aqiLabel = "อันตรายต่อสุขภาพ 🔴";
 
         let temp = 30, humidity = 60, weatherDesc = "แจ่มใส", weatherId = 800, clouds = 0, rainVolume = 0;
+        let windSpeed = 0, windDesc = "ลมสงบ";
         let dailyForecast = [];
 
         try {
@@ -193,6 +194,13 @@ async function fetchCityData(key) {
             weatherId = weatherRes.data.weather[0].id;
             clouds = weatherRes.data.clouds ? weatherRes.data.clouds.all : 0;
             rainVolume = weatherRes.data.rain ? (weatherRes.data.rain['1h'] || weatherRes.data.rain['3h'] || 0) : 0;
+            
+            // ตรวจจับและวิเคราะห์แรงลม
+            windSpeed = weatherRes.data.wind ? weatherRes.data.wind.speed : 0;
+            if (windSpeed < 1) windDesc = "ลมสงบ";
+            else if (windSpeed < 5) windDesc = "ลมพัดเบาๆ";
+            else if (windSpeed < 10) windDesc = "ลมพัดปานกลาง";
+            else windDesc = "ลมแรง";
 
             const forecastRes = await axios.get(`https://api.openweathermap.org/data/2.5/forecast?lat=${locConfig.lat}&lon=${locConfig.lon}&appid=${OPENWEATHER_KEY}&units=metric&lang=th`);
             const checkedDates = new Set();
@@ -222,7 +230,6 @@ async function fetchCityData(key) {
         const heatIndexC = calculateHeatIndex(temp, humidity);
         const heatWarning = getHeatIndexWarning(heatIndexC);
         
-        // 🌧️ ตรวจจับสภาพฝนตกจาก Weather ID หรือปริมาณน้ำฝน
         const isRainingByCode = weatherId >= 200 && weatherId < 600;
         const hasRain = rainVolume >= 0.2 || isRainingByCode;
 
@@ -238,7 +245,9 @@ async function fetchCityData(key) {
         storeData[key] = {
             aqi: currentAQI, aqiLabel: aqiLabel, pm25: currentPM25, temp: temp, humidity: humidity,
             weatherDesc: weatherDesc, heatIndex: heatIndexC, heatWarning: heatWarning.text,
-            uvIndex: calculatedUV.index, uvLabel: calculatedUV.label, isRaining: hasRain, updateTime: localTimeFormatted,
+            uvIndex: calculatedUV.index, uvLabel: calculatedUV.label, 
+            windSpeed: windSpeed, windDesc: windDesc, // ข้อมูลแรงลมใหม่
+            isRaining: hasRain, updateTime: localTimeFormatted,
             forecast: dailyForecast, history: history
         };
 
@@ -266,6 +275,7 @@ async function sendSystemStartupNotice() {
     caption += `📍 <b>สภาวะปัจจุบัน (อ.เมืองชลบุรี):</b>\n`;
     caption += `• สภาพอากาศ: ${mainData.weatherDesc} ${mainData.isRaining ? '🌧️ (ฝนตก)' : '☀️'}\n`;
     caption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
+    caption += `• ความเร็วลม: <code>${mainData.windSpeed} m/s</code> (${mainData.windDesc})\n`;
     caption += `• คุณภาพอากาศ: AQI <code>${mainData.aqi}</code> (${mainData.aqiLabel})\n`;
     caption += `• ฝุ่น PM2.5: <code>${mainData.pm25} µg/m³</code>\n`;
     caption += `• ความชื้น: <code>${mainData.humidity}%</code> | รังสี UV: <code>${mainData.uvIndex}</code>\n\n`;
@@ -335,6 +345,7 @@ async function checkAirAndWeatherAll() {
         textCaption += `<blockquote>🌡️ <b>สภาพอากาศปัจจุบัน</b>\n`;
         textCaption += `• อุณหภูมิ: <code>${mainData.temp}°C</code> (รู้สึกจริง <code>${mainData.heatIndex}°C</code>)\n`;
         textCaption += `• ดัชนีความร้อน: ${mainData.heatWarning}\n`;
+        textCaption += `• ความเร็วลม: <code>${mainData.windSpeed} m/s</code>\n`;
         textCaption += `• รังสี UV: <code>${mainData.uvIndex}</code> (${mainData.uvLabel}) | ความชื้น: <code>${mainData.humidity}%</code>\n`;
         textCaption += `• สภาพท้องฟ้า: ${mainData.weatherDesc}</blockquote>\n\n`;
 

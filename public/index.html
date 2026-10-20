@@ -187,31 +187,44 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide text-heading">TECHNO-CHON WEATHER REPORT</h1>
-                    <p class="text-xs text-indigo-500 font-bold">📍 สถานีตรวจวัดความปลอดภัยทางอากาศ: <span id="header-location-name">อ.เมืองชลบุรี</span></p>
+                    <h1 class="text-xl font-bold tracking-wide text-heading">TECHNO-CHON WEATHER</h1>
+                    <p class="text-xs text-indigo-500 font-bold">📍 สถานีตรวจวัดความปลอดภัย: <span id="header-location-name">อ.เมืองชลบุรี</span></p>
                 </div>
             </div>
 
             <!-- Controls -->
-            <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+            <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
                 <div class="flex items-center gap-2 bg-slate-500/10 border border-slate-400/40 rounded-xl p-1.5 backdrop-blur-sm">
                     <i class="fa-solid fa-palette text-indigo-500 text-xs ml-1"></i>
                     <select id="theme-select" onchange="changeTheme(this.value)" class="bg-transparent text-xs font-bold cursor-pointer focus:outline-none border-none pr-1">
-                        <option value="auto" class="bg-slate-800 text-white">⚙️ Auto (ตามเวลา)</option>
-                        <option value="dark" class="bg-slate-800 text-white" selected>🌙 Dark (มืด)</option>
-                        <option value="light" class="bg-slate-800 text-white">☀️ Light (สว่าง)</option>
-                        <option value="cyberpunk" class="bg-slate-800 text-white">🔮 Cyberpunk (นีออน)</option>
+                        <option value="auto" class="bg-slate-800 text-white">⚙️ Auto</option>
+                        <option value="dark" class="bg-slate-800 text-white" selected>🌙 Dark</option>
+                        <option value="light" class="bg-slate-800 text-white">☀️ Light</option>
+                        <option value="cyberpunk" class="bg-slate-800 text-white">🔮 Cyber</option>
                     </select>
                 </div>
 
-                <button id="header-pwa-btn" onclick="triggerPwaInstall()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
-                    <i class="fa-solid fa-download animate-bounce"></i>
-                    <span>ติดตั้งทางลัด</span>
+                <!-- 📢 ปุ่ม Share -->
+                <button onclick="shareDashboard()" class="flex items-center gap-1.5 bg-slate-500/10 hover:bg-slate-500/20 active:scale-95 text-heading text-xs font-bold px-3 py-2 rounded-xl shadow border border-slate-400/40 backdrop-blur-sm transition-all duration-300 cursor-pointer">
+                    <i class="fa-solid fa-share-nodes text-emerald-500"></i>
+                    <span class="hidden sm:inline">แชร์</span>
                 </button>
 
-                <div class="text-right hidden sm:block">
-                    <span class="text-xs text-muted font-medium">อัปเดตล่าสุด: </span>
-                    <span id="update-time" class="text-sm font-bold text-indigo-600">กำลังโหลด...</span>
+                <button id="header-pwa-btn" onclick="triggerPwaInstall()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow-lg transition-all duration-300 cursor-pointer">
+                    <i class="fa-solid fa-download animate-bounce"></i>
+                    <span>แอป</span>
+                </button>
+
+                <!-- 🕒 นาฬิกา Real-time -->
+                <div class="text-right hidden sm:flex flex-col items-end pl-2 border-l border-slate-400/30">
+                    <div id="realtime-clock" class="text-xs font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 mb-1 flex items-center gap-1.5">
+                        <i class="fa-regular fa-clock animate-pulse"></i>
+                        <span>00:00:00</span>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-muted font-medium">อัปเดต: </span>
+                        <span id="update-time" class="text-xs font-bold text-indigo-600">กำลังโหลด...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,7 +233,7 @@
     <!-- Main Content -->
     <main class="max-w-6xl w-full mx-auto px-4 flex-grow mb-8 z-10">
         
-        <!-- 📍 Navigation Tabs เลือกพื้นที่ (Fade In Delay 100) -->
+        <!-- 📍 Navigation Tabs เลือกพื้นที่ -->
         <div class="animate-fade-in delay-100 card-bg border rounded-2xl p-3 mb-6 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-colors duration-500">
             <div class="px-2 py-1 text-xs font-bold text-indigo-500 flex items-center gap-1.5 border-b sm:border-b-0 sm:border-r border-slate-400/30 pb-2 sm:pb-0 sm:pr-3">
                 <i class="fa-solid fa-location-dot"></i>
@@ -242,10 +255,11 @@
             </div>
         </div>
 
-        <!-- 🤖 Techno-Chon Mascot Section (Fade In Delay 200) -->
+        <!-- 🤖 Techno-Chon Mascot Section -->
         <div class="animate-fade-in delay-200 card-bg border rounded-2xl p-4 md:p-5 shadow-2xl mb-6 backdrop-blur-md flex flex-col md:flex-row items-center gap-4 transition-colors duration-500">
             <div class="flex flex-col items-center flex-shrink-0">
-                <div id="mascot-avatar" class="w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-500/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
+                <!-- 🎮 Easter Egg จุดที่จิ้มพุงได้ -->
+                <div id="mascot-avatar" onclick="pokeMascot()" class="cursor-pointer hover:scale-110 transition-transform w-16 h-16 md:w-24 md:h-24 bg-indigo-600/20 rounded-full border-2 border-indigo-500/50 flex items-center justify-center text-3xl md:text-5xl shadow-inner animate-mascot mb-1">
                     🤖
                 </div>
                 <span class="bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow border border-indigo-400/30 whitespace-nowrap">
@@ -278,12 +292,10 @@
             </div>
         </div>
 
-        <!-- 📊 Real-time Metrics Grid (Fade In Delay 300) -->
-        <div class="animate-fade-in delay-300 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <!-- 📊 Real-time Metrics Grid (เปลี่ยนเป็น 6 Columns) -->
+        <div class="animate-fade-in delay-300 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
             <div onclick="openModal('aqi')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-indigo-500 cursor-pointer group relative">
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">
-                    คลิกดูเกณฑ์ ℹ️
-                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow">คลิกดูเกณฑ์ ℹ️</div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนี AQI</span>
                     <i class="fa-solid fa-wind text-indigo-500 text-base"></i>
@@ -298,9 +310,7 @@
             </div>
 
             <div onclick="openModal('pm25')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-teal-500 cursor-pointer group relative">
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">
-                    คลิกดูเกณฑ์ ℹ️
-                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-600 text-white px-1.5 py-0.5 rounded shadow">คลิกดูเกณฑ์ ℹ️</div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ฝุ่น PM2.5</span>
                     <i class="fa-solid fa-mask-face text-teal-500 text-base"></i>
@@ -310,15 +320,11 @@
                     <span class="text-xs text-muted font-bold"> µg/m³</span>
                     <p id="pm25-warning" class="mt-1 text-[11px] font-bold text-muted">ความเข้มข้นสารมลพิษ</p>
                 </div>
-                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] font-bold text-muted">
-                    เกณฑ์มาตรฐานไทย (PCD)
-                </div>
+                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] font-bold text-muted">เกณฑ์มาตรฐานไทย</div>
             </div>
 
             <div onclick="openModal('uv')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
-                    คลิกดูเกณฑ์ ℹ️
-                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">คลิกดูเกณฑ์ ℹ️</div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีรังสี UV</span>
                     <i class="fa-solid fa-sun text-amber-500 text-base"></i>
@@ -327,9 +333,7 @@
                     <span id="uv-val" class="text-5xl font-extrabold tracking-tight text-amber-500">0</span>
                     <p id="uv-label" class="mt-1 text-xs font-bold text-amber-600">กำลังโหลด...</p>
                 </div>
-                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] font-bold text-muted">
-                    ความเข้มแสงแดด (WHO)
-                </div>
+                <div class="inner-card-bg p-1.5 rounded-lg border text-center text-[9px] font-bold text-muted">ความเข้มแสงแดด</div>
             </div>
 
             <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-colors duration-500">
@@ -355,9 +359,7 @@
             </div>
 
             <div onclick="openModal('heat')" class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-amber-500 cursor-pointer group relative">
-                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">
-                    คลิกดูเกณฑ์ ℹ️
-                </div>
+                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow">คลิกดูเกณฑ์ ℹ️</div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ดัชนีความร้อน</span>
                     <i class="fa-solid fa-fire-flame-curved text-amber-600 text-base"></i>
@@ -366,23 +368,38 @@
                     <span id="heat-val" class="text-5xl font-extrabold tracking-tight text-heading">0</span><span class="text-xs text-muted font-bold"> °C</span>
                     <p id="heat-warning" class="mt-1 text-xs font-bold text-muted">กำลังโหลด...</p>
                 </div>
-                <div class="text-center text-[9px] font-bold text-muted border-t border-slate-400/30 pt-1.5">
-                    เกณฑ์อุตุนิยมวิทยาไทย
+                <div class="text-center text-[9px] font-bold text-muted border-t border-slate-400/30 pt-1.5">อุณหภูมิรู้สึกจริง</div>
+            </div>
+
+            <!-- 💨 Wind Widget (ใหม่) -->
+            <div class="card-bg backdrop-blur-md rounded-2xl p-4 border shadow-xl flex flex-col justify-between transition-all duration-300 hover:scale-[1.03] hover:border-sky-400">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[11px] font-bold text-muted uppercase tracking-wider">ความเร็วลม</span>
+                    <i class="fa-solid fa-wind text-sky-400 text-base"></i>
+                </div>
+                <div class="text-center py-3">
+                    <span id="wind-val" class="text-4xl font-extrabold tracking-tight text-sky-500">0</span>
+                    <span class="text-xs text-muted font-bold"> m/s</span>
+                    <p id="wind-desc" class="mt-1 text-xs font-bold text-muted">กำลังโหลด...</p>
+                </div>
+                <div class="h-1.5 bg-slate-400/30 rounded-full overflow-hidden mt-2">
+                    <div id="wind-bar" class="h-full bg-sky-400 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
         </div>
 
-        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่ (Fade In Delay 400) -->
+        <!-- 📊 แผงเปรียบเทียบมลพิษ 3 พื้นที่ -->
         <div class="animate-fade-in delay-400 card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
             <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
                 <i class="fa-solid fa-layer-group text-indigo-600 text-lg"></i>
                 <h2 class="text-base font-bold tracking-wide text-heading">เปรียบเทียบดัชนีฝุ่นละออง 3 พื้นที่สำคัญ (Chonburi Area Comparison)</h2>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Main Area -->
                 <div onclick="switchLocation('main')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
                     <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
-                        <span class="text-sm font-bold text-heading">📍 อ.เมืองชลบุรี (จุดหลัก)</span>
-                        <span id="comp-main-label" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-600 font-bold border border-emerald-500/30">กำลังโหลด</span>
+                        <span class="text-sm font-bold text-heading">📍 อ.เมืองชลบุรี</span>
+                        <span id="comp-main-label" class="text-xs px-2 py-0.5 rounded bg-slate-300 text-slate-700 font-bold">กำลังโหลด</span>
                     </div>
                     <div class="flex items-center justify-around py-2">
                         <div class="text-center">
@@ -397,6 +414,7 @@
                     </div>
                 </div>
 
+                <!-- Pattaya Area -->
                 <div onclick="switchLocation('pattaya')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
                     <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
                         <span class="text-sm font-bold text-heading">📍 เมืองพัทยา (Pattaya)</span>
@@ -415,6 +433,7 @@
                     </div>
                 </div>
 
+                <!-- Si Racha Area -->
                 <div onclick="switchLocation('siracha')" class="inner-card-bg border rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:border-indigo-500 transition-all duration-300">
                     <div class="flex justify-between items-center border-b border-slate-400/30 pb-2 mb-2">
                         <span class="text-sm font-bold text-heading">📍 อ.ศรีราชา (Si Racha)</span>
@@ -435,7 +454,7 @@
             </div>
         </div>
 
-        <!-- 🔮 พยากรณ์อากาศล่วงหน้า 3 วัน & 📈 Chart Section (Fade In Delay 500) -->
+        <!-- 🔮 พยากรณ์อากาศ & กราฟ -->
         <div class="animate-fade-in delay-500">
             <div class="card-bg backdrop-blur-md border rounded-2xl p-6 shadow-xl mb-6 transition-colors duration-500">
                 <div class="flex items-center gap-2 mb-4 border-b border-slate-400/30 pb-3">
@@ -457,10 +476,10 @@
 
                 <div class="flex items-center gap-4 text-xs font-bold mb-3 justify-end">
                     <span class="flex items-center gap-1.5 text-indigo-400">
-                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI (กราฟแท่ง - แกนซ้าย)
+                        <span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> ดัชนี AQI
                     </span>
                     <span class="flex items-center gap-1.5 text-rose-400">
-                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C (กราฟเส้น - แกนขวา)
+                        <span class="w-3 h-3 rounded-full bg-rose-500 inline-block"></span> อุณหภูมิ °C
                     </span>
                 </div>
 
@@ -474,42 +493,25 @@
     <!-- 📢 Unified Details Modal -->
     <div id="info-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
         <div class="modal-bg border rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">
-                ✕
-            </button>
-
-            <!-- Dynamic Header -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-500/10 transition-colors">✕</button>
             <div class="flex items-center gap-3 mb-4 border-b border-slate-500/30 pb-3">
-                <div id="modal-icon-bg" class="bg-indigo-600 text-white p-2.5 rounded-xl">
-                    <i id="modal-icon" class="fa-solid fa-wind text-xl"></i>
-                </div>
+                <div id="modal-icon-bg" class="bg-indigo-600 text-white p-2.5 rounded-xl"><i id="modal-icon" class="fa-solid fa-wind text-xl"></i></div>
                 <div>
                     <h2 id="modal-title" class="text-lg font-bold text-heading">หัวข้อ</h2>
                     <p id="modal-subtitle" class="text-xs text-indigo-500 font-semibold">คำอธิบาย</p>
                 </div>
             </div>
-
-            <!-- Dynamic Description -->
-            <p id="modal-description" class="text-xs text-muted leading-relaxed mb-4">
-                รายละเอียด...
-            </p>
-
-            <!-- Dynamic Content -->
-            <div id="modal-body-content" class="space-y-2.5 mb-6 text-xs">
-            </div>
-
+            <p id="modal-description" class="text-xs text-muted leading-relaxed mb-4">รายละเอียด...</p>
+            <div id="modal-body-content" class="space-y-2.5 mb-6 text-xs"></div>
             <div class="text-center pt-2">
-                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">
-                    เข้าใจแล้ว ปิดหน้าต่างนี้
-                </button>
+                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg">เข้าใจแล้ว ปิดหน้าต่างนี้</button>
             </div>
         </div>
     </div>
 
     <!-- 🚶‍♂️ Techno-Chon Student Mascot -->
     <div id="walking-mascot" class="fixed bottom-1 left-0 z-20 pointer-events-none flex flex-col items-center">
-        <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(79,70,229,0.5)] border border-indigo-300/40 mb-0.5 flex items-center gap-1 animate-bounce">
+        <div class="bg-indigo-600/85 backdrop-blur-md text-white text-[8px] font-extrabold px-2 py-0.5 rounded-full shadow border border-indigo-300/40 mb-0.5 flex items-center gap-1 animate-bounce">
             <span class="relative flex h-1.5 w-1.5">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
@@ -519,26 +521,11 @@
         
         <svg id="mascot-svg" width="38" height="52" viewBox="0 0 120 160" class="drop-shadow-[0_6px_10px_rgba(0,0,0,0.4)]">
             <defs>
-                <linearGradient id="ctcSkin" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#FFE4C4"/>
-                    <stop offset="100%" stop-color="#F5C29B"/>
-                </linearGradient>
-                <linearGradient id="ctcHair" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#1E293B"/>
-                    <stop offset="100%" stop-color="#090D16"/>
-                </linearGradient>
-                <linearGradient id="ctcSuit" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stop-color="#242C3D"/>
-                    <stop offset="100%" stop-color="#111622"/>
-                </linearGradient>
-                <linearGradient id="ctcTie" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#1E2433"/>
-                    <stop offset="100%" stop-color="#0A0D14"/>
-                </linearGradient>
-                <linearGradient id="ctcCap" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#1E293B"/>
-                    <stop offset="100%" stop-color="#0F172A"/>
-                </linearGradient>
+                <linearGradient id="ctcSkin" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE4C4"/><stop offset="100%" stop-color="#F5C29B"/></linearGradient>
+                <linearGradient id="ctcHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1E293B"/><stop offset="100%" stop-color="#090D16"/></linearGradient>
+                <linearGradient id="ctcSuit" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#242C3D"/><stop offset="100%" stop-color="#111622"/></linearGradient>
+                <linearGradient id="ctcTie" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1E2433"/><stop offset="100%" stop-color="#0A0D14"/></linearGradient>
+                <linearGradient id="ctcCap" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1E293B"/><stop offset="100%" stop-color="#0F172A"/></linearGradient>
             </defs>
             <ellipse cx="60" cy="152" rx="26" ry="5" fill="rgba(0,0,0,0.3)" class="animate-pulse"/>
             <g class="mascot-legs">
@@ -594,20 +581,13 @@
         </svg>
     </div>
 
-    <!-- 📢 Footer ฉบับอัปเดต (รวมปุ่ม Telegram & เอฟเฟกต์ Glow/Shimmer) -->
+    <!-- 📢 Footer -->
     <footer class="bg-slate-900 text-slate-300 border-t border-slate-800 text-center py-5 text-xs font-semibold z-10 flex flex-col items-center justify-center gap-4 relative overflow-hidden mt-6">
-        <!-- เอฟเฟกต์ Gradient เรืองแสงเบาๆ ในพื้นหลัง Footer -->
         <div class="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 opacity-60 blur-xl pointer-events-none"></div>
-
         <p class="relative z-10">พัฒนาโดย สาขาวิชาเทคโนโลยีธุรกิจดิจิทัล Techno-Chon</p>
-        
-        <!-- 💬 ปุ่ม Telegram Link พร้อมเอฟเฟกต์ Shimmer -->
         <a href="https://t.me/weather_techno_chon" target="_blank" rel="noopener noreferrer" 
            class="relative z-10 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#0088cc]/20 to-[#0088cc]/10 hover:from-[#0088cc] hover:to-[#00A3F5] text-[#0088cc] hover:text-white border border-[#0088cc]/40 hover:border-transparent rounded-xl transition-all duration-300 shadow-[0_0_15px_rgba(0,136,204,0.15)] hover:shadow-[0_0_25px_rgba(0,136,204,0.5)] active:scale-95 group overflow-hidden">
-            
-            <!-- Shimmer แสงวิ่ง -->
             <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent transform skew-x-12"></div>
-            
             <i class="fa-brands fa-telegram text-lg group-hover:animate-bounce relative z-10"></i>
             <span class="text-xs font-bold tracking-wide relative z-10">รับแจ้งเตือนสภาพอากาศและ PM2.5 ผ่าน Telegram</span>
         </a>
@@ -624,7 +604,62 @@
             'siracha': 'อ.ศรีราชา (Si Racha)'
         };
 
-        /* 📱 ระบบจัดการและซ่อนปุ่มติดตั้ง PWA เมื่อเปิดผ่านแอป */
+        // 🕒 ฟังก์ชันนาฬิกา Real-time
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const clockSpan = document.querySelector('#realtime-clock span');
+            if(clockSpan) clockSpan.innerText = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // 🎮 ระบบสุ่มคำพูดเมื่อจิ้มน้อง Mascot
+        const mascotQuotes = [
+            "ตั้งใจเรียนนะครับพี่ๆ เทคโนชลบุรี! 📚",
+            "หิวข้าวรึยังครับ? อย่าลืมหาอะไรทานนะ 🍜",
+            "อากาศเปลี่ยนบ่อย รักษาสุขภาพด้วยนะครับ 💖",
+            "ใกล้ส่งโปรเจกต์รึยังครับ? สู้ๆ นะครับ! 💻",
+            "ขับขี่มอเตอร์ไซค์ระวังถนนลื่นด้วยนะครับพี่ๆ 🛵",
+            "วันนี้มีเรียนตึกไหนกันบ้างครับ? 🏫"
+        ];
+
+        function pokeMascot() {
+            const speech = document.getElementById('mascot-speech');
+            const avatar = document.getElementById('mascot-avatar');
+            
+            avatar.style.transition = "transform 0.5s";
+            avatar.style.transform = "rotate(360deg)";
+            setTimeout(() => { avatar.style.transform = "none"; }, 500);
+
+            const randomQuote = mascotQuotes[Math.floor(Math.random() * mascotQuotes.length)];
+            speech.innerHTML = `<span class="text-pink-500 font-bold animate-pulse">${randomQuote}</span>`;
+            
+            setTimeout(() => { fetchWeatherData(); }, 5000);
+        }
+
+        // 📢 ฟังก์ชันแชร์ผ่าน Web Share API
+        async function shareDashboard() {
+            const locName = document.getElementById('header-location-name').innerText;
+            const aqi = document.getElementById('aqi-val').innerText;
+            
+            const shareData = {
+                title: 'Techno-Chon Weather',
+                text: `เช็คสภาพอากาศวันนี้ที่ ${locName}! ดัชนี AQI อยู่ที่ ${aqi} ตรวจสอบข้อมูลแบบ Real-time ได้เลย`,
+                url: window.location.href
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    alert('เบราว์เซอร์นี้ไม่รองรับการแชร์อัตโนมัติ ให้คัดลอก URL ด้านบนส่งให้เพื่อนได้เลยครับ');
+                }
+            } catch (err) {
+                console.log('User cancelled share');
+            }
+        }
+
         function hideInstallUI() {
             const topBar = document.getElementById('pwa-top-bar');
             const headerBtn = document.getElementById('header-pwa-btn');
@@ -637,9 +672,7 @@
                 || window.navigator.standalone 
                 || document.referrer.includes('android-app://');
             
-            if (isStandalone) {
-                hideInstallUI();
-            }
+            if (isStandalone) hideInstallUI();
         }
 
         if ('serviceWorker' in navigator) {
@@ -664,16 +697,13 @@
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    hideInstallUI();
-                }
+                if (outcome === 'accepted') hideInstallUI();
                 deferredPrompt = null;
             } else {
                 alert('📱 วิธีสร้างทางลัดเข้าสู่หน้าจอมือถือ:\n\n1. กดปุ่มจุดสามจุด (⋮) ที่มุมขวาบนเบราว์เซอร์\n2. เลือก "ติดตั้งและสร้างทางลัด" หรือ "เพิ่มไปยังหน้าจอโฮม"\n3. กด "เพิ่ม" เพื่อเสร็จสิ้นครับ');
             }
         }
 
-        /* 🎨 ฟังก์ชั่นคำนวณ Class สีตามระดับ AQI (เกณฑ์มาตรฐานไทย PCD) */
         function getAqiColorClass(aqi) {
             if (aqi <= 25) return { text: 'text-sky-400', bg: 'bg-sky-400' };
             if (aqi <= 50) return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
@@ -698,41 +728,11 @@
                 subtitle.innerText = "AQI Standard (กรมควบคุมมลพิษ ประเทศไทย)";
                 desc.innerHTML = "<b>AQI (Air Quality Index)</b> คือดัชนีชี้วัดคุณภาพอากาศตามเกณฑ์มาตรฐานของกรมควบคุมมลพิษ (PCD) ประเทศไทย โดยแบ่งออกเป็น 5 ระดับสี:";
                 body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-sky-500/15 border border-sky-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-sky-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 25</span>
-                        <div>
-                            <h4 class="font-bold text-sky-600 dark:text-sky-400">🔵 ดีมาก (Very Good)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดีมาก เหมาะสำหรับกิจกรรมกลางแจ้งและการท่องเที่ยวทุกประเภท</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">26 - 50</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ดี (Good)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป ประชาชนทำกิจกรรมได้ตามปกติ กลุ่มเสี่ยงควรสังเกตอาการเบื้องต้น</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 200</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลกระทบต่อสุขภาพ (Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ประชาชนทั่วไปควรลดกิจกรรมกลางแจ้ง กลุ่มเสี่ยงควรสวมหน้ากากอนามัยป้องกันฝุ่น</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">201+</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลกระทบต่อสุขภาพ (Very Unhealthy)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ทุกคนควรหลีกเลี่ยงกิจกรรมกลางแจ้ง งดออกนอกอาคาร และสวมหน้ากาก N95 เมื่อจำเป็น</p>
-                        </div>
-                    </div>
+                    <div class="p-3 rounded-xl bg-sky-500/15 border border-sky-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-sky-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 25</span><div><h4 class="font-bold text-sky-600 dark:text-sky-400">🔵 ดีมาก (Very Good)</h4><p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดีมาก เหมาะสำหรับกิจกรรมกลางแจ้งและการท่องเที่ยวทุกประเภท</p></div></div>
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">26 - 50</span><div><h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ดี (Good)</h4><p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p></div></div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">51 - 100</span><div><h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4><p class="text-muted text-[11px] mt-0.5">ยอมรับได้ทั่วไป ประชาชนทำกิจกรรมได้ตามปกติ กลุ่มเสี่ยงควรสังเกตอาการเบื้องต้น</p></div></div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">101 - 200</span><div><h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลกระทบต่อสุขภาพ (Unhealthy)</h4><p class="text-muted text-[11px] mt-0.5">ประชาชนทั่วไปควรลดกิจกรรมกลางแจ้ง กลุ่มเสี่ยงควรสวมหน้ากากอนามัยป้องกันฝุ่น</p></div></div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">201+</span><div><h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลกระทบต่อสุขภาพ (Very Unhealthy)</h4><p class="text-muted text-[11px] mt-0.5">ทุกคนควรหลีกเลี่ยงกิจกรรมกลางแจ้ง งดออกนอกอาคาร และสวมหน้ากาก N95 เมื่อจำเป็น</p></div></div>
                 `;
             } else if (type === 'pm25') {
                 iconBg.className = "bg-teal-600 text-white p-2.5 rounded-xl";
@@ -741,41 +741,11 @@
                 subtitle.innerText = "PM2.5 Standard (กรมควบคุมมลพิษ ประเทศไทย)";
                 desc.innerHTML = "<b>PM2.5</b> คือฝุ่นละอองขนาดเล็กไม่เกิน 2.5 ไมครอน สามารถเล็ดลอดเข้าสู่ปอดและกระแสเลือดได้โดยตรง กรมควบคุมมลพิษได้กำหนดเกณฑ์มาตรฐานไว้ดังนี้:";
                 body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 15.0</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🔵 ดีมาก (0 - 15.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อากาศสะอาด สดชื่น เหมาะแก่การทำกิจกรรมกลางแจ้งทุกประเภท</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-green-500/15 border border-green-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-green-500 text-white font-bold text-[11px] whitespace-nowrap">15.1 - 25.0</span>
-                        <div>
-                            <h4 class="font-bold text-green-600 dark:text-green-400">🟢 ดี (15.1 - 25.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">25.1 - 37.5</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (25.1 - 37.5 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีฝุ่นสะสม ผู้ป่วยโรคภูมิแพ้หรือทางเดินหายใจควรหลีกเลี่ยงการทำกิจกรรมหนักกลางแจ้ง</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">37.6 - 75.0</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลต่อสุขภาพ (37.6 - 75.0 µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบต่อร่างกาย <b>ควรสวมหน้ากากอนามัย N95</b> และลดระยะเวลาทำกิจกรรมกลางแจ้ง</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">75.1+</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพอย่างมาก (75.1+ µg/m³)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ระดับอันตรายวิกฤต! สวมหน้ากาก N95 ตลอดเวลา หลีกเลี่ยงออกนอกอาคาร และใช้อุปกรณ์ฟอกอากาศ</p>
-                        </div>
-                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 15.0</span><div><h4 class="font-bold text-emerald-600 dark:text-emerald-400">🔵 ดีมาก (0 - 15.0 µg/m³)</h4><p class="text-muted text-[11px] mt-0.5">อากาศสะอาด สดชื่น เหมาะแก่การทำกิจกรรมกลางแจ้งทุกประเภท</p></div></div>
+                    <div class="p-3 rounded-xl bg-green-500/15 border border-green-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-green-500 text-white font-bold text-[11px] whitespace-nowrap">15.1 - 25.0</span><div><h4 class="font-bold text-green-600 dark:text-green-400">🟢 ดี (15.1 - 25.0 µg/m³)</h4><p class="text-muted text-[11px] mt-0.5">คุณภาพอากาศดี ปลอดภัย สามารถทำกิจกรรมกลางแจ้งได้ตามปกติ</p></div></div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">25.1 - 37.5</span><div><h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (25.1 - 37.5 µg/m³)</h4><p class="text-muted text-[11px] mt-0.5">เริ่มมีฝุ่นสะสม ผู้ป่วยโรคภูมิแพ้หรือทางเดินหายใจควรหลีกเลี่ยงการทำกิจกรรมหนักกลางแจ้ง</p></div></div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">37.6 - 75.0</span><div><h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 เริ่มมีผลต่อสุขภาพ (37.6 - 75.0 µg/m³)</h4><p class="text-muted text-[11px] mt-0.5">เริ่มมีผลกระทบต่อร่างกาย <b>ควรสวมหน้ากากอนามัย N95</b> และลดระยะเวลาทำกิจกรรมกลางแจ้ง</p></div></div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">75.1+</span><div><h4 class="font-bold text-red-600 dark:text-red-400">🔴 มีผลต่อสุขภาพอย่างมาก (75.1+ µg/m³)</h4><p class="text-muted text-[11px] mt-0.5">ระดับอันตรายวิกฤต! สวมหน้ากาก N95 ตลอดเวลา หลีกเลี่ยงออกนอกอาคาร และใช้อุปกรณ์ฟอกอากาศ</p></div></div>
                 `;
             } else if (type === 'uv') {
                 iconBg.className = "bg-amber-500 text-white p-2.5 rounded-xl";
@@ -784,41 +754,11 @@
                 subtitle.innerText = "UV Index Standard (WHO - องค์กรอนามัยโลก)";
                 desc.innerHTML = "<b>ดัชนีรังสี UV (Ultraviolet Index)</b> คือค่าชี้วัดความเข้มข้นของรังสีอัลตราไวโอเลตจากดวงอาทิตย์ที่ตกกระทบผิวโลก เพื่อเตือนภัยอันตรายต่อผิวหนังและดวงตา แบ่งเป็น 5 ระดับ:";
                 body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 2</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ (Low)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ปลอดภัยสูง สามารถทำกิจกรรมกลางแจ้งได้ตามปกติโดยไม่ต้องป้องกันพิเศษ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">3 - 5</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ควรสวมแว่นกันแดด สวมหมวก และหลบแดดในที่ร่มช่วงเที่ยงวัน</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">6 - 7</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 สูง (High)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>ทาครีมกันแดด SPF 30+</b> สวมเสื้อแขนยาว หมวกปีกกว้าง และเลี่ยงอยู่กลางแดดจัดเกิน 20 นาที</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">8 - 10</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 สูงมาก (Very High)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">ผิวหนังอาจแสบไหม้ได้เร็ว <b>หลีกเลี่ยงการออกแดดช่วง 10:00 - 16:00 น.</b> และทากันแดดซ้ำทุก 2 ชม.</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">11+</span>
-                        <div>
-                            <h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/อันตรายมาก (Extreme)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> ผิวไหม้แดดได้ภายในไม่กี่นาที งดออกแดดจัดและสวมอุปกรณ์ป้องกันเต็มรูปแบบ</p>
-                        </div>
-                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">0 - 2</span><div><h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 ต่ำ (Low)</h4><p class="text-muted text-[11px] mt-0.5">ปลอดภัยสูง สามารถทำกิจกรรมกลางแจ้งได้ตามปกติโดยไม่ต้องป้องกันพิเศษ</p></div></div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">3 - 5</span><div><h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 ปานกลาง (Moderate)</h4><p class="text-muted text-[11px] mt-0.5">ควรสวมแว่นกันแดด สวมหมวก และหลบแดดในที่ร่มช่วงเที่ยงวัน</p></div></div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">6 - 7</span><div><h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 สูง (High)</h4><p class="text-muted text-[11px] mt-0.5"><b>ทาครีมกันแดด SPF 30+</b> สวมเสื้อแขนยาว หมวกปีกกว้าง และเลี่ยงอยู่กลางแดดจัดเกิน 20 นาที</p></div></div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">8 - 10</span><div><h4 class="font-bold text-red-600 dark:text-red-400">🔴 สูงมาก (Very High)</h4><p class="text-muted text-[11px] mt-0.5">ผิวหนังอาจแสบไหม้ได้เร็ว <b>หลีกเลี่ยงการออกแดดช่วง 10:00 - 16:00 น.</b> และทากันแดดซ้ำทุก 2 ชม.</p></div></div>
+                    <div class="p-3 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-purple-600 text-white font-bold text-[11px] whitespace-nowrap">11+</span><div><h4 class="font-bold text-purple-600 dark:text-purple-400">🟣 สูงจัด/อันตรายมาก (Extreme)</h4><p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> ผิวไหม้แดดได้ภายในไม่กี่นาที งดออกแดดจัดและสวมอุปกรณ์ป้องกันเต็มรูปแบบ</p></div></div>
                 `;
             } else if (type === 'heat') {
                 iconBg.className = "bg-amber-600 text-white p-2.5 rounded-xl";
@@ -827,49 +767,21 @@
                 subtitle.innerText = "Heat Index Standard (กรมอุตุนิยมวิทยา)";
                 desc.innerHTML = "<b>ดัชนีความร้อน (Heat Index)</b> คืออุณหภูมิที่ร่างกายรู้สึกจริง โดยคำนวณจาก <b>อุณหภูมิอากาศร่วมกับความชื้นสัมพัทธ์</b> ซึ่งความชื้นที่สูงจะทำให้เหงื่อระเหยยาก ร่างกายจึงรู้สึกร้อนกว่าอุณหภูมิที่วัดได้จริง:";
                 body.innerHTML = `
-                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">27 - 32 °C</span>
-                        <div>
-                            <h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 เฝ้าระวัง (Caution)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">อาจรู้สึกอ่อนเพลียเมื่อทำกิจกรรมกลางแจ้งนานๆ ควรดื่มน้ำให้เพียงพอ</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">32 - 41 °C</span>
-                        <div>
-                            <h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 เตือนภัย (Extreme Caution)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เสี่ยงเกิดอาการตะคริวจากความร้อน เพลียแดด หลีกเลี่ยงการตากแดดนานเกินไป</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">41 - 54 °C</span>
-                        <div>
-                            <h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 อันตราย (Danger)</h4>
-                            <p class="text-muted text-[11px] mt-0.5">เกิดตะคริวและเพลียแดดได้ง่าย <b>เสี่ยงต่อการเกิดโรคลมแดด (Heatstroke)</b> หากทำกิจกรรมกลางแจ้งนาน</p>
-                        </div>
-                    </div>
-                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3">
-                        <span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">54 °C ขึ้นไป</span>
-                        <div>
-                            <h4 class="font-bold text-red-600 dark:text-red-400">🔴 อันตรายมาก (Extreme Danger)</h4>
-                            <p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> มีโอกาสเกิดโรคลมแดด (Heatstroke) สูงมาก งดกิจกรรมกลางแจ้งและอยู่ในที่ร่มร่มเย็น</p>
-                        </div>
-                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-emerald-500 text-white font-bold text-[11px] whitespace-nowrap">27 - 32 °C</span><div><h4 class="font-bold text-emerald-600 dark:text-emerald-400">🟢 เฝ้าระวัง (Caution)</h4><p class="text-muted text-[11px] mt-0.5">อาจรู้สึกอ่อนเพลียเมื่อทำกิจกรรมกลางแจ้งนานๆ ควรดื่มน้ำให้เพียงพอ</p></div></div>
+                    <div class="p-3 rounded-xl bg-yellow-500/15 border border-yellow-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-yellow-500 text-black font-bold text-[11px] whitespace-nowrap">32 - 41 °C</span><div><h4 class="font-bold text-yellow-600 dark:text-yellow-400">🟡 เตือนภัย (Extreme Caution)</h4><p class="text-muted text-[11px] mt-0.5">เสี่ยงเกิดอาการตะคริวจากความร้อน เพลียแดด หลีกเลี่ยงการตากแดดนานเกินไป</p></div></div>
+                    <div class="p-3 rounded-xl bg-orange-500/15 border border-orange-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-orange-500 text-white font-bold text-[11px] whitespace-nowrap">41 - 54 °C</span><div><h4 class="font-bold text-orange-600 dark:text-orange-400">🟠 อันตราย (Danger)</h4><p class="text-muted text-[11px] mt-0.5">เกิดตะคริวและเพลียแดดได้ง่าย <b>เสี่ยงต่อการเกิดโรคลมแดด (Heatstroke)</b> หากทำกิจกรรมกลางแจ้งนาน</p></div></div>
+                    <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 flex items-start gap-3"><span class="px-2.5 py-1 rounded bg-red-500 text-white font-bold text-[11px] whitespace-nowrap">54 °C ขึ้นไป</span><div><h4 class="font-bold text-red-600 dark:text-red-400">🔴 อันตรายมาก (Extreme Danger)</h4><p class="text-muted text-[11px] mt-0.5"><b>อันตรายสูงสุด!</b> มีโอกาสเกิดโรคลมแดด (Heatstroke) สูงมาก งดกิจกรรมกลางแจ้งและอยู่ในที่ร่มร่มเย็น</p></div></div>
                 `;
             }
 
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
         }
 
         function closeModal() {
             const modal = document.getElementById('info-modal');
             modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function switchLocation(locationKey) {
@@ -1005,7 +917,6 @@
             }
         }
 
-        // ฟังก์ชัน updateChart ที่ปรับเป็น Mixed Chart เรียบร้อยแล้ว
         function updateChart(dataList) {
             if (!dataList || dataList.length === 0) return;
             const labels = dataList.map(d => d.time);
@@ -1042,7 +953,7 @@
                         labels: labels,
                         datasets: [
                             {
-                                type: 'bar', // กราฟแท่ง AQI
+                                type: 'bar',
                                 label: 'ดัชนี AQI',
                                 data: aqiData,
                                 yAxisID: 'yAQI',
@@ -1051,10 +962,10 @@
                                 borderWidth: 1,
                                 borderRadius: 6,
                                 barPercentage: 0.5,
-                                order: 2 // ให้อยู่ด้านหลัง
+                                order: 2
                             },
                             {
-                                type: 'line', // กราฟเส้น อุณหภูมิ
+                                type: 'line',
                                 label: 'อุณหภูมิ (°C)',
                                 data: tempData,
                                 yAxisID: 'yTemp',
@@ -1068,17 +979,14 @@
                                 pointHoverRadius: 7,
                                 fill: true,
                                 tension: 0.4,
-                                order: 1 // ให้อยู่ด้านหน้า
+                                order: 1
                             }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
+                        interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: { display: false },
                             tooltip: {
@@ -1106,11 +1014,7 @@
                         scales: {
                             x: {
                                 ticks: { color: textColor, font: { size: 11 } },
-                                grid: { 
-                                    color: gridColor, 
-                                    drawBorder: false,
-                                    borderDash: [5, 5] 
-                                }
+                                grid: { color: gridColor, drawBorder: false, borderDash: [5, 5] }
                             },
                             yAQI: {
                                 type: 'linear',
@@ -1118,11 +1022,7 @@
                                 position: 'left',
                                 title: { display: true, text: 'ดัชนี AQI', color: '#6366f1', font: { size: 12, weight: 'bold' } },
                                 ticks: { color: textColor, font: { size: 11 } },
-                                grid: { 
-                                    color: gridColor, 
-                                    drawBorder: false,
-                                    borderDash: [5, 5] 
-                                },
+                                grid: { color: gridColor, drawBorder: false, borderDash: [5, 5] },
                                 beginAtZero: true,
                                 grace: '10%'
                             },
@@ -1195,6 +1095,11 @@
                 document.getElementById('heat-val').innerText = data.heatIndex;
                 document.getElementById('heat-warning').innerText = data.heatWarning;
                 document.getElementById('update-time').innerText = data.updateTime;
+
+                // อัปเดต Wind Widget
+                document.getElementById('wind-val').innerText = data.windSpeed || 0;
+                document.getElementById('wind-desc').innerText = data.windDesc || 'ลมสงบ';
+                document.getElementById('wind-bar').style.width = `${Math.min(100, ((data.windSpeed || 0) / 15) * 100)}%`;
 
                 if (data.comparison) {
                     if (data.comparison.main) {
